@@ -1,0 +1,11 @@
+# OS Level
+.DS_Store
+Icon?
+Thumb.db
+
+# Vim Swap
+*.swp
+
+# Cargo generated files and directory
+target
+Cargo.lock
