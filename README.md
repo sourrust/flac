@@ -8,7 +8,7 @@ Rust.
 The status of this FLAC implementation:
 
 - [ ] Parser
-  - [ ] metadata
+  - [x] metadata
     - [x] header
     - [x] data
       - [x] stream info
