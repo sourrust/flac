@@ -16,7 +16,7 @@ The status of this FLAC implementation:
       - [x] application
       - [x] seek table
       - [x] vorbis comment
-      - [ ] cuesheet
+      - [x] cuesheet
       - [ ] picture
   - [ ] frame
     - [ ] header

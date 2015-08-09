@@ -9,8 +9,8 @@ use std::str::from_utf8;
 
 use metadata::{
   BlockData,
-  StreamInfo, Application, VorbisComment,
-  SeekPoint,
+  StreamInfo, Application, VorbisComment, CueSheet,
+  SeekPoint, CueSheetTrack, CueSheetTrackIndex,
 };
 
 use utility::to_u32;
@@ -109,6 +109,64 @@ named!(comment_field <&[u8], &str>,
     comment_length: le_u32 ~
     comment: take_str!(comment_length),
     || { comment }
+  )
+);
+
+named!(cue_sheet <&[u8], BlockData>,
+  chain!(
+    media_catalog_number: take_str!(128) ~
+    lead_in: be_u64 ~
+    bytes: take!(259) ~ // TODO: last (7 + 258 * 8) bits must be 0
+    num_tracks: be_u8 ~
+    tracks: count!(cue_sheet_track, num_tracks as usize),
+    || {
+      let is_cd = ((bytes[0] >> 7) & 0b01) == 1;
+
+      BlockData::CueSheet(CueSheet {
+        media_catalog_number: media_catalog_number,
+        lead_in: lead_in,
+        is_cd: is_cd,
+        tracks: tracks,
+      })
+    }
+  )
+);
+
+named!(cue_sheet_track <&[u8], CueSheetTrack>,
+  chain!(
+    offset: be_u64 ~
+    number: be_u8 ~
+    isrc: take_str!(12) ~
+    bytes: take!(14) ~ // TODO: last (6 + 13 * 8) bits must be 0
+    num_indices: be_u8 ~
+    indices: count!(cue_sheet_track_index, num_indices as usize),
+    || {
+      let isnt_audio      = ((bytes[0] >> 7) & 0b01) == 1;
+      let is_pre_emphasis = ((bytes[0] >> 6) & 0b01) == 1;
+
+      CueSheetTrack {
+        offset: offset,
+        number: number,
+        isrc: isrc,
+        isnt_audio: isnt_audio,
+        is_pre_emphasis: is_pre_emphasis,
+        indices: indices,
+      }
+    }
+  )
+);
+
+named!(cue_sheet_track_index <&[u8], CueSheetTrackIndex>,
+  chain!(
+    offset: be_u64 ~
+    number: be_u8 ~
+    take!(3), // TODO: these bytes must be 0
+    || {
+      CueSheetTrackIndex {
+        offset: offset,
+        number: number,
+      }
+    }
   )
 );
 
