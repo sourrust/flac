@@ -13,7 +13,7 @@ The status of this FLAC implementation:
     - [ ] data
       - [x] stream info
       - [x] padding
-      - [ ] application
+      - [x] application
       - [ ] seek table
       - [ ] vorbis comment
       - [ ] cuesheet

@@ -8,7 +8,7 @@ use std::str::from_utf8;
 
 use metadata::{
   BlockData,
-  StreamInfo,
+  StreamInfo, Application,
 };
 
 use utility::to_u32;
@@ -51,6 +51,19 @@ named!(stream_info <&[u8], BlockData>,
 
 fn padding(input: &[u8], length: u32) -> IResult<&[u8], BlockData> {
   map!(input, take!(length), |_| BlockData::Padding(0))
+}
+
+fn application(input: &[u8], length: u32) -> IResult<&[u8], BlockData> {
+  chain!(input,
+    id: take_str!(4) ~
+    data: take!(length - 4),
+    || {
+      BlockData::Application(Application {
+        id: id,
+        data: data,
+      })
+    }
+  )
 }
 
 named!(header <&[u8], (u8, bool, u32)>,
