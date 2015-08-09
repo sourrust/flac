@@ -49,6 +49,10 @@ named!(stream_info <&[u8], BlockData>,
   )
 );
 
+fn padding(input: &[u8], length: u32) -> IResult<&[u8], BlockData> {
+  map!(input, take!(length), |_| BlockData::Padding(0))
+}
+
 named!(header <&[u8], (u8, bool, u32)>,
   chain!(
     block_byte: be_u8 ~
