@@ -6,3 +6,7 @@ description = "An implementation of FLAC (free lossless audio codec)"
 license     = "BSD-3-Clause"
 authors     = ["Jeremy Hull <sourdrums@gmail.com>"]
 readme      = "README.md"
+
+[dependencies]
+
+nom = "^0.3.0"
