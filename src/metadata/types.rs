@@ -1,3 +1,9 @@
+pub struct Block<'a> {
+  pub is_last: bool,
+  pub length: u32,
+  pub data: BlockData<'a>,
+}
+
 pub enum BlockData<'a> {
   StreamInfo(StreamInfo<'a>),
   Padding(u32),
