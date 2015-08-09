@@ -1,5 +1,5 @@
 use nom::{
-  be_u8, be_u16, be_u64,
+  be_u8, be_u16, be_u32, be_u64,
   le_u32,
   IResult,
   ErrorCode, Err,
@@ -9,8 +9,8 @@ use std::str::from_utf8;
 
 use metadata::{
   BlockData,
-  StreamInfo, Application, VorbisComment, CueSheet,
-  SeekPoint, CueSheetTrack, CueSheetTrackIndex,
+  StreamInfo, Application, VorbisComment, CueSheet, Picture,
+  SeekPoint, CueSheetTrack, CueSheetTrackIndex, PictureType,
 };
 
 use utility::to_u32;
@@ -166,6 +166,59 @@ named!(cue_sheet_track_index <&[u8], CueSheetTrackIndex>,
         offset: offset,
         number: number,
       }
+    }
+  )
+);
+
+named!(picture <&[u8], BlockData>,
+  chain!(
+    picture_type_num: be_u32 ~
+    mime_type_length:  be_u32 ~
+    mime_type: take_str!(mime_type_length) ~
+    description_length: be_u32 ~
+    description: take_str!(description_length) ~
+    width: be_u32 ~
+    height: be_u32 ~
+    depth: be_u32 ~
+    colors: be_u32 ~
+    data_length: be_u32 ~
+    data: take!(data_length),
+    || {
+      let picture_type = match picture_type_num {
+        0  => PictureType::Other,
+        1  => PictureType::FileIconStandard,
+        2  => PictureType::FileIcon,
+        3  => PictureType::FrontCover,
+        4  => PictureType::BackCover,
+        5  => PictureType::LeafletPage,
+        6  => PictureType::Media,
+        7  => PictureType::LeadArtist,
+        8  => PictureType::Artist,
+        9  => PictureType::Conductor,
+        10 => PictureType::Band,
+        11 => PictureType::Composer,
+        12 => PictureType::Lyricist,
+        13 => PictureType::RecordingLocation,
+        14 => PictureType::DuringRecording,
+        15 => PictureType::DuringPerformace,
+        16 => PictureType::VideoScreenCapture,
+        17 => PictureType::Fish,
+        18 => PictureType::Illustration,
+        19 => PictureType::BandLogoType,
+        20 => PictureType::PublisherLogoType,
+        _  => PictureType::Other,
+      };
+
+      BlockData::Picture(Picture {
+        picture_type: picture_type,
+        mime_type: mime_type,
+        description: description,
+        width: width,
+        height: height,
+        depth: depth,
+        colors: colors,
+        data: data,
+      })
     }
   )
 );
