@@ -3,6 +3,7 @@ use nom::{
   le_u32,
   IResult,
   ErrorCode, Err,
+  Needed,
 };
 
 use std::str::from_utf8;
@@ -268,3 +269,37 @@ named!(block <&[u8], Block>,
     }
   )
 );
+
+pub fn many_blocks(input: &[u8]) -> IResult<&[u8], Vec<Block>> {
+  let mut is_last   = false;
+  let mut blocks    = Vec::new();
+  let mut start     = 0;
+  let mut remaining = input.len();
+
+  while !is_last {
+    match block(&input[start..]) {
+      IResult::Done(i, block) => {
+        let result_len = i.len();
+
+        if result_len == input[start..].len() {
+          break;
+        }
+
+        start    += remaining - result_len;
+        remaining = result_len;
+        is_last   = block.is_last;
+
+        blocks.push(block);
+      }
+      _                       => break,
+    }
+  }
+
+  if blocks.len() == 0 {
+    IResult::Error(Err::Position(ErrorCode::Many1 as u32, input))
+  } else if is_last {
+    IResult::Done(&input[start..], blocks)
+  } else {
+    IResult::Incomplete(Needed::Unknown)
+  }
+}
