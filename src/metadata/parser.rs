@@ -1,5 +1,5 @@
 use nom::{
-  be_u8, be_u16,
+  be_u8, be_u16, be_u64,
   IResult,
   ErrorCode, Err,
 };
@@ -9,6 +9,7 @@ use std::str::from_utf8;
 use metadata::{
   BlockData,
   StreamInfo, Application,
+  SeekPoint,
 };
 
 use utility::to_u32;
@@ -65,6 +66,21 @@ fn application(input: &[u8], length: u32) -> IResult<&[u8], BlockData> {
     }
   )
 }
+
+named!(seek_point <&[u8], SeekPoint>,
+  chain!(
+    sample_number: be_u64 ~
+    stream_offset: be_u64 ~
+    frame_samples: be_u16,
+    || {
+      SeekPoint {
+        sample_number: sample_number,
+        stream_offset: stream_offset,
+        frame_samples: frame_samples,
+      }
+    }
+  )
+);
 
 named!(header <&[u8], (u8, bool, u32)>,
   chain!(
