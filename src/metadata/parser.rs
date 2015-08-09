@@ -1,5 +1,6 @@
 use nom::{
   be_u8, be_u16, be_u64,
+  le_u32,
   IResult,
   ErrorCode, Err,
 };
@@ -8,7 +9,7 @@ use std::str::from_utf8;
 
 use metadata::{
   BlockData,
-  StreamInfo, Application,
+  StreamInfo, Application, VorbisComment,
   SeekPoint,
 };
 
@@ -87,6 +88,29 @@ fn seek_table(input: &[u8], length: u32) -> IResult<&[u8], BlockData> {
 
   map!(input, count!(seek_point, seek_count), BlockData::SeekTable)
 }
+
+named!(vorbis_comment <&[u8], BlockData>,
+  chain!(
+    vendor_string_length: le_u32 ~
+    vendor_string: take_str!(vendor_string_length)  ~
+    number_of_comments: le_u32 ~
+    comments: count!(comment_field, number_of_comments as usize),
+    || {
+      BlockData::VorbisComment(VorbisComment {
+        vendor_string: vendor_string,
+        comments: comments,
+      })
+    }
+  )
+);
+
+named!(comment_field <&[u8], &str>,
+  chain!(
+    comment_length: le_u32 ~
+    comment: take_str!(comment_length),
+    || { comment }
+  )
+);
 
 named!(header <&[u8], (u8, bool, u32)>,
   chain!(

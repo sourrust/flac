@@ -15,7 +15,7 @@ The status of this FLAC implementation:
       - [x] padding
       - [x] application
       - [x] seek table
-      - [ ] vorbis comment
+      - [x] vorbis comment
       - [ ] cuesheet
       - [ ] picture
   - [ ] frame
