@@ -9,7 +9,7 @@ The status of this FLAC implementation:
 
 - [ ] Parser
   - [ ] metadata
-    - [ ] header
+    - [x] header
     - [ ] data
       - [ ] stream info
       - [ ] padding
