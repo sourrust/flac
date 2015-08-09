@@ -11,7 +11,7 @@ The status of this FLAC implementation:
   - [ ] metadata
     - [x] header
     - [ ] data
-      - [ ] stream info
+      - [x] stream info
       - [ ] padding
       - [ ] application
       - [ ] seek table
