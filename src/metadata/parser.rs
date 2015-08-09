@@ -8,7 +8,7 @@ use nom::{
 use std::str::from_utf8;
 
 use metadata::{
-  BlockData,
+  Block, BlockData,
   StreamInfo, Application, VorbisComment, CueSheet, Picture,
   SeekPoint, CueSheetTrack, CueSheetTrackIndex, PictureType,
 };
@@ -254,3 +254,17 @@ fn block_data(input: &[u8], block_type: u8, length: u32)
     _       => IResult::Error(Err::Position(ErrorCode::Alt as u32, input)),
   }
 }
+
+named!(block <&[u8], Block>,
+  chain!(
+    block_header: header ~
+    data: apply!(block_data, block_header.0, block_header.2),
+    || {
+      Block {
+        is_last: block_header.1,
+        length: block_header.2,
+        data: data
+      }
+    }
+  )
+);
