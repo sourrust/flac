@@ -15,6 +15,7 @@ pub enum BlockData<'a> {
   Unknown(&'a [u8]),
 }
 
+/// Information regarding the entire audio stream
 pub struct StreamInfo<'a> {
   pub min_block_size: u16,
   pub max_block_size: u16,
@@ -27,22 +28,29 @@ pub struct StreamInfo<'a> {
   pub md5_sum: &'a [u8],
 }
 
+/// Data used by third-party applications
 pub struct Application<'a> {
   pub id: &'a str,
   pub data: &'a [u8],
 }
 
+/// Seek, or skip, to a point within the FLAC file
 pub struct SeekPoint {
   pub sample_number: u64,
   pub stream_offset: u64,
   pub frame_samples: u16,
 }
 
+/// Stores human-readable name/value pairs
 pub struct VorbisComment<'a> {
   pub vendor_string: &'a str,
   pub comments: Vec<&'a str>,
 }
 
+/// Stores cue information
+///
+/// Generally for storing information from Compact Disk Digital Audio, but
+/// can be used as a cueing mechanism for playback.
 pub struct CueSheet<'a> {
   pub media_catalog_number: &'a str,
   pub lead_in: u64,
@@ -64,6 +72,11 @@ pub struct CueSheetTrackIndex {
   pub number: u8,
 }
 
+/// Stores pictures associated with a FLAC file
+///
+/// More than likely these pictures will be cover art, but you can have more
+/// than one within a file, which are distinguished by `PictureType`and it's
+/// mime type string.
 pub struct Picture<'a> {
   pub picture_type: PictureType,
   pub mime_type: &'a str,
