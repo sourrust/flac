@@ -23,7 +23,7 @@ named!(stream_info <&[u8], BlockData>,
     min_frame_size: map!(take!(3), to_u32) ~
     max_frame_size: map!(take!(3), to_u32) ~
     bytes: take!(8) ~
-    md5_sum: take_str!(16),
+    md5_sum: take!(16),
     || {
       let sample_rate     = ((bytes[0] as u32) << 12) +
                             ((bytes[1] as u32) << 4)  +
