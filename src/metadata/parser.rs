@@ -224,6 +224,9 @@ named!(picture <&[u8], BlockData>,
   )
 );
 
+// As of FLAC v1.3.1, there is support for up to 127 different metadata
+// `Block`s but actually 7 that are implemented. When the `Block` type isn't
+// recognised, this block gets skipped over with this parser.
 fn unknown(input: &[u8], length: u32) -> IResult<&[u8], BlockData> {
   map!(input, take!(length), BlockData::Unknown)
 }
@@ -270,6 +273,11 @@ named!(block <&[u8], Block>,
   )
 );
 
+/// Parses one or more metadata `Block`s
+///
+/// The first block should always be `StreamInfo` since that is the only
+/// required `Block`. At the moment `many_blocks` doesn't check that
+/// requirement.
 pub fn many_blocks(input: &[u8]) -> IResult<&[u8], Vec<Block>> {
   let mut is_last   = false;
   let mut blocks    = Vec::new();
