@@ -184,7 +184,7 @@ named!(cue_sheet_track_index <&[u8], CueSheetTrackIndex>,
   chain!(
     offset: be_u64 ~
     number: be_u8 ~
-    take!(3), // TODO: these bytes must be 0
+    skip_bytes!(3),
     || {
       CueSheetTrackIndex {
         offset: offset,
