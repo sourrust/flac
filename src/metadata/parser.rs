@@ -73,7 +73,7 @@ named!(stream_info <&[u8], BlockData>,
 );
 
 fn padding(input: &[u8], length: u32) -> IResult<&[u8], BlockData> {
-  map!(input, take!(length), |_| BlockData::Padding(0))
+  map!(input, skip_bytes!(length), |_| BlockData::Padding(0))
 }
 
 fn application(input: &[u8], length: u32) -> IResult<&[u8], BlockData> {
