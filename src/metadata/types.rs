@@ -24,7 +24,7 @@ pub struct StreamInfo<'a> {
   pub channels: u8,
   pub bits_per_sample: u8,
   pub total_samples: u64,
-  pub md5_sum: &'a str,
+  pub md5_sum: &'a [u8],
 }
 
 pub struct Application<'a> {
