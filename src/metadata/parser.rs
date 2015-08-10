@@ -16,6 +16,26 @@ use metadata::{
 
 use utility::to_u32;
 
+macro_rules! skip_bytes(
+  ($input: expr, $length: expr) => (
+    {
+      match take!($input, $length) {
+        IResult::Done(i, bytes)   => {
+          let sum = bytes.iter().fold(0, |result, byte| result + byte);
+
+          if sum == 0 {
+            IResult::Done(i, bytes)
+          } else {
+            IResult::Error(Err::Position(ErrorCode::Digit as u32, $input))
+          }
+        }
+        IResult::Error(error)     => IResult::Error(error),
+        IResult::Incomplete(need) => IResult::Incomplete(need),
+      }
+    }
+  );
+);
+
 named!(stream_info <&[u8], BlockData>,
   chain!(
     min_block_size: be_u16 ~
