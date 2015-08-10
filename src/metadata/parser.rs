@@ -16,6 +16,26 @@ use metadata::{
 
 use utility::to_u32;
 
+macro_rules! skip_bytes(
+  ($input: expr, $length: expr) => (
+    {
+      match take!($input, $length) {
+        IResult::Done(i, bytes)   => {
+          let sum = bytes.iter().fold(0, |result, byte| result + byte);
+
+          if sum == 0 {
+            IResult::Done(i, bytes)
+          } else {
+            IResult::Error(Err::Position(ErrorCode::Digit as u32, $input))
+          }
+        }
+        IResult::Error(error)     => IResult::Error(error),
+        IResult::Incomplete(need) => IResult::Incomplete(need),
+      }
+    }
+  );
+);
+
 named!(stream_info <&[u8], BlockData>,
   chain!(
     min_block_size: be_u16 ~
@@ -53,7 +73,7 @@ named!(stream_info <&[u8], BlockData>,
 );
 
 fn padding(input: &[u8], length: u32) -> IResult<&[u8], BlockData> {
-  map!(input, take!(length), |_| BlockData::Padding(0))
+  map!(input, skip_bytes!(length), |_| BlockData::Padding(0))
 }
 
 fn application(input: &[u8], length: u32) -> IResult<&[u8], BlockData> {
@@ -140,7 +160,10 @@ named!(cue_sheet_track <&[u8], CueSheetTrack>,
     isrc: take_str!(12) ~
     bytes: take!(14) ~ // TODO: last (6 + 13 * 8) bits must be 0
     num_indices: be_u8 ~
-    indices: count!(cue_sheet_track_index, num_indices as usize),
+    indices: cond!(
+      num_indices != 0,
+      count!(cue_sheet_track_index, num_indices as usize)
+    ),
     || {
       let isnt_audio      = ((bytes[0] >> 7) & 0b01) == 1;
       let is_pre_emphasis = ((bytes[0] >> 6) & 0b01) == 1;
@@ -151,7 +174,7 @@ named!(cue_sheet_track <&[u8], CueSheetTrack>,
         isrc: isrc,
         isnt_audio: isnt_audio,
         is_pre_emphasis: is_pre_emphasis,
-        indices: indices,
+        indices: indices.unwrap_or(Vec::new()),
       }
     }
   )
@@ -161,7 +184,7 @@ named!(cue_sheet_track_index <&[u8], CueSheetTrackIndex>,
   chain!(
     offset: be_u64 ~
     number: be_u8 ~
-    take!(3), // TODO: these bytes must be 0
+    skip_bytes!(3),
     || {
       CueSheetTrackIndex {
         offset: offset,
