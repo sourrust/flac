@@ -254,7 +254,7 @@ fn unknown(input: &[u8], length: u32) -> IResult<&[u8], BlockData> {
   map!(input, take!(length), BlockData::Unknown)
 }
 
-named!(header <&[u8], (u8, bool, u32)>,
+named!(header <&[u8], (bool, u8, u32)>,
   chain!(
     block_byte: be_u8 ~
     length: map!(take!(3), to_u32),
@@ -262,7 +262,7 @@ named!(header <&[u8], (u8, bool, u32)>,
       let is_last    = (block_byte >> 7) == 1;
       let block_type = block_byte & 0b01111111;
 
-      (block_type, is_last, length)
+      (is_last, block_type, length)
     }
   )
 );
@@ -285,10 +285,10 @@ fn block_data(input: &[u8], block_type: u8, length: u32)
 named!(block <&[u8], Block>,
   chain!(
     block_header: header ~
-    data: apply!(block_data, block_header.0, block_header.2),
+    data: apply!(block_data, block_header.1, block_header.2),
     || {
       Block {
-        is_last: block_header.1,
+        is_last: block_header.0,
         length: block_header.2,
         data: data
       }
