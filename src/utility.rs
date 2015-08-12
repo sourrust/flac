@@ -12,3 +12,24 @@ pub fn to_u32(bytes: &[u8]) -> u32 {
     result + ((bytes[i] as u32) << ((length - 1 - i) * 8))
   )
 }
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  #[should_panic]
+  fn test_panic_to_u32() {
+    to_u32(&[0x00, 0x00, 0x00, 0x00, 0x00]);
+  }
+
+  #[test]
+  fn test_to_u32() {
+    let bytes = [0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef];
+
+    assert!(to_u32(&bytes[0..1]) == 0x00000001, "Slice count of 1");
+    assert!(to_u32(&bytes[3..5]) == 0x00006789, "Slice count of 2");
+    assert!(to_u32(&bytes[1..4]) == 0x00234567, "Slice count of 3");
+    assert!(to_u32(&bytes[4..])  == 0x89abcdef, "Slice count of 4");
+  }
+}

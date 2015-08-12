@@ -36,7 +36,7 @@ macro_rules! skip_bytes(
   );
 );
 
-named!(stream_info <&[u8], BlockData>,
+named!(pub stream_info <&[u8], BlockData>,
   chain!(
     min_block_size: be_u16 ~
     max_block_size: be_u16 ~
@@ -47,7 +47,7 @@ named!(stream_info <&[u8], BlockData>,
     || {
       let sample_rate     = ((bytes[0] as u32) << 12) +
                             ((bytes[1] as u32) << 4)  +
-                            (bytes[2] as u32) >> 4;
+                            ((bytes[2] as u32) >> 4);
       let channels        = (bytes[2] >> 1) & 0b0111;
       let bits_per_sample = ((bytes[2] & 0b01) << 4) +
                             bytes[3] >> 4;
@@ -254,7 +254,7 @@ fn unknown(input: &[u8], length: u32) -> IResult<&[u8], BlockData> {
   map!(input, take!(length), BlockData::Unknown)
 }
 
-named!(header <&[u8], (bool, u8, u32)>,
+named!(pub header <&[u8], (bool, u8, u32)>,
   chain!(
     block_byte: be_u8 ~
     length: map!(take!(3), to_u32),
@@ -332,5 +332,57 @@ pub fn many_blocks(input: &[u8]) -> IResult<&[u8], Vec<Block>> {
     IResult::Done(&input[start..], blocks)
   } else {
     IResult::Incomplete(Needed::Unknown)
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use metadata::{
+    BlockData,
+    StreamInfo,
+  };
+  use nom::IResult;
+
+  #[test]
+  fn test_header() {
+    let inputs = [ [0x80, 0x00, 0x00, 0x22]
+                 , [0x01, 0x00, 0x04, 0x00]
+                 , [0x84, 0x00, 0x00, 0xf8]
+                 ];
+
+    assert!(header(&inputs[0]) == IResult::Done(&[], (true, 0, 34)),
+            "Header Test #1");
+    assert!(header(&inputs[1]) == IResult::Done(&[], (false, 1, 1024)),
+            "Header Test #2");
+    assert!(header(&inputs[2]) == IResult::Done(&[], (true, 4, 248)),
+            "Header Test #3");
+  }
+
+  #[test]
+  fn test_stream_info() {
+    let input   = [ 0x12, 0x00, 0x12, 0x00, 0x00, 0x00, 0x0e, 0x00, 0x00, 0x10
+                  , 0x01, 0xf4, 0x02, 0x70, 0x00, 0x01, 0x38, 0x80, 0xa0, 0x42
+                  , 0x23, 0x7c, 0x54, 0x93, 0xfd, 0xb9, 0x65, 0x6b, 0x94, 0xa8
+                  , 0x36, 0x08, 0xd1, 0x1a
+                  ];
+
+    let md5_sum = [ 0xa0, 0x42, 0x23, 0x7c, 0x54, 0x93, 0xfd, 0xb9, 0x65, 0x6b
+                  , 0x94, 0xa8, 0x36, 0x08, 0xd1, 0x1a
+                  ];
+
+    let result = BlockData::StreamInfo(StreamInfo {
+      min_block_size: 4608,
+      max_block_size: 4608,
+      min_frame_size: 14,
+      max_frame_size: 16,
+      sample_rate: 8000,
+      channels: 2,
+      bits_per_sample: 8,
+      total_samples: 80000,
+      md5_sum: &md5_sum,
+    });
+
+    assert_eq!(stream_info(&input), IResult::Done(&[][..], result));
   }
 }
