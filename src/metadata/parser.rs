@@ -338,6 +338,10 @@ pub fn many_blocks(input: &[u8]) -> IResult<&[u8], Vec<Block>> {
 #[cfg(test)]
 mod tests {
   use super::*;
+  use metadata::{
+    BlockData,
+    StreamInfo,
+  };
   use nom::IResult;
 
   #[test]
@@ -353,5 +357,32 @@ mod tests {
             "Header Test #2");
     assert!(header(&inputs[2]) == IResult::Done(&[], (true, 4, 248)),
             "Header Test #3");
+  }
+
+  #[test]
+  fn test_stream_info() {
+    let input   = [ 0x12, 0x00, 0x12, 0x00, 0x00, 0x00, 0x0e, 0x00, 0x00, 0x10
+                  , 0x01, 0xf4, 0x02, 0x70, 0x00, 0x01, 0x38, 0x80, 0xa0, 0x42
+                  , 0x23, 0x7c, 0x54, 0x93, 0xfd, 0xb9, 0x65, 0x6b, 0x94, 0xa8
+                  , 0x36, 0x08, 0xd1, 0x1a
+                  ];
+
+    let md5_sum = [ 0xa0, 0x42, 0x23, 0x7c, 0x54, 0x93, 0xfd, 0xb9, 0x65, 0x6b
+                  , 0x94, 0xa8, 0x36, 0x08, 0xd1, 0x1a
+                  ];
+
+    let result = BlockData::StreamInfo(StreamInfo {
+      min_block_size: 4608,
+      max_block_size: 4608,
+      min_frame_size: 14,
+      max_frame_size: 16,
+      sample_rate: 8000,
+      channels: 2,
+      bits_per_sample: 8,
+      total_samples: 80000,
+      md5_sum: &md5_sum,
+    });
+
+    assert_eq!(stream_info(&input), IResult::Done(&[][..], result));
   }
 }
