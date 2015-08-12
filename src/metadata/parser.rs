@@ -334,3 +334,24 @@ pub fn many_blocks(input: &[u8]) -> IResult<&[u8], Vec<Block>> {
     IResult::Incomplete(Needed::Unknown)
   }
 }
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use nom::IResult;
+
+  #[test]
+  fn test_header() {
+    let inputs = [ [0x80, 0x00, 0x00, 0x22]
+                 , [0x01, 0x00, 0x04, 0x00]
+                 , [0x84, 0x00, 0x00, 0xf8]
+                 ];
+
+    assert!(header(&inputs[0]) == IResult::Done(&[], (true, 0, 34)),
+            "Header Test #1");
+    assert!(header(&inputs[1]) == IResult::Done(&[], (false, 1, 1024)),
+            "Header Test #2");
+    assert!(header(&inputs[2]) == IResult::Done(&[], (true, 4, 248)),
+            "Header Test #3");
+  }
+}
