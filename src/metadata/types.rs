@@ -4,6 +4,7 @@ pub struct Block<'a> {
   pub data: BlockData<'a>,
 }
 
+#[derive(Debug, PartialEq, Eq)]
 pub enum BlockData<'a> {
   StreamInfo(StreamInfo<'a>),
   Padding(u32),
@@ -16,6 +17,7 @@ pub enum BlockData<'a> {
 }
 
 /// Information regarding the entire audio stream
+#[derive(Debug, PartialEq, Eq)]
 pub struct StreamInfo<'a> {
   pub min_block_size: u16,
   pub max_block_size: u16,
@@ -29,12 +31,14 @@ pub struct StreamInfo<'a> {
 }
 
 /// Data used by third-party applications
+#[derive(Debug, PartialEq, Eq)]
 pub struct Application<'a> {
   pub id: &'a str,
   pub data: &'a [u8],
 }
 
 /// Seek, or skip, to a point within the FLAC file
+#[derive(Debug, PartialEq, Eq)]
 pub struct SeekPoint {
   pub sample_number: u64,
   pub stream_offset: u64,
@@ -42,6 +46,7 @@ pub struct SeekPoint {
 }
 
 /// Stores human-readable name/value pairs
+#[derive(Debug, PartialEq, Eq)]
 pub struct VorbisComment<'a> {
   pub vendor_string: &'a str,
   pub comments: Vec<&'a str>,
@@ -51,6 +56,7 @@ pub struct VorbisComment<'a> {
 ///
 /// Generally for storing information from Compact Disk Digital Audio, but
 /// can be used as a cueing mechanism for playback.
+#[derive(Debug, PartialEq, Eq)]
 pub struct CueSheet<'a> {
   pub media_catalog_number: &'a str,
   pub lead_in: u64,
@@ -58,6 +64,7 @@ pub struct CueSheet<'a> {
   pub tracks: Vec<CueSheetTrack<'a>>,
 }
 
+#[derive(Debug, PartialEq, Eq)]
 pub struct CueSheetTrack<'a> {
   pub offset: u64,
   pub number: u8,
@@ -67,6 +74,7 @@ pub struct CueSheetTrack<'a> {
   pub indices: Vec<CueSheetTrackIndex>,
 }
 
+#[derive(Debug, PartialEq, Eq)]
 pub struct CueSheetTrackIndex {
   pub offset: u64,
   pub number: u8,
@@ -77,6 +85,7 @@ pub struct CueSheetTrackIndex {
 /// More than likely these pictures will be cover art, but you can have more
 /// than one within a file, which are distinguished by `PictureType`and it's
 /// mime type string.
+#[derive(Debug, PartialEq, Eq)]
 pub struct Picture<'a> {
   pub picture_type: PictureType,
   pub mime_type: &'a str,
@@ -88,6 +97,7 @@ pub struct Picture<'a> {
   pub data: &'a [u8],
 }
 
+#[derive(Debug, PartialEq, Eq)]
 pub enum PictureType {
   Other,
   FileIconStandard,
