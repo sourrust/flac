@@ -47,7 +47,7 @@ named!(pub stream_info <&[u8], BlockData>,
     || {
       let sample_rate     = ((bytes[0] as u32) << 12) +
                             ((bytes[1] as u32) << 4)  +
-                            (bytes[2] as u32) >> 4;
+                            ((bytes[2] as u32) >> 4);
       let channels        = (bytes[2] >> 1) & 0b0111;
       let bits_per_sample = ((bytes[2] & 0b01) << 4) +
                             bytes[3] >> 4;
