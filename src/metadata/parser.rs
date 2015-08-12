@@ -254,7 +254,7 @@ fn unknown(input: &[u8], length: u32) -> IResult<&[u8], BlockData> {
   map!(input, take!(length), BlockData::Unknown)
 }
 
-named!(header <&[u8], (bool, u8, u32)>,
+named!(pub header <&[u8], (bool, u8, u32)>,
   chain!(
     block_byte: be_u8 ~
     length: map!(take!(3), to_u32),
