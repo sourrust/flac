@@ -1,5 +1,7 @@
 # FLAC
 
+[![Build Status](https://travis-ci.org/sourrust/flac.svg?branch=master)](https://travis-ci.org/sourrust/flac)
+
 An implementation of [FLAC][flac], free lossless audio codec, written in
 Rust.
 
