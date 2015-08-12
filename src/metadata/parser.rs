@@ -36,7 +36,7 @@ macro_rules! skip_bytes(
   );
 );
 
-named!(stream_info <&[u8], BlockData>,
+named!(pub stream_info <&[u8], BlockData>,
   chain!(
     min_block_size: be_u16 ~
     max_block_size: be_u16 ~
