@@ -342,7 +342,10 @@ mod tests {
     BlockData,
     StreamInfo,
   };
-  use nom::IResult;
+  use nom::{
+    IResult,
+    ErrorCode, Err,
+  };
 
   #[test]
   fn test_header() {
@@ -384,5 +387,19 @@ mod tests {
     });
 
     assert_eq!(stream_info(&input), IResult::Done(&[][..], result));
+  }
+
+  #[test]
+  fn test_padding() {
+    let input = [ [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+                , [0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00]
+                ];
+
+    let result_valid   = IResult::Done(&[][..], BlockData::Padding(0));
+    let result_invalid = IResult::Error(Err::Position(
+                           ErrorCode::Digit as u32, &input[1][..]));
+
+    assert!(padding(&input[0], 10) == result_valid, "Valid Padding");
+    assert!(padding(&input[1], 10) == result_invalid, "Invalid Padding");
   }
 }
