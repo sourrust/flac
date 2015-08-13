@@ -108,7 +108,7 @@ named!(seek_point <&[u8], SeekPoint>,
   )
 );
 
-fn seek_table(input: &[u8], length: u32) -> IResult<&[u8], BlockData> {
+pub fn seek_table(input: &[u8], length: u32) -> IResult<&[u8], BlockData> {
   let seek_count = (length / 18) as usize;
 
   map!(input, count!(seek_point, seek_count), BlockData::SeekTable)
