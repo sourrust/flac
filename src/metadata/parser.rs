@@ -114,7 +114,7 @@ pub fn seek_table(input: &[u8], length: u32) -> IResult<&[u8], BlockData> {
   map!(input, count!(seek_point, seek_count), BlockData::SeekTable)
 }
 
-named!(vorbis_comment <&[u8], BlockData>,
+named!(pub vorbis_comment <&[u8], BlockData>,
   chain!(
     vendor_string_length: le_u32 ~
     vendor_string: take_str!(vendor_string_length)  ~
@@ -137,7 +137,7 @@ named!(comment_field <&[u8], &str>,
   )
 );
 
-named!(cue_sheet <&[u8], BlockData>,
+named!(pub cue_sheet <&[u8], BlockData>,
   chain!(
     media_catalog_number: take_str!(128) ~
     lead_in: be_u64 ~
@@ -198,7 +198,7 @@ named!(cue_sheet_track_index <&[u8], CueSheetTrackIndex>,
   )
 );
 
-named!(picture <&[u8], BlockData>,
+named!(pub picture <&[u8], BlockData>,
   chain!(
     picture_type_num: be_u32 ~
     mime_type_length:  be_u32 ~
@@ -254,7 +254,7 @@ named!(picture <&[u8], BlockData>,
 // As of FLAC v1.3.1, there is support for up to 127 different metadata
 // `Block`s but actually 7 that are implemented. When the `Block` type isn't
 // recognised, this block gets skipped over with this parser.
-fn unknown(input: &[u8], length: u32) -> IResult<&[u8], BlockData> {
+pub fn unknown(input: &[u8], length: u32) -> IResult<&[u8], BlockData> {
   map!(input, take!(length), BlockData::Unknown)
 }
 
@@ -344,8 +344,8 @@ mod tests {
   use super::*;
   use metadata::{
     BlockData,
-    StreamInfo, Application,
-    SeekPoint
+    StreamInfo, Application, VorbisComment, CueSheet, Picture,
+    SeekPoint, CueSheetTrack, CueSheetTrackIndex, PictureType,
   };
   use nom::{
     IResult,
@@ -410,10 +410,8 @@ mod tests {
 
   #[test]
   fn test_application() {
-    let input0   = [0x66, 0x61, 0x6b, 0x65];
-    let input1   = [ 0x72, 0x69, 0x66, 0x66, 0x66, 0x61, 0x6b, 0x65, 0x20
-                   , 0x64, 0x61, 0x74, 0x61
-                   ];
+    let input0   = b"fake";
+    let input1   = b"rifffake data";
     let results  = [
       IResult::Done(&[][..], BlockData::Application(Application {
         id: "fake",
@@ -425,9 +423,9 @@ mod tests {
       }))
     ];
 
-    assert!(application(&input0, 4) == results[0],
+    assert!(application(input0, 4) == results[0],
             "Fake Application, No data");
-    assert!(application(&input1, 13) == results[1],
+    assert!(application(input1, 13) == results[1],
             "Riff Application, With data");
   }
 
@@ -472,5 +470,134 @@ mod tests {
     ]));
 
     assert_eq!(seek_table(&input, 5 * 18), result);
+  }
+
+  #[test]
+  fn test_vorbis_comment() {
+    let input = b"\x20\0\0\0reference libFLAC 1.1.3 20060805\x06\0\0\0\
+                  \x20\0\0\0REPLAYGAIN_TRACK_PEAK=0.99996948\
+                  \x1e\0\0\0REPLAYGAIN_TRACK_GAIN=-7.89 dB\
+                  \x20\0\0\0REPLAYGAIN_ALBUM_PEAK=0.99996948\
+                  \x1e\0\0\0REPLAYGAIN_ALBUM_GAIN=-7.89 dB\
+                  \x08\0\0\0artist=1\x07\0\0\0title=2";
+
+    let result = IResult::Done(&[][..],
+      BlockData::VorbisComment(VorbisComment{
+        vendor_string: "reference libFLAC 1.1.3 20060805",
+        comments: vec![
+          "REPLAYGAIN_TRACK_PEAK=0.99996948",
+          "REPLAYGAIN_TRACK_GAIN=-7.89 dB",
+          "REPLAYGAIN_ALBUM_PEAK=0.99996948",
+          "REPLAYGAIN_ALBUM_GAIN=-7.89 dB",
+          "artist=1",
+          "title=2"
+        ],
+      }));
+
+    assert_eq!(vorbis_comment(input), result);
+  }
+
+  #[test]
+  fn test_cue_sheet() {
+    let input  = b"1234567890123\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
+                   \0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
+                   \0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
+                   \0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
+                   \0\0\0\0\0\0\0\0\0\0\0\x01\x58\x88\x80\0\0\0\0\0\0\0\0\0\0\
+                   \0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
+                   \0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
+                   \0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
+                   \0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
+                   \0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
+                   \0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
+                   \0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
+                   \0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
+                   \0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x03\0\0\0\0\0\0\0\0\x01\0\
+                   \0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x02\0\0\
+                   \0\0\0\0\0\0\x01\0\0\0\0\0\0\0\0\0\x02\x4c\x02\0\0\0\0\0\0\
+                   \0\0\0\x0b\x7c\x02\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
+                   \0\0\0\0\0\0\x01\0\0\0\0\0\0\0\0\x01\0\0\0\0\0\0\0\0\0\x16\
+                   \xf8\xaa\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
+                   \0\0";
+    let result = IResult::Done(&[][..],
+      BlockData::CueSheet(CueSheet {
+        media_catalog_number: "1234567890123\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
+                               \0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
+                               \0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
+                               \0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
+                               \0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
+                               \0\0\0\0\0\0\0",
+        lead_in: 88200,
+        is_cd: true,
+        tracks: vec![
+          CueSheetTrack {
+            offset: 0,
+            number: 1,
+            isrc: "\0\0\0\0\0\0\0\0\0\0\0\0",
+            isnt_audio: false,
+            is_pre_emphasis: false,
+            indices: vec![
+              CueSheetTrackIndex {
+                offset: 0,
+                number: 1,
+              },
+              CueSheetTrackIndex {
+                offset: 588,
+                number: 2,
+              }
+            ],
+          },
+          CueSheetTrack {
+            offset: 2940,
+            number: 2,
+            isrc: "\0\0\0\0\0\0\0\0\0\0\0\0",
+            isnt_audio: false,
+            is_pre_emphasis: false,
+            indices: vec![
+              CueSheetTrackIndex {
+                offset: 0,
+                number: 1,
+              }
+            ],
+          },
+          CueSheetTrack {
+            offset: 5880,
+            number: 170,
+            isrc: "\0\0\0\0\0\0\0\0\0\0\0\0",
+            isnt_audio: false,
+            is_pre_emphasis: false,
+            indices: vec![],
+          },
+        ],
+      }));
+
+    assert_eq!(cue_sheet(input), result);
+  }
+
+  #[test]
+  fn test_picture() {
+    let input  = b"\0\0\0\0\0\0\0\x09image/png\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
+                   \0\0\0\0\0\0\0\0\0";
+    let result = IResult::Done(&[][..],
+      BlockData::Picture(Picture {
+        picture_type: PictureType::Other,
+        mime_type: "image/png",
+        description: "",
+        width: 0,
+        height: 0,
+        depth: 0,
+        colors: 0,
+        data: &[][..],
+      }));
+
+    assert_eq!(picture(input), result);
+  }
+
+  #[test]
+  fn test_unknown() {
+    let input  = b"random data that won't really be parsed anyway.";
+    let result = IResult::Done(&[][..], BlockData::Unknown(&input[..]));
+
+    assert_eq!(unknown(input, 47), result);
   }
 }
