@@ -72,11 +72,15 @@ named!(pub stream_info <&[u8], BlockData>,
   )
 );
 
-fn padding(input: &[u8], length: u32) -> IResult<&[u8], BlockData> {
-  map!(input, skip_bytes!(length), |_| BlockData::Padding(0))
+pub fn padding(input: &[u8], length: u32) -> IResult<&[u8], BlockData> {
+  match skip_bytes!(input, length) {
+    IResult::Done(i, _)       => IResult::Done(i, BlockData::Padding(0)),
+    IResult::Error(error)     => IResult::Error(error),
+    IResult::Incomplete(need) => IResult::Incomplete(need),
+  }
 }
 
-fn application(input: &[u8], length: u32) -> IResult<&[u8], BlockData> {
+pub fn application(input: &[u8], length: u32) -> IResult<&[u8], BlockData> {
   chain!(input,
     id: take_str!(4) ~
     data: take!(length - 4),
@@ -104,7 +108,7 @@ named!(seek_point <&[u8], SeekPoint>,
   )
 );
 
-fn seek_table(input: &[u8], length: u32) -> IResult<&[u8], BlockData> {
+pub fn seek_table(input: &[u8], length: u32) -> IResult<&[u8], BlockData> {
   let seek_count = (length / 18) as usize;
 
   map!(input, count!(seek_point, seek_count), BlockData::SeekTable)
@@ -340,9 +344,13 @@ mod tests {
   use super::*;
   use metadata::{
     BlockData,
-    StreamInfo,
+    StreamInfo, Application,
+    SeekPoint
   };
-  use nom::IResult;
+  use nom::{
+    IResult,
+    ErrorCode, Err,
+  };
 
   #[test]
   fn test_header() {
@@ -384,5 +392,85 @@ mod tests {
     });
 
     assert_eq!(stream_info(&input), IResult::Done(&[][..], result));
+  }
+
+  #[test]
+  fn test_padding() {
+    let input = [ [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+                , [0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00]
+                ];
+
+    let result_valid   = IResult::Done(&[][..], BlockData::Padding(0));
+    let result_invalid = IResult::Error(Err::Position(
+                           ErrorCode::Digit as u32, &input[1][..]));
+
+    assert!(padding(&input[0], 10) == result_valid, "Valid Padding");
+    assert!(padding(&input[1], 10) == result_invalid, "Invalid Padding");
+  }
+
+  #[test]
+  fn test_application() {
+    let input0   = [0x66, 0x61, 0x6b, 0x65];
+    let input1   = [ 0x72, 0x69, 0x66, 0x66, 0x66, 0x61, 0x6b, 0x65, 0x20
+                   , 0x64, 0x61, 0x74, 0x61
+                   ];
+    let results  = [
+      IResult::Done(&[][..], BlockData::Application(Application {
+        id: "fake",
+        data: &[][..],
+      })),
+      IResult::Done(&[][..], BlockData::Application(Application {
+        id: "riff",
+        data: &input1[4..],
+      }))
+    ];
+
+    assert!(application(&input0, 4) == results[0],
+            "Fake Application, No data");
+    assert!(application(&input1, 13) == results[1],
+            "Riff Application, With data");
+  }
+
+  #[test]
+  fn test_seek_table() {
+    let input  = [ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+                 , 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x12, 0x00, 0x00, 0x00
+                 , 0x00, 0x00, 0x00, 0x00, 0x12, 0x00, 0x00, 0x00, 0x00, 0x00
+                 , 0x00, 0x00, 0x00, 0x0e, 0x04, 0xf8, 0xff, 0xff, 0xff, 0xff
+                 , 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+                 , 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff
+                 , 0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+                 , 0x00, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff
+                 , 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+                 ];
+    let result = IResult::Done(&[][..], BlockData::SeekTable(vec![
+      SeekPoint {
+        sample_number: 0,
+        stream_offset: 0,
+        frame_samples: 4608,
+      },
+      SeekPoint {
+        sample_number: 4608,
+        stream_offset: 14,
+        frame_samples: 1272,
+      },
+      SeekPoint {
+        sample_number: 0xffffffffffffffff,
+        stream_offset: 0,
+        frame_samples: 0,
+      },
+      SeekPoint {
+        sample_number: 0xffffffffffffffff,
+        stream_offset: 0,
+        frame_samples: 0,
+      },
+      SeekPoint {
+        sample_number: 0xffffffffffffffff,
+        stream_offset: 0,
+        frame_samples: 0,
+      }
+    ]));
+
+    assert_eq!(seek_table(&input, 5 * 18), result);
   }
 }
