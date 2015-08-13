@@ -254,7 +254,7 @@ named!(pub picture <&[u8], BlockData>,
 // As of FLAC v1.3.1, there is support for up to 127 different metadata
 // `Block`s but actually 7 that are implemented. When the `Block` type isn't
 // recognised, this block gets skipped over with this parser.
-fn unknown(input: &[u8], length: u32) -> IResult<&[u8], BlockData> {
+pub fn unknown(input: &[u8], length: u32) -> IResult<&[u8], BlockData> {
   map!(input, take!(length), BlockData::Unknown)
 }
 
