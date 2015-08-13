@@ -592,4 +592,12 @@ mod tests {
 
     assert_eq!(picture(input), result);
   }
+
+  #[test]
+  fn test_unknown() {
+    let input  = b"random data that won't really be parsed anyway.";
+    let result = IResult::Done(&[][..], BlockData::Unknown(&input[..]));
+
+    assert_eq!(unknown(input, 47), result);
+  }
 }
