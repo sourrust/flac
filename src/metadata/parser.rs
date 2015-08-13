@@ -344,8 +344,8 @@ mod tests {
   use super::*;
   use metadata::{
     BlockData,
-    StreamInfo, Application, VorbisComment, CueSheet,
-    SeekPoint, CueSheetTrack, CueSheetTrackIndex,
+    StreamInfo, Application, VorbisComment, CueSheet, Picture,
+    SeekPoint, CueSheetTrack, CueSheetTrackIndex, PictureType,
   };
   use nom::{
     IResult,
@@ -572,5 +572,24 @@ mod tests {
       }));
 
     assert_eq!(cue_sheet(input), result);
+  }
+
+  #[test]
+  fn test_picture() {
+    let input  = b"\0\0\0\0\0\0\0\x09image/png\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
+                   \0\0\0\0\0\0\0\0\0";
+    let result = IResult::Done(&[][..],
+      BlockData::Picture(Picture {
+        picture_type: PictureType::Other,
+        mime_type: "image/png",
+        description: "",
+        width: 0,
+        height: 0,
+        depth: 0,
+        colors: 0,
+        data: &[][..],
+      }));
+
+    assert_eq!(picture(input), result);
   }
 }
