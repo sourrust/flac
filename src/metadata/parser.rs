@@ -137,7 +137,7 @@ named!(comment_field <&[u8], &str>,
   )
 );
 
-named!(cue_sheet <&[u8], BlockData>,
+named!(pub cue_sheet <&[u8], BlockData>,
   chain!(
     media_catalog_number: take_str!(128) ~
     lead_in: be_u64 ~
