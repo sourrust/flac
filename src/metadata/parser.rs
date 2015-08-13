@@ -114,7 +114,7 @@ pub fn seek_table(input: &[u8], length: u32) -> IResult<&[u8], BlockData> {
   map!(input, count!(seek_point, seek_count), BlockData::SeekTable)
 }
 
-named!(vorbis_comment <&[u8], BlockData>,
+named!(pub vorbis_comment <&[u8], BlockData>,
   chain!(
     vendor_string_length: le_u32 ~
     vendor_string: take_str!(vendor_string_length)  ~
