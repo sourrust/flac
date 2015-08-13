@@ -344,7 +344,7 @@ mod tests {
   use super::*;
   use metadata::{
     BlockData,
-    StreamInfo,
+    StreamInfo, Application,
   };
   use nom::{
     IResult,
@@ -405,5 +405,28 @@ mod tests {
 
     assert!(padding(&input[0], 10) == result_valid, "Valid Padding");
     assert!(padding(&input[1], 10) == result_invalid, "Invalid Padding");
+  }
+
+  #[test]
+  fn test_application() {
+    let input0   = [0x66, 0x61, 0x6b, 0x65];
+    let input1   = [ 0x72, 0x69, 0x66, 0x66, 0x66, 0x61, 0x6b, 0x65, 0x20
+                   , 0x64, 0x61, 0x74, 0x61
+                   ];
+    let results  = [
+      IResult::Done(&[][..], BlockData::Application(Application {
+        id: "fake",
+        data: &[][..],
+      })),
+      IResult::Done(&[][..], BlockData::Application(Application {
+        id: "riff",
+        data: &input1[4..],
+      }))
+    ];
+
+    assert!(application(&input0, 4) == results[0],
+            "Fake Application, No data");
+    assert!(application(&input1, 13) == results[1],
+            "Riff Application, With data");
   }
 }
