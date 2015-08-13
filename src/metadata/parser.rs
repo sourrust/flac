@@ -80,7 +80,7 @@ pub fn padding(input: &[u8], length: u32) -> IResult<&[u8], BlockData> {
   }
 }
 
-fn application(input: &[u8], length: u32) -> IResult<&[u8], BlockData> {
+pub fn application(input: &[u8], length: u32) -> IResult<&[u8], BlockData> {
   chain!(input,
     id: take_str!(4) ~
     data: take!(length - 4),
