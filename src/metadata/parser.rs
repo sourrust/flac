@@ -198,7 +198,7 @@ named!(cue_sheet_track_index <&[u8], CueSheetTrackIndex>,
   )
 );
 
-named!(picture <&[u8], BlockData>,
+named!(pub picture <&[u8], BlockData>,
   chain!(
     picture_type_num: be_u32 ~
     mime_type_length:  be_u32 ~
