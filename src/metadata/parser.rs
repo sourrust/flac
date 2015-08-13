@@ -410,10 +410,8 @@ mod tests {
 
   #[test]
   fn test_application() {
-    let input0   = [0x66, 0x61, 0x6b, 0x65];
-    let input1   = [ 0x72, 0x69, 0x66, 0x66, 0x66, 0x61, 0x6b, 0x65, 0x20
-                   , 0x64, 0x61, 0x74, 0x61
-                   ];
+    let input0   = b"fake";
+    let input1   = b"rifffake data";
     let results  = [
       IResult::Done(&[][..], BlockData::Application(Application {
         id: "fake",
@@ -425,9 +423,9 @@ mod tests {
       }))
     ];
 
-    assert!(application(&input0, 4) == results[0],
+    assert!(application(input0, 4) == results[0],
             "Fake Application, No data");
-    assert!(application(&input1, 13) == results[1],
+    assert!(application(input1, 13) == results[1],
             "Riff Application, With data");
   }
 
