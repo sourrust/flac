@@ -344,7 +344,7 @@ mod tests {
   use super::*;
   use metadata::{
     BlockData,
-    StreamInfo, Application,
+    StreamInfo, Application, VorbisComment,
     SeekPoint
   };
   use nom::{
@@ -472,5 +472,30 @@ mod tests {
     ]));
 
     assert_eq!(seek_table(&input, 5 * 18), result);
+  }
+
+  #[test]
+  fn test_vorbis_comment() {
+    let input = b"\x20\0\0\0reference libFLAC 1.1.3 20060805\x06\0\0\0\
+                  \x20\0\0\0REPLAYGAIN_TRACK_PEAK=0.99996948\
+                  \x1e\0\0\0REPLAYGAIN_TRACK_GAIN=-7.89 dB\
+                  \x20\0\0\0REPLAYGAIN_ALBUM_PEAK=0.99996948\
+                  \x1e\0\0\0REPLAYGAIN_ALBUM_GAIN=-7.89 dB\
+                  \x08\0\0\0artist=1\x07\0\0\0title=2";
+
+    let result = IResult::Done(&[][..],
+      BlockData::VorbisComment(VorbisComment{
+        vendor_string: "reference libFLAC 1.1.3 20060805",
+        comments: vec![
+          "REPLAYGAIN_TRACK_PEAK=0.99996948",
+          "REPLAYGAIN_TRACK_GAIN=-7.89 dB",
+          "REPLAYGAIN_ALBUM_PEAK=0.99996948",
+          "REPLAYGAIN_ALBUM_GAIN=-7.89 dB",
+          "artist=1",
+          "title=2"
+        ],
+      }));
+
+    assert_eq!(vorbis_comment(input), result);
   }
 }
