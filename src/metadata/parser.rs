@@ -16,7 +16,7 @@ use metadata::{
 
 use utility::to_u32;
 
-macro_rules! skip_bytes(
+macro_rules! skip_bytes (
   ($input: expr, $length: expr) => (
     {
       match take!($input, $length) {
