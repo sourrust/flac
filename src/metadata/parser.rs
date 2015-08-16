@@ -36,7 +36,7 @@ macro_rules! skip_bytes (
   );
 );
 
-/// Parsers all metadata within a file
+/// Parses all metadata within a file stream
 ///
 /// The first metadata block should always be `StreamInfo` since that is the
 /// only required `Block`. At the moment `metadata` parser doesn't check
