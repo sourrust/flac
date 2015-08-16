@@ -313,7 +313,7 @@ named!(block <&[u8], Block>,
 /// The first block should always be `StreamInfo` since that is the only
 /// required `Block`. At the moment `many_blocks` doesn't check that
 /// requirement.
-pub fn many_blocks(input: &[u8]) -> IResult<&[u8], Vec<Block>> {
+fn many_blocks(input: &[u8]) -> IResult<&[u8], Vec<Block>> {
   let mut is_last   = false;
   let mut blocks    = Vec::new();
   let mut start     = 0;
