@@ -7,7 +7,7 @@ mod utility;
 use metadata::metadata;
 
 pub struct Stream<'a> {
-  pub meta_data: Vec<metadata::Block<'a>>,
+  pub metadata: Vec<metadata::Block<'a>>,
   //frames: Vec<u32>
 }
 
@@ -16,7 +16,7 @@ named!(stream <&[u8], Stream>,
     blocks: metadata,
     || {
       Stream {
-        meta_data: blocks,
+        metadata: blocks,
       }
     }
   )
