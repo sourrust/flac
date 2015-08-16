@@ -36,6 +36,14 @@ macro_rules! skip_bytes (
   );
 );
 
+named!(pub metadata <&[u8], Vec<Block> >,
+  chain!(
+    tag!("fLaC") ~
+    blocks: many_blocks,
+    || { blocks }
+  )
+);
+
 named!(pub stream_info <&[u8], BlockData>,
   chain!(
     min_block_size: be_u16 ~
