@@ -4,20 +4,19 @@ extern crate nom;
 pub mod metadata;
 mod utility;
 
-use metadata::many_blocks;
+use metadata::metadata;
 
 pub struct Stream<'a> {
-  pub meta_data: Vec<metadata::Block<'a>>,
+  pub metadata: Vec<metadata::Block<'a>>,
   //frames: Vec<u32>
 }
 
 named!(stream <&[u8], Stream>,
   chain!(
-    tag!("fLaC") ~
-    blocks: many_blocks,
+    blocks: metadata,
     || {
       Stream {
-        meta_data: blocks,
+        metadata: blocks,
       }
     }
   )

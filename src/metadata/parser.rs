@@ -16,7 +16,7 @@ use metadata::{
 
 use utility::to_u32;
 
-macro_rules! skip_bytes(
+macro_rules! skip_bytes (
   ($input: expr, $length: expr) => (
     {
       match take!($input, $length) {
@@ -34,6 +34,19 @@ macro_rules! skip_bytes(
       }
     }
   );
+);
+
+/// Parsers all metadata within a file
+///
+/// The first metadata block should always be `StreamInfo` since that is the
+/// only required `Block`. At the moment `metadata` parser doesn't check
+/// that requirement.
+named!(pub metadata <&[u8], Vec<Block> >,
+  chain!(
+    tag!("fLaC") ~
+    blocks: many_blocks,
+    || { blocks }
+  )
 );
 
 named!(pub stream_info <&[u8], BlockData>,
@@ -300,12 +313,8 @@ named!(block <&[u8], Block>,
   )
 );
 
-/// Parses one or more metadata `Block`s
-///
-/// The first block should always be `StreamInfo` since that is the only
-/// required `Block`. At the moment `many_blocks` doesn't check that
-/// requirement.
-pub fn many_blocks(input: &[u8]) -> IResult<&[u8], Vec<Block>> {
+// Parses one or more metadata `Block`s
+fn many_blocks(input: &[u8]) -> IResult<&[u8], Vec<Block>> {
   let mut is_last   = false;
   let mut blocks    = Vec::new();
   let mut start     = 0;
