@@ -313,7 +313,6 @@ named!(block <&[u8], Block>,
   )
 );
 
-// Parses one or more metadata `Block`s
 fn many_blocks(input: &[u8]) -> IResult<&[u8], Vec<Block>> {
   let mut is_last   = false;
   let mut blocks    = Vec::new();
