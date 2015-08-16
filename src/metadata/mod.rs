@@ -7,4 +7,4 @@ pub use self::types::{
   SeekPoint, CueSheetTrack, CueSheetTrackIndex, PictureType,
 };
 
-pub use self::parser::many_blocks;
+pub use self::parser::metadata;
