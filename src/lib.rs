@@ -6,8 +6,8 @@ mod utility;
 
 use metadata::metadata;
 
-pub struct Stream<'a> {
-  pub metadata: Vec<metadata::Block<'a>>,
+pub struct Stream {
+  pub metadata: Vec<metadata::Block>,
   //frames: Vec<u32>
 }
 
