@@ -285,8 +285,8 @@ named!(pub header <&[u8], (bool, u8, u32)>,
   )
 );
 
-fn block_data(input: &[u8], block_type: u8, length: u32)
-              -> IResult<&[u8], BlockData> {
+pub fn block_data(input: &[u8], block_type: u8, length: u32)
+                  -> IResult<&[u8], BlockData> {
   match block_type {
     0       => stream_info(input),
     1       => padding(input, length),
