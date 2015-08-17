@@ -1,4 +1,4 @@
-use nom::{IResult, Consumer, FileProducer};
+use nom::{Consumer, FileProducer};
 use std::io::{Error, ErrorKind, Result};
 
 use metadata::{
