@@ -1,6 +1,7 @@
 use nom::{IResult, Consumer, ConsumerState};
 use metadata::parser::{header, block_data};
 
+#[derive(Debug)]
 pub struct Block {
   pub is_last: bool,
   pub length: u32,

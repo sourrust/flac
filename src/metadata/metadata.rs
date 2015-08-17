@@ -70,3 +70,20 @@ pub fn get_cue_sheet(filename: &str) -> Result<CueSheet> {
     result
   })
 }
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use std::io::ErrorKind;
+
+  #[test]
+  fn test_get_metadata() {
+    let not_found    = get_metadata("non-existent/file.txt");
+    let invalid_data = get_metadata("README.md");
+    let result       = get_metadata("tests/assets/input-SVAUP.flac");
+
+    assert_eq!(not_found.unwrap_err().kind(), ErrorKind::NotFound);
+    assert_eq!(invalid_data.unwrap_err().kind(), ErrorKind::InvalidData);
+    assert!(result.is_ok());
+  }
+}
