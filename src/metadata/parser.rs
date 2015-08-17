@@ -397,7 +397,7 @@ mod tests {
       channels: 2,
       bits_per_sample: 8,
       total_samples: 80000,
-      md5_sum: &md5_sum,
+      md5_sum: md5_sum[..].to_owned(),
     });
 
     assert_eq!(stream_info(&input), IResult::Done(&[][..], result));
@@ -423,12 +423,12 @@ mod tests {
     let input1   = b"rifffake data";
     let results  = [
       IResult::Done(&[][..], BlockData::Application(Application {
-        id: "fake",
-        data: &[][..],
+        id: "fake".to_owned(),
+        data: vec![],
       })),
       IResult::Done(&[][..], BlockData::Application(Application {
-        id: "riff",
-        data: &input1[4..],
+        id: "riff".to_owned(),
+        data: input1[4..].to_owned(),
       }))
     ];
 
@@ -492,14 +492,14 @@ mod tests {
 
     let result = IResult::Done(&[][..],
       BlockData::VorbisComment(VorbisComment{
-        vendor_string: "reference libFLAC 1.1.3 20060805",
+        vendor_string: "reference libFLAC 1.1.3 20060805".to_owned(),
         comments: vec![
-          "REPLAYGAIN_TRACK_PEAK=0.99996948",
-          "REPLAYGAIN_TRACK_GAIN=-7.89 dB",
-          "REPLAYGAIN_ALBUM_PEAK=0.99996948",
-          "REPLAYGAIN_ALBUM_GAIN=-7.89 dB",
-          "artist=1",
-          "title=2"
+          "REPLAYGAIN_TRACK_PEAK=0.99996948".to_owned(),
+          "REPLAYGAIN_TRACK_GAIN=-7.89 dB".to_owned(),
+          "REPLAYGAIN_ALBUM_PEAK=0.99996948".to_owned(),
+          "REPLAYGAIN_ALBUM_GAIN=-7.89 dB".to_owned(),
+          "artist=1".to_owned(),
+          "title=2".to_owned()
         ],
       }));
 
@@ -535,14 +535,14 @@ mod tests {
                                \0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
                                \0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
                                \0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
-                               \0\0\0\0\0\0\0",
+                               \0\0\0\0\0\0\0".to_owned(),
         lead_in: 88200,
         is_cd: true,
         tracks: vec![
           CueSheetTrack {
             offset: 0,
             number: 1,
-            isrc: "\0\0\0\0\0\0\0\0\0\0\0\0",
+            isrc: "\0\0\0\0\0\0\0\0\0\0\0\0".to_owned(),
             isnt_audio: false,
             is_pre_emphasis: false,
             indices: vec![
@@ -559,7 +559,7 @@ mod tests {
           CueSheetTrack {
             offset: 2940,
             number: 2,
-            isrc: "\0\0\0\0\0\0\0\0\0\0\0\0",
+            isrc: "\0\0\0\0\0\0\0\0\0\0\0\0".to_owned(),
             isnt_audio: false,
             is_pre_emphasis: false,
             indices: vec![
@@ -572,7 +572,7 @@ mod tests {
           CueSheetTrack {
             offset: 5880,
             number: 170,
-            isrc: "\0\0\0\0\0\0\0\0\0\0\0\0",
+            isrc: "\0\0\0\0\0\0\0\0\0\0\0\0".to_owned(),
             isnt_audio: false,
             is_pre_emphasis: false,
             indices: vec![],
@@ -590,13 +590,13 @@ mod tests {
     let result = IResult::Done(&[][..],
       BlockData::Picture(Picture {
         picture_type: PictureType::Other,
-        mime_type: "image/png",
-        description: "",
+        mime_type: "image/png".to_owned(),
+        description: String::new(),
         width: 0,
         height: 0,
         depth: 0,
         colors: 0,
-        data: &[][..],
+        data: vec![],
       }));
 
     assert_eq!(picture(input), result);
@@ -605,7 +605,8 @@ mod tests {
   #[test]
   fn test_unknown() {
     let input  = b"random data that won't really be parsed anyway.";
-    let result = IResult::Done(&[][..], BlockData::Unknown(&input[..]));
+    let result = IResult::Done(&[][..],
+                   BlockData::Unknown(input[..].to_owned()));
 
     assert_eq!(unknown(input, 47), result);
   }
