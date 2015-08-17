@@ -4,7 +4,7 @@ extern crate nom;
 pub mod metadata;
 mod utility;
 
-use metadata::metadata;
+use metadata::metadata_parser;
 
 pub struct Stream {
   pub metadata: Vec<metadata::Block>,
@@ -13,10 +13,10 @@ pub struct Stream {
 
 named!(stream <&[u8], Stream>,
   chain!(
-    blocks: metadata,
+    metadata: metadata_parser,
     || {
       Stream {
-        metadata: blocks,
+        metadata: metadata,
       }
     }
   )
