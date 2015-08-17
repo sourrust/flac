@@ -1,24 +1,24 @@
-pub struct Block<'a> {
+pub struct Block {
   pub is_last: bool,
   pub length: u32,
-  pub data: BlockData<'a>,
+  pub data: BlockData,
 }
 
 #[derive(Debug, PartialEq, Eq)]
-pub enum BlockData<'a> {
-  StreamInfo(StreamInfo<'a>),
+pub enum BlockData {
+  StreamInfo(StreamInfo),
   Padding(u32),
-  Application(Application<'a>),
+  Application(Application),
   SeekTable(Vec<SeekPoint>),
-  VorbisComment(VorbisComment<'a>),
-  CueSheet(CueSheet<'a>),
-  Picture(Picture<'a>),
-  Unknown(&'a [u8]),
+  VorbisComment(VorbisComment),
+  CueSheet(CueSheet),
+  Picture(Picture),
+  Unknown(Vec<u8>),
 }
 
 /// Information regarding the entire audio stream
 #[derive(Debug, PartialEq, Eq)]
-pub struct StreamInfo<'a> {
+pub struct StreamInfo {
   pub min_block_size: u16,
   pub max_block_size: u16,
   pub min_frame_size: u32,
@@ -27,14 +27,14 @@ pub struct StreamInfo<'a> {
   pub channels: u8,
   pub bits_per_sample: u8,
   pub total_samples: u64,
-  pub md5_sum: &'a [u8],
+  pub md5_sum: Vec<u8>,
 }
 
 /// Data used by third-party applications
 #[derive(Debug, PartialEq, Eq)]
-pub struct Application<'a> {
-  pub id: &'a str,
-  pub data: &'a [u8],
+pub struct Application {
+  pub id: String,
+  pub data: Vec<u8>,
 }
 
 /// Seek, or skip, to a point within the FLAC file
@@ -47,9 +47,9 @@ pub struct SeekPoint {
 
 /// Stores human-readable name/value pairs
 #[derive(Debug, PartialEq, Eq)]
-pub struct VorbisComment<'a> {
-  pub vendor_string: &'a str,
-  pub comments: Vec<&'a str>,
+pub struct VorbisComment {
+  pub vendor_string: String,
+  pub comments: Vec<String>,
 }
 
 /// Stores cue information
@@ -57,18 +57,18 @@ pub struct VorbisComment<'a> {
 /// Generally for storing information from Compact Disk Digital Audio, but
 /// can be used as a cueing mechanism for playback.
 #[derive(Debug, PartialEq, Eq)]
-pub struct CueSheet<'a> {
-  pub media_catalog_number: &'a str,
+pub struct CueSheet {
+  pub media_catalog_number: String,
   pub lead_in: u64,
   pub is_cd: bool,
-  pub tracks: Vec<CueSheetTrack<'a>>,
+  pub tracks: Vec<CueSheetTrack>,
 }
 
 #[derive(Debug, PartialEq, Eq)]
-pub struct CueSheetTrack<'a> {
+pub struct CueSheetTrack {
   pub offset: u64,
   pub number: u8,
-  pub isrc: &'a str,
+  pub isrc: String,
   pub isnt_audio: bool,
   pub is_pre_emphasis: bool,
   pub indices: Vec<CueSheetTrackIndex>,
@@ -86,15 +86,15 @@ pub struct CueSheetTrackIndex {
 /// than one within a file, which are distinguished by `PictureType`and it's
 /// mime type string.
 #[derive(Debug, PartialEq, Eq)]
-pub struct Picture<'a> {
+pub struct Picture {
   pub picture_type: PictureType,
-  pub mime_type: &'a str,
-  pub description: &'a str,
+  pub mime_type: String,
+  pub description: String,
   pub width: u32,
   pub height: u32,
   pub depth: u32,
   pub colors: u32,
-  pub data: &'a [u8],
+  pub data: Vec<u8>,
 }
 
 #[derive(Debug, PartialEq, Eq)]
