@@ -1,3 +1,6 @@
+use nom::{IResult, Consumer, ConsumerState};
+use metadata::parser::{header, block_data};
+
 pub struct Block {
   pub is_last: bool,
   pub length: u32,
@@ -120,4 +123,92 @@ pub enum PictureType {
   Illustration,
   BandLogoType,
   PublisherLogoType,
+}
+
+enum ParserState {
+  FLAC,
+  Header,
+  MetaData,
+}
+
+pub struct MetaDataConsumer {
+  state: ParserState,
+  is_last: bool,
+  block_type: u8,
+  length: u32,
+  pub data: Vec<Block>
+}
+
+impl MetaDataConsumer {
+  pub fn new() -> MetaDataConsumer {
+    MetaDataConsumer {
+      state: ParserState::FLAC,
+      is_last: false,
+      block_type: 127,
+      length: 0,
+      data: Vec::new(),
+    }
+  }
+}
+
+impl Consumer for MetaDataConsumer {
+  fn consume(&mut self, input: &[u8]) -> ConsumerState {
+    match self.state {
+      ParserState::FLAC     => {
+        match tag!(input, "fLaC") {
+          IResult::Done(_, _) => {
+            self.state = ParserState::Header;
+            ConsumerState::Await(4, 4)
+          }
+          IResult::Error(_)      => ConsumerState::ConsumerError(0),
+          IResult::Incomplete(_) => ConsumerState::Await(0, 4),
+        }
+      }
+      ParserState::Header   => {
+        match header(input) {
+          IResult::Done(_, data) => {
+            let (is_last, block_type, length) = data;
+
+            self.state      = ParserState::MetaData;
+            self.is_last    = is_last;
+            self.block_type = block_type;
+            self.length     = length;
+
+            ConsumerState::Await(4, length as usize)
+          }
+          IResult::Error(_)      => ConsumerState::ConsumerError(0),
+          IResult::Incomplete(_) => ConsumerState::Await(0, 4),
+        }
+      },
+      ParserState::MetaData => {
+        let length = self.length as usize;
+
+        match block_data(input, self.block_type, self.length) {
+          IResult::Done(_, data) => {
+            self.data.push(Block {
+              is_last: self.is_last,
+              length: self.length,
+              data: data,
+            });
+
+            if self.is_last {
+              ConsumerState::ConsumerDone
+            } else {
+              self.state = ParserState::Header;
+
+              ConsumerState::Await(length, 4)
+            }
+          }
+          IResult::Error(_)      => ConsumerState::ConsumerError(0),
+          IResult::Incomplete(_) => ConsumerState::Await(0, length),
+        }
+      }
+    }
+  }
+
+  fn failed(&mut self, error_code: u32) {
+    println!("Failed with error code: {}", error_code);
+  }
+
+  fn end(&mut self) {}
 }
