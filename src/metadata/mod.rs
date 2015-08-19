@@ -12,5 +12,5 @@ pub use self::types::{
 pub use self::parser::metadata_parser;
 
 pub use self::metadata::{
-  get_stream_info, get_vorbis_comment, get_cue_sheet,
+  get_stream_info, get_vorbis_comment, get_cue_sheet, get_picture,
 };

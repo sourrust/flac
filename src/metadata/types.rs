@@ -101,7 +101,7 @@ pub struct Picture {
   pub data: Vec<u8>,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum PictureType {
   Other,
   FileIconStandard,

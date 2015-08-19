@@ -1,11 +1,19 @@
 use nom::{Consumer, FileProducer};
 use std::io::{Error, ErrorKind, Result};
+use std::u32;
 
 use metadata::{
   Block, BlockData,
-  StreamInfo, CueSheet, VorbisComment,
+  StreamInfo, CueSheet, VorbisComment, Picture,
+  PictureType,
   MetaDataConsumer,
 };
+
+macro_rules! optional_eq (
+  ($compare: expr, $option: expr) => (
+    $option.map_or(true, |compare| $compare == compare);
+  );
+);
 
 pub fn get_metadata(filename: &str) -> Result<Vec<Block>> {
   FileProducer::new(filename, 1024).and_then(|mut producer| {
@@ -64,6 +72,52 @@ pub fn get_cue_sheet(filename: &str) -> Result<CueSheet> {
       if let BlockData::CueSheet(cue_sheet) = block.data {
         result = Ok(cue_sheet);
         break;
+      }
+    }
+
+    result
+  })
+}
+
+pub fn get_picture(filename: &str,
+                   picture_type: Option<PictureType>,
+                   mime_type: Option<&str>,
+                   description: Option<&str>,
+                   max_width: Option<u32>,
+                   max_height: Option<u32>,
+                   max_depth: Option<u32>,
+                   max_colors: Option<u32>)
+                   -> Result<Picture> {
+  get_metadata(filename).and_then(|blocks| {
+    let error_str  = "metadata: couldn't find any Picture";
+    let mut result = Err(Error::new(ErrorKind::NotFound, error_str));
+
+    let mut max_area_seen  = 0;
+    let mut max_depth_seen = 0;
+
+    let max_value      = u32::max_value();
+    let max_width_num  = max_width.unwrap_or(max_value);
+    let max_height_num = max_height.unwrap_or(max_value);
+    let max_depth_num  = max_depth.unwrap_or(max_value);
+    let max_colors_num = max_colors.unwrap_or(max_value);
+
+    for block in blocks {
+      if let BlockData::Picture(picture) = block.data {
+        let area = (picture.width as u64) * (picture.height as u64);
+
+        if optional_eq!(picture.picture_type, picture_type) &&
+           optional_eq!(picture.mime_type, mime_type) &&
+           optional_eq!(picture.description, description) &&
+           picture.width <= max_width_num &&
+           picture.height <= max_height_num &&
+           picture.depth <= max_depth_num &&
+           picture.colors <= max_colors_num &&
+           (area > max_area_seen || (area == max_area_seen &&
+                                     picture.depth > max_depth_seen)) {
+          max_area_seen  = area;
+          max_depth_seen = picture.depth;
+          result         = Ok(picture);
+        }
       }
     }
 
