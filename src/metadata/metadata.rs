@@ -15,6 +15,16 @@ macro_rules! optional_eq (
   );
 );
 
+// With the given filename, return all metadata blocks available.
+//
+// This function expects a flac file, but will return a proper `Result::Err`
+// when things go wrong.
+//
+// # Failures
+//
+// * `ErrorKind::NotFound` is returned when the given filename isn't found.
+// * `ErrorKind::InvalidData` is returned when the data within the file
+//   isn't valid FLAC data.
 pub fn get_metadata(filename: &str) -> Result<Vec<Block>> {
   FileProducer::new(filename, 1024).and_then(|mut producer| {
     let mut consumer = MetaDataConsumer::new();
