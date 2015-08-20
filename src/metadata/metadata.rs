@@ -9,12 +9,24 @@ use metadata::{
   MetaDataConsumer,
 };
 
+// Will return true when the unwrapped value of `$option` and `$compare`
+// match or `$option` is `Option::None`, otherwise false.
 macro_rules! optional_eq (
   ($compare: expr, $option: expr) => (
     $option.map_or(true, |compare| $compare == compare);
   );
 );
 
+// With the given filename, return all metadata blocks available.
+//
+// This function expects a flac file, but will return a proper `Result::Err`
+// when things go wrong.
+//
+// # Failures
+//
+// * `ErrorKind::NotFound` is returned when the given filename isn't found.
+// * `ErrorKind::InvalidData` is returned when the data within the file
+//   isn't valid FLAC data.
 pub fn get_metadata(filename: &str) -> Result<Vec<Block>> {
   FileProducer::new(filename, 1024).and_then(|mut producer| {
     let mut consumer = MetaDataConsumer::new();
@@ -31,6 +43,15 @@ pub fn get_metadata(filename: &str) -> Result<Vec<Block>> {
   })
 }
 
+/// Reads and returns the `StreamInfo` metadata block of the given FLAC
+/// file.
+///
+/// # Failures
+///
+/// * `ErrorKind::NotFound` is returned when the given filename isn't found
+///   or there is no `StreamInfo` within the file.
+/// * `ErrorKind::InvalidData` is returned when the data within the file
+///   isn't valid FLAC data.
 pub fn get_stream_info(filename: &str) -> Result<StreamInfo> {
   get_metadata(filename).and_then(|blocks| {
     let error_str  = "metadata: couldn't find StreamInfo";
@@ -47,6 +68,15 @@ pub fn get_stream_info(filename: &str) -> Result<StreamInfo> {
   })
 }
 
+/// Reads and returns the `VorbisComment` metadata block of the given FLAC
+/// file.
+///
+/// # Failures
+///
+/// * `ErrorKind::NotFound` is returned when the given filename isn't found
+///   or there is no `VorbisComment` within the file.
+/// * `ErrorKind::InvalidData` is returned when the data within the file
+///   isn't valid FLAC data.
 pub fn get_vorbis_comment(filename: &str) -> Result<VorbisComment> {
   get_metadata(filename).and_then(|blocks| {
     let error_str  = "metadata: couldn't find VorbisComment";
@@ -63,6 +93,14 @@ pub fn get_vorbis_comment(filename: &str) -> Result<VorbisComment> {
   })
 }
 
+/// Reads and returns the `CueSheet` metadata block of the given FLAC file.
+///
+/// # Failures
+///
+/// * `ErrorKind::NotFound` is returned when the given filename isn't found
+///   or there is no `CueSheet` within the file.
+/// * `ErrorKind::InvalidData` is returned when the data within the file
+///   isn't valid FLAC data.
 pub fn get_cue_sheet(filename: &str) -> Result<CueSheet> {
   get_metadata(filename).and_then(|blocks| {
     let error_str  = "metadata: couldn't find CueSheet";
@@ -79,6 +117,20 @@ pub fn get_cue_sheet(filename: &str) -> Result<CueSheet> {
   })
 }
 
+/// Reads and returns a `Picture` metadata block of the given FLAC file.
+///
+/// There can be more than one `Picture` block in a file, this function
+/// takes optional, that being `Option<T>`, parameters that act as
+/// constraints to search within. The `Picture` with the largest area
+/// matching all constraints will be returned.
+///
+/// # Failures
+///
+/// * `ErrorKind::NotFound` is returned when the given filename isn't found,
+///   there is no `Picture` within the file, or no `Picture` that fits the
+///   given constraints.
+/// * `ErrorKind::InvalidData` is returned when the data within the file
+///   isn't valid FLAC data.
 pub fn get_picture(filename: &str,
                    picture_type: Option<PictureType>,
                    mime_type: Option<&str>,
@@ -129,6 +181,18 @@ pub fn get_picture(filename: &str,
 mod tests {
   use super::*;
   use std::io::ErrorKind;
+
+  #[test]
+  #[should_panic]
+  fn test_panic_optional_eq() {
+    assert!(optional_eq!(0, Some(1)));
+  }
+
+  #[test]
+  fn test_optional_eq() {
+    assert!(optional_eq!(0, None), "Should always return true when None");
+    assert!(optional_eq!(0, Some(0)), "Should return true (Some(0) == 0)");
+  }
 
   #[test]
   fn test_get_metadata() {
