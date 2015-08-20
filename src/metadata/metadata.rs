@@ -31,6 +31,15 @@ pub fn get_metadata(filename: &str) -> Result<Vec<Block>> {
   })
 }
 
+/// Reads and returns the `StreamInfo` metadata block of the given FLAC
+/// file.
+///
+/// # Failures
+///
+/// * `ErrorKind::NotFound` is returned when the given filename isn't found
+///   or there is no `StreamInfo` within the file.
+/// * `ErrorKind::InvalidData` is returned when the data within the file
+///   isn't valid FLAC data.
 pub fn get_stream_info(filename: &str) -> Result<StreamInfo> {
   get_metadata(filename).and_then(|blocks| {
     let error_str  = "metadata: couldn't find StreamInfo";
@@ -47,6 +56,15 @@ pub fn get_stream_info(filename: &str) -> Result<StreamInfo> {
   })
 }
 
+/// Reads and returns the `VorbisComment` metadata block of the given FLAC
+/// file.
+///
+/// # Failures
+///
+/// * `ErrorKind::NotFound` is returned when the given filename isn't found
+///   or there is no `VorbisComment` within the file.
+/// * `ErrorKind::InvalidData` is returned when the data within the file
+///   isn't valid FLAC data.
 pub fn get_vorbis_comment(filename: &str) -> Result<VorbisComment> {
   get_metadata(filename).and_then(|blocks| {
     let error_str  = "metadata: couldn't find VorbisComment";
@@ -63,6 +81,14 @@ pub fn get_vorbis_comment(filename: &str) -> Result<VorbisComment> {
   })
 }
 
+/// Reads and returns the `CueSheet` metadata block of the given FLAC file.
+///
+/// # Failures
+///
+/// * `ErrorKind::NotFound` is returned when the given filename isn't found
+///   or there is no `CueSheet` within the file.
+/// * `ErrorKind::InvalidData` is returned when the data within the file
+///   isn't valid FLAC data.
 pub fn get_cue_sheet(filename: &str) -> Result<CueSheet> {
   get_metadata(filename).and_then(|blocks| {
     let error_str  = "metadata: couldn't find CueSheet";
@@ -79,6 +105,20 @@ pub fn get_cue_sheet(filename: &str) -> Result<CueSheet> {
   })
 }
 
+/// Reads and returns a `Picture` metadata block of the given FLAC file.
+///
+/// There can be more than one `Picture` block in a file, this function
+/// takes optional, that being `Option<T>`, parameters that act as
+/// constraints to search within. The `Picture` with the largest area
+/// matching all constraints will be returned.
+///
+/// # Failures
+///
+/// * `ErrorKind::NotFound` is returned when the given filename isn't found,
+///   there is no `Picture` within the file, or no `Picture` that fits the
+///   given constraints.
+/// * `ErrorKind::InvalidData` is returned when the data within the file
+///   isn't valid FLAC data.
 pub fn get_picture(filename: &str,
                    picture_type: Option<PictureType>,
                    mime_type: Option<&str>,
