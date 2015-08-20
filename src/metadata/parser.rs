@@ -21,9 +21,9 @@ macro_rules! skip_bytes (
     {
       match take!($input, $length) {
         IResult::Done(i, bytes)   => {
-          let sum = bytes.iter().fold(0, |result, byte| result + byte);
+          let is_all_zero = bytes.iter().all(|byte| *byte == 0);
 
-          if sum == 0 {
+          if is_all_zero {
             IResult::Done(i, bytes)
           } else {
             IResult::Error(Err::Position(ErrorCode::Digit as u32, $input))
