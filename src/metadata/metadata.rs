@@ -131,6 +131,18 @@ mod tests {
   use std::io::ErrorKind;
 
   #[test]
+  #[should_panic]
+  fn test_panic_optional_eq() {
+    assert!(optional_eq!(0, Some(1)));
+  }
+
+  #[test]
+  fn test_optional_eq() {
+    assert!(optional_eq!(0, None), "Should always return true when None");
+    assert!(optional_eq!(0, Some(0)), "Should return true (Some(0) == 0)");
+  }
+
+  #[test]
   fn test_get_metadata() {
     let not_found    = get_metadata("non-existent/file.txt");
     let invalid_data = get_metadata("README.md");
