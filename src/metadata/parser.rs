@@ -543,7 +543,7 @@ mod tests {
             offset: 0,
             number: 1,
             isrc: "\0\0\0\0\0\0\0\0\0\0\0\0".to_owned(),
-            isnt_audio: false,
+            is_audio: true,
             is_pre_emphasis: false,
             indices: vec![
               CueSheetTrackIndex {
@@ -560,7 +560,7 @@ mod tests {
             offset: 2940,
             number: 2,
             isrc: "\0\0\0\0\0\0\0\0\0\0\0\0".to_owned(),
-            isnt_audio: false,
+            is_audio: true,
             is_pre_emphasis: false,
             indices: vec![
               CueSheetTrackIndex {
@@ -573,7 +573,7 @@ mod tests {
             offset: 5880,
             number: 170,
             isrc: "\0\0\0\0\0\0\0\0\0\0\0\0".to_owned(),
-            isnt_audio: false,
+            is_audio: true,
             is_pre_emphasis: false,
             indices: vec![],
           },
