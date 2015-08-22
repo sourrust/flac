@@ -245,8 +245,8 @@ named!(pub picture <&[u8], BlockData>,
         16 => PictureType::VideoScreenCapture,
         17 => PictureType::Fish,
         18 => PictureType::Illustration,
-        19 => PictureType::BandLogoType,
-        20 => PictureType::PublisherLogoType,
+        19 => PictureType::BandLogo,
+        20 => PictureType::PublisherLogo,
         _  => PictureType::Other,
       };
 

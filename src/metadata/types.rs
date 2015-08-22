@@ -122,8 +122,8 @@ pub enum PictureType {
   VideoScreenCapture,
   Fish,
   Illustration,
-  BandLogoType,
-  PublisherLogoType,
+  BandLogo,
+  PublisherLogo,
 }
 
 enum ParserState {
