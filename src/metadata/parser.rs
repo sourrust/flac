@@ -182,14 +182,14 @@ named!(cue_sheet_track <&[u8], CueSheetTrack>,
       count!(cue_sheet_track_index, num_indices as usize)
     ),
     || {
-      let isnt_audio      = ((bytes[0] >> 7) & 0b01) == 1;
+      let is_audio        = ((bytes[0] >> 7) & 0b01) == 0;
       let is_pre_emphasis = ((bytes[0] >> 6) & 0b01) == 1;
 
       CueSheetTrack {
         offset: offset,
         number: number,
         isrc: isrc.to_owned(),
-        isnt_audio: isnt_audio,
+        is_audio: is_audio,
         is_pre_emphasis: is_pre_emphasis,
         indices: indices.unwrap_or(vec![]),
       }
@@ -245,8 +245,8 @@ named!(pub picture <&[u8], BlockData>,
         16 => PictureType::VideoScreenCapture,
         17 => PictureType::Fish,
         18 => PictureType::Illustration,
-        19 => PictureType::BandLogoType,
-        20 => PictureType::PublisherLogoType,
+        19 => PictureType::BandLogo,
+        20 => PictureType::PublisherLogo,
         _  => PictureType::Other,
       };
 
@@ -543,7 +543,7 @@ mod tests {
             offset: 0,
             number: 1,
             isrc: "\0\0\0\0\0\0\0\0\0\0\0\0".to_owned(),
-            isnt_audio: false,
+            is_audio: true,
             is_pre_emphasis: false,
             indices: vec![
               CueSheetTrackIndex {
@@ -560,7 +560,7 @@ mod tests {
             offset: 2940,
             number: 2,
             isrc: "\0\0\0\0\0\0\0\0\0\0\0\0".to_owned(),
-            isnt_audio: false,
+            is_audio: true,
             is_pre_emphasis: false,
             indices: vec![
               CueSheetTrackIndex {
@@ -573,7 +573,7 @@ mod tests {
             offset: 5880,
             number: 170,
             isrc: "\0\0\0\0\0\0\0\0\0\0\0\0".to_owned(),
-            isnt_audio: false,
+            is_audio: true,
             is_pre_emphasis: false,
             indices: vec![],
           },
