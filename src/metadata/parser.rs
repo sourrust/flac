@@ -182,14 +182,14 @@ named!(cue_sheet_track <&[u8], CueSheetTrack>,
       count!(cue_sheet_track_index, num_indices as usize)
     ),
     || {
-      let isnt_audio      = ((bytes[0] >> 7) & 0b01) == 1;
+      let is_audio        = ((bytes[0] >> 7) & 0b01) == 0;
       let is_pre_emphasis = ((bytes[0] >> 6) & 0b01) == 1;
 
       CueSheetTrack {
         offset: offset,
         number: number,
         isrc: isrc.to_owned(),
-        isnt_audio: isnt_audio,
+        is_audio: is_audio,
         is_pre_emphasis: is_pre_emphasis,
         indices: indices.unwrap_or(vec![]),
       }

@@ -73,7 +73,7 @@ pub struct CueSheetTrack {
   pub offset: u64,
   pub number: u8,
   pub isrc: String,
-  pub isnt_audio: bool,
+  pub is_audio: bool,
   pub is_pre_emphasis: bool,
   pub indices: Vec<CueSheetTrackIndex>,
 }
