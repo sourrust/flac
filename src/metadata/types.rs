@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use nom::{IResult, Consumer, ConsumerState};
 use metadata::parser::{header, block_data};
 
@@ -53,7 +54,7 @@ pub struct SeekPoint {
 #[derive(Debug, PartialEq, Eq)]
 pub struct VorbisComment {
   pub vendor_string: String,
-  pub comments: Vec<String>,
+  pub comments: HashMap<String, String>,
 }
 
 /// Stores cue information

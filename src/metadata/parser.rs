@@ -7,6 +7,7 @@ use nom::{
 };
 
 use std::str::from_utf8;
+use std::collections::HashMap;
 
 use metadata::{
   Block, BlockData,
@@ -132,8 +133,16 @@ named!(pub vorbis_comment <&[u8], BlockData>,
     vendor_string_length: le_u32 ~
     vendor_string: take_str!(vendor_string_length)  ~
     number_of_comments: le_u32 ~
-    comments: count!(comment_field, number_of_comments as usize),
+    comment_lines: count!(comment_field, number_of_comments as usize),
     || {
+      let mut comments = HashMap::with_capacity(comment_lines.len());
+
+      for line in comment_lines {
+        let comment: Vec<&str> = line.splitn(2, '=').collect();
+
+        comments.insert(comment[0].to_owned(), comment[1].to_owned());
+      }
+
       BlockData::VorbisComment(VorbisComment {
         vendor_string: vendor_string.to_owned(),
         comments: comments,
@@ -361,6 +370,8 @@ mod tests {
     ErrorCode, Err,
   };
 
+  use std::collections::HashMap;
+
   #[test]
   fn test_header() {
     let inputs = [ [0x80, 0x00, 0x00, 0x22]
@@ -490,17 +501,23 @@ mod tests {
                   \x1e\0\0\0REPLAYGAIN_ALBUM_GAIN=-7.89 dB\
                   \x08\0\0\0artist=1\x07\0\0\0title=2";
 
+    let mut comments = HashMap::with_capacity(6);
+
+    comments.insert("REPLAYGAIN_TRACK_PEAK".to_owned(),
+                    "0.99996948".to_owned());
+    comments.insert("REPLAYGAIN_TRACK_GAIN".to_owned(),
+                    "-7.89 dB".to_owned());
+    comments.insert("REPLAYGAIN_ALBUM_PEAK".to_owned(),
+                    "0.99996948".to_owned());
+    comments.insert("REPLAYGAIN_ALBUM_GAIN".to_owned(),
+                    "-7.89 dB".to_owned());
+    comments.insert("artist".to_owned(), "1".to_owned());
+    comments.insert("title".to_owned(), "2".to_owned());
+
     let result = IResult::Done(&[][..],
       BlockData::VorbisComment(VorbisComment{
         vendor_string: "reference libFLAC 1.1.3 20060805".to_owned(),
-        comments: vec![
-          "REPLAYGAIN_TRACK_PEAK=0.99996948".to_owned(),
-          "REPLAYGAIN_TRACK_GAIN=-7.89 dB".to_owned(),
-          "REPLAYGAIN_ALBUM_PEAK=0.99996948".to_owned(),
-          "REPLAYGAIN_ALBUM_GAIN=-7.89 dB".to_owned(),
-          "artist=1".to_owned(),
-          "title=2".to_owned()
-        ],
+        comments: comments,
       }));
 
     assert_eq!(vorbis_comment(input), result);
