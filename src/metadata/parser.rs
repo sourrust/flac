@@ -7,6 +7,7 @@ use nom::{
 };
 
 use std::str::from_utf8;
+use std::collections::HashMap;
 
 use metadata::{
   Block, BlockData,
@@ -132,8 +133,16 @@ named!(pub vorbis_comment <&[u8], BlockData>,
     vendor_string_length: le_u32 ~
     vendor_string: take_str!(vendor_string_length)  ~
     number_of_comments: le_u32 ~
-    comments: count!(comment_field, number_of_comments as usize),
+    comment_lines: count!(comment_field, number_of_comments as usize),
     || {
+      let mut comments = HashMap::with_capacity(comment_lines.len());
+
+      for line in comment_lines {
+        let comment: Vec<&str> = line.splitn(2, '=').collect();
+
+        comments.insert(comment[0].to_owned(), comment[1].to_owned());
+      }
+
       BlockData::VorbisComment(VorbisComment {
         vendor_string: vendor_string.to_owned(),
         comments: comments,
