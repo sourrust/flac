@@ -57,7 +57,7 @@ named!(pub stream_info <&[u8], BlockData>,
     min_frame_size: map!(take!(3), to_u32) ~
     max_frame_size: map!(take!(3), to_u32) ~
     bytes: take!(8) ~
-    md5_sum: take!(16),
+    md5_sum: count_fixed!(u8, be_u8, 16),
     || {
       let sample_rate     = ((bytes[0] as u32) << 12) +
                             ((bytes[1] as u32) << 4)  +
@@ -80,7 +80,7 @@ named!(pub stream_info <&[u8], BlockData>,
         channels: channels + 1,
         bits_per_sample: bits_per_sample + 1,
         total_samples: total_samples,
-        md5_sum: md5_sum.to_owned(),
+        md5_sum: md5_sum,
       })
     }
   )
@@ -395,10 +395,6 @@ mod tests {
                   , 0x36, 0x08, 0xd1, 0x1a
                   ];
 
-    let md5_sum = [ 0xa0, 0x42, 0x23, 0x7c, 0x54, 0x93, 0xfd, 0xb9, 0x65, 0x6b
-                  , 0x94, 0xa8, 0x36, 0x08, 0xd1, 0x1a
-                  ];
-
     let result = BlockData::StreamInfo(StreamInfo {
       min_block_size: 4608,
       max_block_size: 4608,
@@ -408,7 +404,9 @@ mod tests {
       channels: 2,
       bits_per_sample: 8,
       total_samples: 80000,
-      md5_sum: md5_sum[..].to_owned(),
+      md5_sum: [ 0xa0, 0x42, 0x23, 0x7c, 0x54, 0x93, 0xfd, 0xb9, 0x65, 0x6b
+               , 0x94, 0xa8, 0x36, 0x08, 0xd1, 0x1a
+               ],
     });
 
     assert_eq!(stream_info(&input), IResult::Done(&[][..], result));
