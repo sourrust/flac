@@ -32,7 +32,7 @@ pub struct StreamInfo {
   pub channels: u8,
   pub bits_per_sample: u8,
   pub total_samples: u64,
-  pub md5_sum: Vec<u8>,
+  pub md5_sum: [u8; 16],
 }
 
 /// Data used by third-party applications
