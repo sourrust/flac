@@ -119,7 +119,7 @@ pub fn get_cue_sheet(filename: &str) -> Result<CueSheet> {
 
 /// Reads and returns a `Picture` metadata block of the given FLAC file.
 ///
-/// There can be more than one `Picture` block in a file, this function
+/// There can be more than one `Picture` block in a file and this function
 /// takes optional, that being `Option<T>`, parameters that act as
 /// constraints to search within. The `Picture` with the largest area
 /// matching all constraints will be returned.
