@@ -57,7 +57,7 @@ named!(pub stream_info <&[u8], BlockData>,
     min_frame_size: map!(take!(3), to_u32) ~
     max_frame_size: map!(take!(3), to_u32) ~
     bytes: take!(8) ~
-    md5_sum: take!(16),
+    md5_sum: count_fixed!(u8, be_u8, 16),
     || {
       let sample_rate     = ((bytes[0] as u32) << 12) +
                             ((bytes[1] as u32) << 4)  +
@@ -80,7 +80,7 @@ named!(pub stream_info <&[u8], BlockData>,
         channels: channels + 1,
         bits_per_sample: bits_per_sample + 1,
         total_samples: total_samples,
-        md5_sum: md5_sum.to_owned(),
+        md5_sum: md5_sum,
       })
     }
   )
