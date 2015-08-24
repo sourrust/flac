@@ -124,6 +124,10 @@ pub fn get_cue_sheet(filename: &str) -> Result<CueSheet> {
 /// constraints to search within. The `Picture` with the largest area
 /// matching all constraints will be returned.
 ///
+/// Putting `None` into any of the optional constraints conveys that you
+/// want any of that parameter. Otherwise it will try to look for the image
+/// that matches within the given constraints.
+///
 /// # Failures
 ///
 /// * `ErrorKind::NotFound` is returned when the given filename isn't found,
