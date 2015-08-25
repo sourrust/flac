@@ -386,12 +386,9 @@ mod tests {
 
   #[test]
   fn test_stream_info() {
-    let input   = [ 0x12, 0x00, 0x12, 0x00, 0x00, 0x00, 0x0e, 0x00, 0x00, 0x10
-                  , 0x01, 0xf4, 0x02, 0x70, 0x00, 0x01, 0x38, 0x80, 0xa0, 0x42
-                  , 0x23, 0x7c, 0x54, 0x93, 0xfd, 0xb9, 0x65, 0x6b, 0x94, 0xa8
-                  , 0x36, 0x08, 0xd1, 0x1a
-                  ];
-
+    let input  = b"\x12\0\x12\0\0\0\x0e\0\0\x10\x01\xf4\x02\x70\0\x01\x38\x80\
+                   \xa0\x42\x23\x7c\x54\x93\xfd\xb9\x65\x6b\x94\xa8\x36\x08\
+                   \xd1\x1a";
     let result = BlockData::StreamInfo(StreamInfo {
       min_block_size: 4608,
       max_block_size: 4608,
@@ -406,7 +403,7 @@ mod tests {
                ],
     });
 
-    assert_eq!(stream_info(&input), IResult::Done(&[][..], result));
+    assert_eq!(stream_info(input), IResult::Done(&[][..], result));
   }
 
   #[test]
