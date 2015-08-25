@@ -374,27 +374,21 @@ mod tests {
 
   #[test]
   fn test_header() {
-    let inputs = [ [0x80, 0x00, 0x00, 0x22]
-                 , [0x01, 0x00, 0x04, 0x00]
-                 , [0x84, 0x00, 0x00, 0xf8]
-                 ];
+    let inputs = [b"\x80\0\0\x22", b"\x01\0\x04\0", b"\x84\0\0\xf8"];
 
-    assert!(header(&inputs[0]) == IResult::Done(&[], (true, 0, 34)),
+    assert!(header(inputs[0]) == IResult::Done(&[], (true, 0, 34)),
             "Header Test #1");
-    assert!(header(&inputs[1]) == IResult::Done(&[], (false, 1, 1024)),
+    assert!(header(inputs[1]) == IResult::Done(&[], (false, 1, 1024)),
             "Header Test #2");
-    assert!(header(&inputs[2]) == IResult::Done(&[], (true, 4, 248)),
+    assert!(header(inputs[2]) == IResult::Done(&[], (true, 4, 248)),
             "Header Test #3");
   }
 
   #[test]
   fn test_stream_info() {
-    let input   = [ 0x12, 0x00, 0x12, 0x00, 0x00, 0x00, 0x0e, 0x00, 0x00, 0x10
-                  , 0x01, 0xf4, 0x02, 0x70, 0x00, 0x01, 0x38, 0x80, 0xa0, 0x42
-                  , 0x23, 0x7c, 0x54, 0x93, 0xfd, 0xb9, 0x65, 0x6b, 0x94, 0xa8
-                  , 0x36, 0x08, 0xd1, 0x1a
-                  ];
-
+    let input  = b"\x12\0\x12\0\0\0\x0e\0\0\x10\x01\xf4\x02\x70\0\x01\x38\x80\
+                   \xa0\x42\x23\x7c\x54\x93\xfd\xb9\x65\x6b\x94\xa8\x36\x08\
+                   \xd1\x1a";
     let result = BlockData::StreamInfo(StreamInfo {
       min_block_size: 4608,
       max_block_size: 4608,
@@ -409,56 +403,48 @@ mod tests {
                ],
     });
 
-    assert_eq!(stream_info(&input), IResult::Done(&[][..], result));
+    assert_eq!(stream_info(input), IResult::Done(&[][..], result));
   }
 
   #[test]
   fn test_padding() {
-    let input = [ [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
-                , [0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00]
-                ];
+    let inputs = [b"\0\0\0\0\0\0\0\0\0\0", b"\0\0\0\0\x01\0\0\0\0\0"];
 
     let result_valid   = IResult::Done(&[][..], BlockData::Padding(0));
     let result_invalid = IResult::Error(Err::Position(
-                           ErrorCode::Digit as u32, &input[1][..]));
+                           ErrorCode::Digit as u32, &inputs[1][..]));
 
-    assert!(padding(&input[0], 10) == result_valid, "Valid Padding");
-    assert!(padding(&input[1], 10) == result_invalid, "Invalid Padding");
+    assert!(padding(inputs[0], 10) == result_valid, "Valid Padding");
+    assert!(padding(inputs[1], 10) == result_invalid, "Invalid Padding");
   }
 
   #[test]
   fn test_application() {
-    let input0   = b"fake";
-    let input1   = b"rifffake data";
-    let results  = [
+    let inputs  = [&b"fake"[..], &b"rifffake data"[..]];
+    let results = [
       IResult::Done(&[][..], BlockData::Application(Application {
         id: "fake".to_owned(),
         data: vec![],
       })),
       IResult::Done(&[][..], BlockData::Application(Application {
         id: "riff".to_owned(),
-        data: input1[4..].to_owned(),
+        data: inputs[1][4..].to_owned(),
       }))
     ];
 
-    assert!(application(input0, 4) == results[0],
+    assert!(application(inputs[0], 4) == results[0],
             "Fake Application, No data");
-    assert!(application(input1, 13) == results[1],
+    assert!(application(inputs[1], 13) == results[1],
             "Riff Application, With data");
   }
 
   #[test]
   fn test_seek_table() {
-    let input  = [ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-                 , 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x12, 0x00, 0x00, 0x00
-                 , 0x00, 0x00, 0x00, 0x00, 0x12, 0x00, 0x00, 0x00, 0x00, 0x00
-                 , 0x00, 0x00, 0x00, 0x0e, 0x04, 0xf8, 0xff, 0xff, 0xff, 0xff
-                 , 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-                 , 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff
-                 , 0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-                 , 0x00, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff
-                 , 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-                 ];
+    let input  = b"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x12\0\0\0\0\0\0\0\x12\0\0\
+                   \0\0\0\0\0\0\x0e\x04\xf8\xff\xff\xff\xff\xff\xff\xff\xff\0\
+                   \0\0\0\0\0\0\0\0\0\xff\xff\xff\xff\xff\xff\xff\xff\0\0\0\0\
+                   \0\0\0\0\0\0\xff\xff\xff\xff\xff\xff\xff\xff\0\0\0\0\0\0\0\
+                   \0\0\0";
     let result = IResult::Done(&[][..], BlockData::SeekTable(vec![
       SeekPoint {
         sample_number: 0,
@@ -487,7 +473,7 @@ mod tests {
       }
     ]));
 
-    assert_eq!(seek_table(&input, 5 * 18), result);
+    assert_eq!(seek_table(input, 5 * 18), result);
   }
 
   #[test]
