@@ -1,6 +1,7 @@
-use std::collections::HashMap;
 use nom::{IResult, Consumer, ConsumerState};
 use metadata::parser::{header, block_data};
+
+use std::collections::HashMap;
 
 #[derive(Debug)]
 pub struct Block {
