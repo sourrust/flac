@@ -408,16 +408,14 @@ mod tests {
 
   #[test]
   fn test_padding() {
-    let input = [ [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
-                , [0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00]
-                ];
+    let inputs = [b"\0\0\0\0\0\0\0\0\0\0", b"\0\0\0\0\x01\0\0\0\0\0"];
 
     let result_valid   = IResult::Done(&[][..], BlockData::Padding(0));
     let result_invalid = IResult::Error(Err::Position(
-                           ErrorCode::Digit as u32, &input[1][..]));
+                           ErrorCode::Digit as u32, &inputs[1][..]));
 
-    assert!(padding(&input[0], 10) == result_valid, "Valid Padding");
-    assert!(padding(&input[1], 10) == result_invalid, "Invalid Padding");
+    assert!(padding(inputs[0], 10) == result_valid, "Valid Padding");
+    assert!(padding(inputs[1], 10) == result_invalid, "Invalid Padding");
   }
 
   #[test]
