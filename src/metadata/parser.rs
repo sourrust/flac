@@ -420,22 +420,21 @@ mod tests {
 
   #[test]
   fn test_application() {
-    let input0   = b"fake";
-    let input1   = b"rifffake data";
-    let results  = [
+    let inputs  = [&b"fake"[..], &b"rifffake data"[..]];
+    let results = [
       IResult::Done(&[][..], BlockData::Application(Application {
         id: "fake".to_owned(),
         data: vec![],
       })),
       IResult::Done(&[][..], BlockData::Application(Application {
         id: "riff".to_owned(),
-        data: input1[4..].to_owned(),
+        data: inputs[1][4..].to_owned(),
       }))
     ];
 
-    assert!(application(input0, 4) == results[0],
+    assert!(application(inputs[0], 4) == results[0],
             "Fake Application, No data");
-    assert!(application(input1, 13) == results[1],
+    assert!(application(inputs[1], 13) == results[1],
             "Riff Application, With data");
   }
 
