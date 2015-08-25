@@ -374,16 +374,13 @@ mod tests {
 
   #[test]
   fn test_header() {
-    let inputs = [ [0x80, 0x00, 0x00, 0x22]
-                 , [0x01, 0x00, 0x04, 0x00]
-                 , [0x84, 0x00, 0x00, 0xf8]
-                 ];
+    let inputs = [b"\x80\0\0\x22", b"\x01\0\x04\0", b"\x84\0\0\xf8"];
 
-    assert!(header(&inputs[0]) == IResult::Done(&[], (true, 0, 34)),
+    assert!(header(inputs[0]) == IResult::Done(&[], (true, 0, 34)),
             "Header Test #1");
-    assert!(header(&inputs[1]) == IResult::Done(&[], (false, 1, 1024)),
+    assert!(header(inputs[1]) == IResult::Done(&[], (false, 1, 1024)),
             "Header Test #2");
-    assert!(header(&inputs[2]) == IResult::Done(&[], (true, 4, 248)),
+    assert!(header(inputs[2]) == IResult::Done(&[], (true, 4, 248)),
             "Header Test #3");
   }
 
