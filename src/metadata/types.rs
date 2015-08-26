@@ -98,25 +98,38 @@ pub struct VorbisComment {
 /// can be used as a cueing mechanism for playback.
 #[derive(Debug, PartialEq, Eq)]
 pub struct CueSheet {
+  /// Media catalog number.
   pub media_catalog_number: String,
+  /// Number of lead-in samples.
   pub lead_in: u64,
+  /// Whether or not this `CueSheet` corresponds to a Compact Disc.
   pub is_cd: bool,
+  /// One or more tracks.
   pub tracks: Vec<CueSheetTrack>,
 }
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct CueSheetTrack {
+  /// Track offset, in samples, relative to the beginning of the FLAC audio
+  /// stream.
   pub offset: u64,
+  /// Track number.
   pub number: u8,
+  /// Twelve digit alphanumeric code.
   pub isrc: String,
+  /// Whether the cue sheet track is audio.
   pub is_audio: bool,
+  /// Whether the cue sheet track is pre-emphasis.
   pub is_pre_emphasis: bool,
+  /// For all tracks expect the lead-out track.
   pub indices: Vec<CueSheetTrackIndex>,
 }
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct CueSheetTrackIndex {
+  /// Offset, in samples, relative to the track offset of the index point.
   pub offset: u64,
+  /// Index point number.
   pub number: u8,
 }
 
