@@ -140,16 +140,25 @@ pub struct CueSheetTrackIndex {
 /// mime type string.
 #[derive(Debug, PartialEq, Eq)]
 pub struct Picture {
+  /// Picture type, based on the ID3v2 APIC frame.
   pub picture_type: PictureType,
+  /// Multipurpose Internet Mail Extensions (MIME) type.
   pub mime_type: String,
+  /// A string describing the picture.
   pub description: String,
+  /// Width of the picture in pixels.
   pub width: u32,
+  /// Height of the picture in pixels.
   pub height: u32,
+  /// Color depth of the picture in bits-per-pixel.
   pub depth: u32,
+  /// Number of colors used.
   pub colors: u32,
+  /// Binary picture data.
   pub data: Vec<u8>,
 }
 
+/// The picture type according to the ID3v2 attached picture frame.
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum PictureType {
   Other,
