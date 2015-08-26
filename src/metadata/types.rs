@@ -65,7 +65,9 @@ pub struct StreamInfo {
 /// Data used by third-party applications.
 #[derive(Debug, PartialEq, Eq)]
 pub struct Application {
+  /// Registered application ID.
   pub id: String,
+  /// Data used by the third-party application.
   pub data: Vec<u8>,
 }
 
