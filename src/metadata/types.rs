@@ -15,15 +15,24 @@ pub struct Block {
   pub data: BlockData,
 }
 
+/// General enum that hold all the different metadata block data.
 #[derive(Debug, PartialEq, Eq)]
 pub enum BlockData {
+  /// Information regarding the entire audio stream.
   StreamInfo(StreamInfo),
+  /// Block that represents a number of padded bytes.
   Padding(u32),
+  /// Data used by third-party applications.
   Application(Application),
+  /// Table of multiple points to seek, or skip, to within the FLAC file.
   SeekTable(Vec<SeekPoint>),
+  /// Stores human-readable name/value pairs.
   VorbisComment(VorbisComment),
+  /// Stores cue information
   CueSheet(CueSheet),
+  /// Stores pictures associated with the FLAC file.
   Picture(Picture),
+  /// A type of block data that isn't know or doesn't match the type above.
   Unknown(Vec<u8>),
 }
 
