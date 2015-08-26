@@ -85,7 +85,10 @@ pub struct SeekPoint {
 /// Stores human-readable name/value pairs.
 #[derive(Debug, PartialEq, Eq)]
 pub struct VorbisComment {
+  /// Vendor name.
   pub vendor_string: String,
+  /// Comments associated with a name, or category, followed by it's
+  /// contents.
   pub comments: HashMap<String, String>,
 }
 
