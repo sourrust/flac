@@ -74,8 +74,11 @@ pub struct Application {
 /// Seek, or skip, to a point within the FLAC file.
 #[derive(Debug, PartialEq, Eq)]
 pub struct SeekPoint {
+  /// Sample number of the first sample in the target frame.
   pub sample_number: u64,
+  /// Byte offset of the target frame's header.
   pub stream_offset: u64,
+  /// Number of samples in the target frame.
   pub frame_samples: u16,
 }
 
