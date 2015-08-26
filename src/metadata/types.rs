@@ -39,14 +39,26 @@ pub enum BlockData {
 /// Information regarding the entire audio stream
 #[derive(Debug, PartialEq, Eq)]
 pub struct StreamInfo {
+  /// Minimum block size, in samples, used in the stream.
   pub min_block_size: u16,
+  /// Maximum block size, in samples, used in the stream.
   pub max_block_size: u16,
+  /// Minimum frame size, in bytes, used in the stream. May be zero to imply
+  /// the value isn't know.
   pub min_frame_size: u32,
+  /// Maximum frame size, in bytes, used in the stream. May be zero to imply
+  /// the value isn't know.
   pub max_frame_size: u32,
+  /// Sample rate in hertz (Hz).
   pub sample_rate: u32,
+  /// Number of channels. FLAC supports one to eight channel.
   pub channels: u8,
+  /// Bits per sample. FLAC supports four to thirty-two bits per sample.
   pub bits_per_sample: u8,
+  /// Total samples in the stream. A value of zero means the number is
+  /// unknown.
   pub total_samples: u64,
+  /// MD5 signature of the unencoded audio data.
   pub md5_sum: [u8; 16],
 }
 
