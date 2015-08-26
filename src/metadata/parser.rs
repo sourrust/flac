@@ -235,7 +235,6 @@ named!(pub picture <&[u8], BlockData>,
     data: take!(data_length),
     || {
       let picture_type = match picture_type_num {
-        0  => PictureType::Other,
         1  => PictureType::FileIconStandard,
         2  => PictureType::FileIcon,
         3  => PictureType::FrontCover,
