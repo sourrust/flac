@@ -36,14 +36,14 @@ pub struct StreamInfo {
   pub md5_sum: [u8; 16],
 }
 
-/// Data used by third-party applications
+/// Data used by third-party applications.
 #[derive(Debug, PartialEq, Eq)]
 pub struct Application {
   pub id: String,
   pub data: Vec<u8>,
 }
 
-/// Seek, or skip, to a point within the FLAC file
+/// Seek, or skip, to a point within the FLAC file.
 #[derive(Debug, PartialEq, Eq)]
 pub struct SeekPoint {
   pub sample_number: u64,
@@ -51,14 +51,14 @@ pub struct SeekPoint {
   pub frame_samples: u16,
 }
 
-/// Stores human-readable name/value pairs
+/// Stores human-readable name/value pairs.
 #[derive(Debug, PartialEq, Eq)]
 pub struct VorbisComment {
   pub vendor_string: String,
   pub comments: HashMap<String, String>,
 }
 
-/// Stores cue information
+/// Stores cue information.
 ///
 /// Generally for storing information from Compact Disk Digital Audio, but
 /// can be used as a cueing mechanism for playback.
@@ -86,7 +86,7 @@ pub struct CueSheetTrackIndex {
   pub number: u8,
 }
 
-/// Stores pictures associated with a FLAC file
+/// Stores pictures associated with the FLAC file.
 ///
 /// More than likely these pictures will be cover art, but you can have more
 /// than one within a file, which are distinguished by `PictureType`and it's
