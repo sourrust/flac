@@ -26,4 +26,22 @@ fn blocking_strategy(input: &[u8]) -> IResult<&[u8], bool> {
   }
 }
 
+fn block_sample(input: &[u8]) -> IResult<&[u8], (u32, u32)> {
+  match take!(input, 1) {
+    IResult::Done(i, bytes)   => {
+      let sample_rate = bytes[0] & 0x0f;
+
+      if sample_rate != 0x0f {
+        let block_size = bytes[0] >> 4;
+
+        IResult::Done(i, (block_size as u32, sample_rate as u32))
+      } else {
+        IResult::Error(Err::Position(ErrorCode::Digit as u32, input))
+      }
+    }
+    IResult::Error(error)     => IResult::Error(error),
+    IResult::Incomplete(need) => IResult::Incomplete(need),
+  }
+}
+
 named!(footer <&[u8], Footer>, map!(be_u16, Footer));
