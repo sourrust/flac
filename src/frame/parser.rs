@@ -5,7 +5,7 @@ use nom::{
 };
 
 use frame::{
-  ChannelAssignment,
+  ChannelAssignment, NumberType,
   Footer,
 };
 
@@ -85,6 +85,41 @@ fn utf8_size(input: &[u8], is_u64: bool)
       _                       => None,
     }
   })
+}
+
+fn sample_or_frame_number(input: &[u8], is_sample: bool,
+                          (size, value): (usize, u8))
+                          -> IResult<&[u8], NumberType> {
+  let mut result   = value as u64;
+  let mut is_error = false;
+
+  match take!(input, size) {
+    IResult::Done(i, bytes)   => {
+      for i in (0..size) {
+        let byte = bytes[i] as u64;
+
+        match byte {
+          0b10000000...10111111 => {
+            result = (result << 6) + (byte & 0b00111111);
+          }
+          _                     => {
+            is_error = true;
+            break;
+          }
+        }
+      }
+
+      if is_error {
+        IResult::Error(Err::Position(ErrorCode::Digit as u32, input))
+      } else if is_sample {
+        IResult::Done(i, NumberType::Sample(result))
+      } else {
+        IResult::Done(i, NumberType::Frame(result as u32))
+      }
+    }
+    IResult::Error(error)     => IResult::Error(error),
+    IResult::Incomplete(need) => IResult::Incomplete(need),
+  }
 }
 
 named!(footer <&[u8], Footer>, map!(be_u16, Footer));
