@@ -4,7 +4,10 @@ use nom::{
   ErrorCode, Err,
 };
 
-use frame::Footer;
+use frame::{
+  ChannelAssignment,
+  Footer,
+};
 
 fn blocking_strategy(input: &[u8]) -> IResult<&[u8], bool> {
   match take!(input, 2) {
@@ -35,6 +38,30 @@ fn block_sample(input: &[u8]) -> IResult<&[u8], (u32, u32)> {
         let block_size = bytes[0] >> 4;
 
         IResult::Done(i, (block_size as u32, sample_rate as u32))
+      } else {
+        IResult::Error(Err::Position(ErrorCode::Digit as u32, input))
+      }
+    }
+    IResult::Error(error)     => IResult::Error(error),
+    IResult::Incomplete(need) => IResult::Incomplete(need),
+  }
+}
+
+fn channel_bits(input: &[u8]) -> IResult<&[u8], (ChannelAssignment, usize)> {
+  match take!(input, 1) {
+    IResult::Done(i, bytes)   => {
+      let channel_assignment = match bytes[0] >> 4 {
+        0b0000...0b0111 => ChannelAssignment::Independent,
+        0b1000          => ChannelAssignment::LeftSide,
+        0b1001          => ChannelAssignment::RightSide,
+        0b1010          => ChannelAssignment::MiddleSide,
+        _               => ChannelAssignment::Independent,
+      };
+      let bits_per_sample = (bytes[0] >> 1) & 0b0111;
+      let is_valid        = (bytes[0] & 0b01) == 0;
+
+      if is_valid {
+        IResult::Done(i, (channel_assignment, bits_per_sample as usize))
       } else {
         IResult::Error(Err::Position(ErrorCode::Digit as u32, input))
       }
