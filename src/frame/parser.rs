@@ -6,10 +6,24 @@ use nom::{
 
 use frame::{
   ChannelAssignment, NumberType,
+  Frame,
   Header, Footer,
 };
 
 use utility::to_u32;
+
+pub fn frame_parser(input: &[u8], channels: u8) -> IResult<&[u8], Frame> {
+  chain!(input,
+    frame_header: header ~
+    frame_footer: footer,
+    || {
+      Frame {
+        header: frame_header,
+        footer: frame_footer,
+      }
+    }
+  )
+}
 
 fn blocking_strategy(input: &[u8]) -> IResult<&[u8], bool> {
   match take!(input, 2) {
