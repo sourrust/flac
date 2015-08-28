@@ -6,7 +6,7 @@ use nom::{
 
 use frame::{
   ChannelAssignment, NumberType,
-  Footer,
+  Header, Footer,
 };
 
 use utility::to_u32;
@@ -142,5 +142,62 @@ fn secondary_sample_rate(input: &[u8], sample_byte: u32)
     _      => IResult::Done(input, None)
   }
 }
+
+named!(header <&[u8], Header>,
+  chain!(
+    is_variable_block_size: blocking_strategy ~
+    tuple0: block_sample ~
+    tuple1: channel_bits ~
+    number_opt: apply!(utf8_size, is_variable_block_size) ~
+    number_length: expr_opt!(number_opt) ~
+    number: apply!(sample_or_frame_number, is_variable_block_size,
+                   number_length) ~
+    alt_block_size: apply!(secondary_block_size, tuple0.0) ~
+    alt_sample_rate: apply!(secondary_sample_rate, tuple0.1) ~
+    crc: be_u8,
+    || {
+      let (block_byte, sample_byte)             = tuple0;
+      let (channel_assignment, bits_per_sample) = tuple1;
+
+      let block_size = match block_byte {
+        0b0000          => 0,
+        0b0001          => 192,
+        0b0010...0b0101 => 576 * 2_u32.pow(tuple0.0 - 2),
+        0b0110 | 0b0111 => alt_block_size.unwrap() + 1,
+        0b1000...0b1111 => 256 * 2_u32.pow(tuple0.0 - 8),
+        _               => unreachable!(),
+      };
+
+      let sample_rate = match sample_byte {
+        0b0000 => 0,
+        0b0001 => 88200,
+        0b0010 => 176400,
+        0b0011 => 192000,
+        0b0100 => 8000,
+        0b0101 => 16000,
+        0b0110 => 22050,
+        0b0111 => 24000,
+        0b1000 => 32000,
+        0b1001 => 44100,
+        0b1010 => 48000,
+        0b1011 => 96000,
+        0b1100 => alt_sample_rate.unwrap() * 1000,
+        0b1101 => alt_sample_rate.unwrap(),
+        0b1110 => alt_sample_rate.unwrap() * 10,
+        0b1111 => 0,
+        _      => unreachable!(),
+      };
+
+      Header {
+        block_size: block_size,
+        sample_rate: sample_rate,
+        channel_assignment: channel_assignment,
+        bits_per_sample: bits_per_sample,
+        number: number,
+        crc: crc,
+      }
+    }
+  )
+);
 
 named!(footer <&[u8], Footer>, map!(be_u16, Footer));
