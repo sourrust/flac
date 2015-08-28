@@ -2,6 +2,7 @@
 extern crate nom;
 
 pub mod metadata;
+mod frame;
 mod utility;
 
 use metadata::metadata_parser;
