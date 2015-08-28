@@ -23,7 +23,7 @@ The status of this FLAC implementation:
       - [x] unknown
   - [ ] frame
     - [ ] header
-    - [ ] footer
+    - [x] footer
     - [ ] sub-frame
       - [ ] header
       - [ ] constant
