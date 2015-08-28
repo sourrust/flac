@@ -9,6 +9,8 @@ use frame::{
   Footer,
 };
 
+use utility::to_u32;
+
 fn blocking_strategy(input: &[u8]) -> IResult<&[u8], bool> {
   match take!(input, 2) {
     IResult::Done(i, bytes)   => {
@@ -119,6 +121,25 @@ fn sample_or_frame_number(input: &[u8], is_sample: bool,
     }
     IResult::Error(error)     => IResult::Error(error),
     IResult::Incomplete(need) => IResult::Incomplete(need),
+  }
+}
+
+fn secondary_block_size(input: &[u8], block_byte: u32)
+                        -> IResult<&[u8], Option<u32>> {
+  match block_byte {
+    0b0110 => opt!(input, map!(take!(1), to_u32)),
+    0b0111 => opt!(input, map!(take!(2), to_u32)),
+    _      => IResult::Done(input, None)
+  }
+}
+
+fn secondary_sample_rate(input: &[u8], sample_byte: u32)
+                        -> IResult<&[u8], Option<u32>> {
+  match sample_byte {
+    0b1100 => opt!(input, map!(take!(1), to_u32)),
+    0b1101 => opt!(input, map!(take!(2), to_u32)),
+    0b1110 => opt!(input, map!(take!(2), to_u32)),
+    _      => IResult::Done(input, None)
   }
 }
 
