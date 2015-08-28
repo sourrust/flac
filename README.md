@@ -22,8 +22,8 @@ The status of this FLAC implementation:
       - [x] picture
       - [x] unknown
   - [ ] frame
-    - [ ] header
-    - [ ] footer
+    - [x] header
+    - [x] footer
     - [ ] sub-frame
       - [ ] header
       - [ ] constant
