@@ -73,6 +73,12 @@ pub fn crc8(data: &[u8]) -> u8 {
   data.iter().fold(0, |crc, byte| CRC_8_TABLE[(crc ^ byte) as usize])
 }
 
+#[inline]
+pub fn crc16(data: &[u8]) -> u16 {
+  data.iter().fold(0, |crc, byte|
+    (crc << 8) ^ CRC_16_TABLE[(((crc >> 8) as u8) ^ byte) as usize])
+}
+
 // Convert one to four byte slices in an unsigned 32-bit number.
 //
 // NOTE: This assumes big-endian since most numbers in the FLAC binary are
