@@ -33,6 +33,11 @@ const CRC_8_TABLE: [u8; 256] = [
   0xe6, 0xe1, 0xe8, 0xef, 0xfa, 0xfd, 0xf4, 0xf3
 ];
 
+#[inline]
+pub fn crc8(data: &[u8]) -> u8 {
+  data.iter().fold(0, |crc, byte| CRC_8_TABLE[(crc ^ byte) as usize])
+}
+
 // Convert one to four byte slices in an unsigned 32-bit number.
 //
 // NOTE: This assumes big-endian since most numbers in the FLAC binary are
