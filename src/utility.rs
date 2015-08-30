@@ -113,4 +113,14 @@ mod tests {
     assert!(to_u32(&bytes[1..4]) == 0x00234567, "Slice count of 3");
     assert!(to_u32(&bytes[4..])  == 0x89abcdef, "Slice count of 4");
   }
+
+  #[test]
+  fn test_crc8() {
+    assert!(crc8(&[0x1f]) == 0x5d, "1 Byte hash (0x5d)");
+    assert!(crc8(&[0x04, 0x01]) == 0x53, "2 Byte hash (0x53)");
+    assert!(crc8(&[0x61, 0x62, 0x63]) == 0x5f, "3 Byte hash (0x5f)");
+    assert!(crc8(&[0x94]) == 0xe5, "1 Byte hash (0xe5)");
+    assert!(crc8(&[0x36, 0xa7]) == 0xfb, "2 Byte hash (0xfb)");
+    assert!(crc8(&[0x4f, 0x9e, 0x4b]) == 0x00, "3 Byte hash (0x00)");
+  }
 }
