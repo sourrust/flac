@@ -170,8 +170,8 @@ named!(header <&[u8], Header>,
     alt_sample_rate: apply!(secondary_sample_rate, tuple0.1) ~
     crc: be_u8,
     || {
-      let (block_byte, sample_byte)             = tuple0;
-      let (channel_assignment, bits_per_sample) = tuple1;
+      let (block_byte, sample_byte)       = tuple0;
+      let (channel_assignment, size_byte) = tuple1;
 
       let block_size = match block_byte {
         0b0000          => 0,
@@ -199,6 +199,18 @@ named!(header <&[u8], Header>,
         0b1101 => alt_sample_rate.unwrap(),
         0b1110 => alt_sample_rate.unwrap() * 10,
         0b1111 => 0,
+        _      => unreachable!(),
+      };
+
+      let bits_per_sample = match size_byte {
+        0b0000 => 0,
+        0b0001 => 8,
+        0b0010 => 12,
+        0b0011 => 0,
+        0b0100 => 16,
+        0b0101 => 20,
+        0b0110 => 24,
+        0b0111 => 0,
         _      => unreachable!(),
       };
 
