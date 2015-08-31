@@ -42,7 +42,7 @@ macro_rules! skip_bytes (
 /// The first metadata block should always be `StreamInfo` since that is the
 /// only required `Block`. At the moment `metadata_parser` parser doesn't
 /// check that requirement.
-named!(pub metadata_parser <&[u8], Vec<Block> >,
+named!(pub metadata_parser <&[u8], (StreamInfo, Vec<Block>)>,
   chain!(
     tag!("fLaC") ~
     blocks: many_blocks,
@@ -322,37 +322,37 @@ named!(block <&[u8], Block>,
   )
 );
 
-fn many_blocks(input: &[u8]) -> IResult<&[u8], Vec<Block>> {
-  let mut is_last   = false;
-  let mut blocks    = Vec::new();
-  let mut start     = 0;
-  let mut remaining = input.len();
+fn many_blocks(input: &[u8]) -> IResult<&[u8], (StreamInfo, Vec<Block>)> {
+  let mut is_last     = false;
+  let mut found_info  = false;
+  let mut blocks      = Vec::new();
+  let mut mut_input   = input;
+  let mut stream_info = StreamInfo::new();
 
   while !is_last {
-    match block(&input[start..]) {
-      IResult::Done(i, block) => {
-        let result_len = i.len();
+    if let IResult::Done(i, block) = block(mut_input) {
+      if i.len() == input.len() {
+        break;
+      }
 
-        if result_len == input[start..].len() {
-          break;
-        }
+      mut_input = i;
+      is_last   = block.is_last;
 
-        start    += remaining - result_len;
-        remaining = result_len;
-        is_last   = block.is_last;
-
+      if let BlockData::StreamInfo(info) = block.data {
+        found_info  = true;
+        stream_info = info;
+      } else {
         blocks.push(block);
       }
-      _                       => break,
+    } else {
+      break;
     }
   }
 
-  if blocks.len() == 0 {
-    IResult::Error(Err::Position(ErrorCode::Many1 as u32, input))
-  } else if is_last {
-    IResult::Done(&input[start..], blocks)
+  if found_info && is_last {
+    IResult::Done(mut_input, (stream_info, blocks))
   } else {
-    IResult::Incomplete(Needed::Unknown)
+    IResult::Error(Err::Position(ErrorCode::Many1 as u32, input))
   }
 }
 

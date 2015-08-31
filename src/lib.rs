@@ -6,18 +6,23 @@ mod frame;
 mod utility;
 
 use metadata::metadata_parser;
+use frame::frame_parser;
 
 pub struct Stream {
+  pub info: metadata::StreamInfo,
   pub metadata: Vec<metadata::Block>,
-  //frames: Vec<u32>
+  pub frames: Vec<frame::Frame>
 }
 
 named!(stream <&[u8], Stream>,
   chain!(
-    metadata: metadata_parser,
-    || {
+    blocks: metadata_parser ~
+    frames: many1!(apply!(frame_parser, blocks.0.channels)),
+    move|| {
       Stream {
-        metadata: metadata,
+        info: blocks.0,
+        metadata: blocks.1,
+        frames: frames,
       }
     }
   )

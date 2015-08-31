@@ -62,6 +62,22 @@ pub struct StreamInfo {
   pub md5_sum: [u8; 16],
 }
 
+impl StreamInfo {
+  pub fn new() -> StreamInfo {
+    StreamInfo {
+      min_block_size: 0,
+      max_block_size: 0,
+      min_frame_size: 0,
+      max_frame_size: 0,
+      sample_rate: 0,
+      channels: 0,
+      bits_per_sample: 0,
+      total_samples: 0,
+      md5_sum: [0; 16],
+    }
+  }
+}
+
 /// Data used by third-party applications.
 #[derive(Debug, PartialEq, Eq)]
 pub struct Application {
