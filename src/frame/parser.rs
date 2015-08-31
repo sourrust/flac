@@ -176,9 +176,9 @@ named!(header <&[u8], Header>,
       let block_size = match block_byte {
         0b0000          => 0,
         0b0001          => 192,
-        0b0010...0b0101 => 576 * 2_u32.pow(tuple0.0 - 2),
+        0b0010...0b0101 => 576 * 2_u32.pow(block_byte - 2),
         0b0110 | 0b0111 => alt_block_size.unwrap() + 1,
-        0b1000...0b1111 => 256 * 2_u32.pow(tuple0.0 - 8),
+        0b1000...0b1111 => 256 * 2_u32.pow(block_byte - 8),
         _               => unreachable!(),
       };
 
