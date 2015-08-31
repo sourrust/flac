@@ -323,36 +323,29 @@ named!(block <&[u8], Block>,
 );
 
 fn many_blocks(input: &[u8]) -> IResult<&[u8], Vec<Block>> {
-  let mut is_last   = false;
-  let mut blocks    = Vec::new();
-  let mut start     = 0;
-  let mut remaining = input.len();
+  let mut is_last     = false;
+  let mut blocks      = Vec::new();
+  let mut mut_input   = input;
 
   while !is_last {
-    match block(&input[start..]) {
-      IResult::Done(i, block) => {
-        let result_len = i.len();
-
-        if result_len == input[start..].len() {
-          break;
-        }
-
-        start    += remaining - result_len;
-        remaining = result_len;
-        is_last   = block.is_last;
-
-        blocks.push(block);
+    if let IResult::Done(i, block) = block(mut_input) {
+      if i.len() == input.len() {
+        break;
       }
-      _                       => break,
+
+      mut_input = i;
+      is_last   = block.is_last;
+
+      blocks.push(block);
+    } else {
+      break;
     }
   }
 
-  if blocks.len() == 0 {
-    IResult::Error(Err::Position(ErrorCode::Many1 as u32, input))
-  } else if is_last {
-    IResult::Done(&input[start..], blocks)
+  if is_last {
+    IResult::Done(mut_input, blocks)
   } else {
-    IResult::Incomplete(Needed::Unknown)
+    IResult::Error(Err::Position(ErrorCode::Many1 as u32, input))
   }
 }
 
