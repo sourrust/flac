@@ -10,11 +10,13 @@ use frame::{
   Header, Footer,
 };
 
+use metadata::StreamInfo;
 use utility::to_u32;
 
-pub fn frame_parser(input: &[u8], channels: u8) -> IResult<&[u8], Frame> {
+pub fn frame_parser<'a>(input: &'a [u8], stream_info: &StreamInfo)
+                        -> IResult<'a, &'a [u8], Frame> {
   chain!(input,
-    frame_header: header ~
+    frame_header: apply!(header, stream_info) ~
     frame_footer: footer,
     || {
       Frame {
@@ -157,8 +159,9 @@ fn secondary_sample_rate(input: &[u8], sample_byte: u32)
   }
 }
 
-named!(header <&[u8], Header>,
-  chain!(
+fn header<'a>(input: &'a [u8], stream_info: &StreamInfo)
+              -> IResult<'a, &'a [u8], Header> {
+  chain!(input,
     is_variable_block_size: blocking_strategy ~
     tuple0: block_sample ~
     tuple1: channel_bits ~
@@ -224,6 +227,6 @@ named!(header <&[u8], Header>,
       }
     }
   )
-);
+}
 
 named!(footer <&[u8], Footer>, map!(be_u16, Footer));
