@@ -186,7 +186,7 @@ fn header<'a>(input: &'a [u8], stream_info: &StreamInfo)
       };
 
       let sample_rate = match sample_byte {
-        0b0000 => 0,
+        0b0000 => stream_info.sample_rate,
         0b0001 => 88200,
         0b0010 => 176400,
         0b0011 => 192000,
@@ -206,7 +206,7 @@ fn header<'a>(input: &'a [u8], stream_info: &StreamInfo)
       };
 
       let bits_per_sample = match size_byte {
-        0b0000 => 0,
+        0b0000 => stream_info.bits_per_sample as usize,
         0b0001 => 8,
         0b0010 => 12,
         0b0011 => 0,
