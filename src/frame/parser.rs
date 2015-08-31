@@ -10,11 +10,13 @@ use frame::{
   Header, Footer,
 };
 
+use metadata::StreamInfo;
 use utility::to_u32;
 
-pub fn frame_parser(input: &[u8], channels: u8) -> IResult<&[u8], Frame> {
+pub fn frame_parser<'a>(input: &'a [u8], stream_info: &StreamInfo)
+                        -> IResult<'a, &'a [u8], Frame> {
   chain!(input,
-    frame_header: header ~
+    frame_header: apply!(header, stream_info) ~
     frame_footer: footer,
     || {
       Frame {
@@ -63,7 +65,7 @@ fn block_sample(input: &[u8]) -> IResult<&[u8], (u32, u32)> {
   }
 }
 
-fn channel_bits(input: &[u8]) -> IResult<&[u8], (ChannelAssignment, usize)> {
+fn channel_bits(input: &[u8]) -> IResult<&[u8], (ChannelAssignment, u8)> {
   match take!(input, 1) {
     IResult::Done(i, bytes)   => {
       let channel_assignment = match bytes[0] >> 4 {
@@ -73,11 +75,11 @@ fn channel_bits(input: &[u8]) -> IResult<&[u8], (ChannelAssignment, usize)> {
         0b1010          => ChannelAssignment::MiddleSide,
         _               => ChannelAssignment::Independent,
       };
-      let bits_per_sample = (bytes[0] >> 1) & 0b0111;
-      let is_valid        = (bytes[0] & 0b01) == 0;
+      let size_byte = (bytes[0] >> 1) & 0b0111;
+      let is_valid  = (bytes[0] & 0b01) == 0;
 
       if is_valid {
-        IResult::Done(i, (channel_assignment, bits_per_sample as usize))
+        IResult::Done(i, (channel_assignment, size_byte))
       } else {
         IResult::Error(Err::Position(ErrorCode::Digit as u32, input))
       }
@@ -157,8 +159,9 @@ fn secondary_sample_rate(input: &[u8], sample_byte: u32)
   }
 }
 
-named!(header <&[u8], Header>,
-  chain!(
+fn header<'a>(input: &'a [u8], stream_info: &StreamInfo)
+              -> IResult<'a, &'a [u8], Header> {
+  chain!(input,
     is_variable_block_size: blocking_strategy ~
     tuple0: block_sample ~
     tuple1: channel_bits ~
@@ -170,20 +173,20 @@ named!(header <&[u8], Header>,
     alt_sample_rate: apply!(secondary_sample_rate, tuple0.1) ~
     crc: be_u8,
     || {
-      let (block_byte, sample_byte)             = tuple0;
-      let (channel_assignment, bits_per_sample) = tuple1;
+      let (block_byte, sample_byte)       = tuple0;
+      let (channel_assignment, size_byte) = tuple1;
 
       let block_size = match block_byte {
         0b0000          => 0,
         0b0001          => 192,
-        0b0010...0b0101 => 576 * 2_u32.pow(tuple0.0 - 2),
+        0b0010...0b0101 => 576 * 2_u32.pow(block_byte - 2),
         0b0110 | 0b0111 => alt_block_size.unwrap() + 1,
-        0b1000...0b1111 => 256 * 2_u32.pow(tuple0.0 - 8),
+        0b1000...0b1111 => 256 * 2_u32.pow(block_byte - 8),
         _               => unreachable!(),
       };
 
       let sample_rate = match sample_byte {
-        0b0000 => 0,
+        0b0000 => stream_info.sample_rate,
         0b0001 => 88200,
         0b0010 => 176400,
         0b0011 => 192000,
@@ -202,6 +205,18 @@ named!(header <&[u8], Header>,
         _      => unreachable!(),
       };
 
+      let bits_per_sample = match size_byte {
+        0b0000 => stream_info.bits_per_sample as usize,
+        0b0001 => 8,
+        0b0010 => 12,
+        0b0011 => 0,
+        0b0100 => 16,
+        0b0101 => 20,
+        0b0110 => 24,
+        0b0111 => 0,
+        _      => unreachable!(),
+      };
+
       Header {
         block_size: block_size,
         sample_rate: sample_rate,
@@ -212,6 +227,6 @@ named!(header <&[u8], Header>,
       }
     }
   )
-);
+}
 
 named!(footer <&[u8], Footer>, map!(be_u16, Footer));

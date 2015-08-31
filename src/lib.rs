@@ -17,7 +17,7 @@ pub struct Stream {
 named!(stream <&[u8], Stream>,
   chain!(
     blocks: metadata_parser ~
-    frames: many1!(apply!(frame_parser, blocks.0.channels)),
+    frames: many1!(apply!(frame_parser, &blocks.0)),
     move|| {
       Stream {
         info: blocks.0,
