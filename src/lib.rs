@@ -8,8 +8,9 @@ mod utility;
 use metadata::metadata_parser;
 
 pub struct Stream {
+  pub info: metadata::StreamInfo,
   pub metadata: Vec<metadata::Block>,
-  //frames: Vec<u32>
+  pub frames: Vec<frame::Frame>
 }
 
 named!(stream <&[u8], Stream>,
