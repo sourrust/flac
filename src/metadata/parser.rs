@@ -322,10 +322,12 @@ named!(block <&[u8], Block>,
   )
 );
 
-fn many_blocks(input: &[u8]) -> IResult<&[u8], Vec<Block>> {
+fn many_blocks(input: &[u8]) -> IResult<&[u8], (StreamInfo, Vec<Block>)> {
   let mut is_last     = false;
+  let mut found_info  = false;
   let mut blocks      = Vec::new();
   let mut mut_input   = input;
+  let mut stream_info = StreamInfo::new();
 
   while !is_last {
     if let IResult::Done(i, block) = block(mut_input) {
@@ -336,14 +338,19 @@ fn many_blocks(input: &[u8]) -> IResult<&[u8], Vec<Block>> {
       mut_input = i;
       is_last   = block.is_last;
 
-      blocks.push(block);
+      if let BlockData::StreamInfo(info) = block.data {
+        found_info  = true;
+        stream_info = info;
+      } else {
+        blocks.push(block);
+      }
     } else {
       break;
     }
   }
 
-  if is_last {
-    IResult::Done(mut_input, blocks)
+  if found_info && is_last {
+    IResult::Done(mut_input, (stream_info, blocks))
   } else {
     IResult::Error(Err::Position(ErrorCode::Many1 as u32, input))
   }
