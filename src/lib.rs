@@ -15,10 +15,11 @@ pub struct Stream {
 
 named!(stream <&[u8], Stream>,
   chain!(
-    metadata: metadata_parser,
-    || {
+    blocks: metadata_parser ~
+    move|| {
       Stream {
-        metadata: metadata,
+        info: blocks.0,
+        metadata: blocks.1,
       }
     }
   )
