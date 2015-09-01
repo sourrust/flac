@@ -113,17 +113,14 @@ fn sample_or_frame_number(input: &[u8], is_sample: bool,
 
   match take!(input, size) {
     IResult::Done(i, bytes)   => {
-      for i in (0..size) {
+      for i in 0..size {
         let byte = bytes[i] as u64;
 
-        match byte {
-          0b10000000...10111111 => {
-            result = (result << 6) + (byte & 0b00111111);
-          }
-          _                     => {
-            is_error = true;
-            break;
-          }
+        if byte >= 0b10000000 && byte <= 0b10111111 {
+          result = (result << 6) + (byte & 0b00111111);
+        } else {
+          is_error = true;
+          break;
         }
       }
 
