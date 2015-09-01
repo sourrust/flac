@@ -50,12 +50,12 @@ fn blocking_strategy(input: &[u8]) -> IResult<&[u8], bool> {
 fn block_sample(input: &[u8]) -> IResult<&[u8], (u32, u32)> {
   match take!(input, 1) {
     IResult::Done(i, bytes)   => {
-      let sample_rate = bytes[0] & 0x0f;
+      let sample_byte = bytes[0] & 0x0f;
 
-      if sample_rate != 0x0f {
-        let block_size = bytes[0] >> 4;
+      if sample_byte != 0x0f {
+        let block_byte = bytes[0] >> 4;
 
-        IResult::Done(i, (block_size as u32, sample_rate as u32))
+        IResult::Done(i, (block_byte as u32, sample_byte as u32))
       } else {
         IResult::Error(Err::Position(ErrorCode::Digit as u32, input))
       }
