@@ -87,11 +87,7 @@ named!(pub stream_info <&[u8], BlockData>,
 );
 
 pub fn padding(input: &[u8], length: u32) -> IResult<&[u8], BlockData> {
-  match skip_bytes!(input, length) {
-    IResult::Done(i, _)       => IResult::Done(i, BlockData::Padding(0)),
-    IResult::Error(error)     => IResult::Error(error),
-    IResult::Incomplete(need) => IResult::Incomplete(need),
-  }
+  map!(input, skip_bytes!(length), |_| BlockData::Padding(0))
 }
 
 pub fn application(input: &[u8], length: u32) -> IResult<&[u8], BlockData> {
