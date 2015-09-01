@@ -47,7 +47,7 @@ fn blocking_strategy(input: &[u8]) -> IResult<&[u8], bool> {
   }
 }
 
-fn block_sample(input: &[u8]) -> IResult<&[u8], (u32, u32)> {
+fn sample_block(input: &[u8]) -> IResult<&[u8], (u8, u8)> {
   match take!(input, 1) {
     IResult::Done(i, bytes)   => {
       let sample_byte = bytes[0] & 0x0f;
@@ -55,7 +55,7 @@ fn block_sample(input: &[u8]) -> IResult<&[u8], (u32, u32)> {
       if sample_byte != 0x0f {
         let block_byte = bytes[0] >> 4;
 
-        IResult::Done(i, (sample_byte as u32, block_byte as u32))
+        IResult::Done(i, (sample_byte, block_byte))
       } else {
         IResult::Error(Err::Position(ErrorCode::Digit as u32, input))
       }
@@ -163,7 +163,7 @@ fn header<'a>(input: &'a [u8], stream_info: &StreamInfo)
               -> IResult<'a, &'a [u8], Header> {
   chain!(input,
     is_variable_block_size: blocking_strategy ~
-    tuple0: block_sample ~
+    tuple0: sample_block ~
     tuple1: channel_bits ~
     number_opt: apply!(utf8_size, is_variable_block_size) ~
     number_length: expr_opt!(number_opt) ~
@@ -179,9 +179,9 @@ fn header<'a>(input: &'a [u8], stream_info: &StreamInfo)
       let block_size = match block_byte {
         0b0000          => 0,
         0b0001          => 192,
-        0b0010...0b0101 => 576 * 2_u32.pow(block_byte - 2),
+        0b0010...0b0101 => 576 * 2_u32.pow(block_byte as u32 - 2),
         0b0110 | 0b0111 => alt_block_size.unwrap() + 1,
-        0b1000...0b1111 => 256 * 2_u32.pow(block_byte - 8),
+        0b1000...0b1111 => 256 * 2_u32.pow(block_byte as u32 - 8),
         _               => unreachable!(),
       };
 
