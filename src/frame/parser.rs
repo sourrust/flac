@@ -55,7 +55,7 @@ fn block_sample(input: &[u8]) -> IResult<&[u8], (u32, u32)> {
       if sample_byte != 0x0f {
         let block_byte = bytes[0] >> 4;
 
-        IResult::Done(i, (block_byte as u32, sample_byte as u32))
+        IResult::Done(i, (sample_byte as u32, block_byte as u32))
       } else {
         IResult::Error(Err::Position(ErrorCode::Digit as u32, input))
       }
@@ -173,7 +173,7 @@ fn header<'a>(input: &'a [u8], stream_info: &StreamInfo)
     alt_sample_rate: apply!(secondary_sample_rate, tuple0.1) ~
     crc: be_u8,
     || {
-      let (block_byte, sample_byte)       = tuple0;
+      let (sample_byte, block_byte)       = tuple0;
       let (channel_assignment, size_byte) = tuple1;
 
       let block_size = match block_byte {
