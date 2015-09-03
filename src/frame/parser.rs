@@ -11,7 +11,7 @@ use frame::{
 };
 
 use metadata::StreamInfo;
-use utility::to_u32;
+use utility::{crc8, crc16, to_u32};
 
 pub fn frame_parser<'a>(input: &'a [u8], stream_info: &StreamInfo)
                         -> IResult<'a, &'a [u8], Frame> {
