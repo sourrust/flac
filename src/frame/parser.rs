@@ -15,7 +15,7 @@ use utility::to_u32;
 
 pub fn frame_parser<'a>(input: &'a [u8], stream_info: &StreamInfo)
                         -> IResult<'a, &'a [u8], Frame> {
-  chain!(input,
+  let result = chain!(input,
     frame_header: apply!(header, stream_info) ~
     frame_footer: footer,
     || {
@@ -24,7 +24,23 @@ pub fn frame_parser<'a>(input: &'a [u8], stream_info: &StreamInfo)
         footer: frame_footer,
       }
     }
-  )
+  );
+
+  match result {
+    IResult::Done(i, frame)   => {
+      // All frame bytes before the crc-16
+      let end         = (input.len() - i.len()) - 2;
+      let Footer(crc) = frame.footer;
+
+      if crc16(&input[0..end]) == crc {
+        IResult::Done(i, frame)
+      } else {
+        IResult::Error(Err::Position(ErrorCode::Digit as u32, input))
+      }
+    }
+    IResult::Error(error)     => IResult::Error(error),
+    IResult::Incomplete(need) => IResult::Incomplete(need),
+  }
 }
 
 fn blocking_strategy(input: &[u8]) -> IResult<&[u8], bool> {
