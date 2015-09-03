@@ -47,7 +47,7 @@ fn blocking_strategy(input: &[u8]) -> IResult<&[u8], bool> {
   }
 }
 
-fn sample_block(input: &[u8]) -> IResult<&[u8], (u8, u8)> {
+fn block_sample(input: &[u8]) -> IResult<&[u8], (u8, u8)> {
   match take!(input, 1) {
     IResult::Done(i, bytes)   => {
       let sample_byte = bytes[0] & 0x0f;
@@ -55,7 +55,7 @@ fn sample_block(input: &[u8]) -> IResult<&[u8], (u8, u8)> {
       if sample_byte != 0x0f {
         let block_byte = bytes[0] >> 4;
 
-        IResult::Done(i, (sample_byte, block_byte))
+        IResult::Done(i, (block_byte, sample_byte))
       } else {
         IResult::Error(Err::Position(ErrorCode::Digit as u32, input))
       }
@@ -160,7 +160,7 @@ fn header<'a>(input: &'a [u8], stream_info: &StreamInfo)
               -> IResult<'a, &'a [u8], Header> {
   chain!(input,
     is_variable_block_size: blocking_strategy ~
-    tuple0: sample_block ~
+    tuple0: block_sample ~
     tuple1: channel_bits ~
     number_opt: apply!(utf8_size, is_variable_block_size) ~
     number_length: expr_opt!(number_opt) ~
@@ -170,7 +170,7 @@ fn header<'a>(input: &'a [u8], stream_info: &StreamInfo)
     alt_sample_rate: apply!(secondary_sample_rate, tuple0.1) ~
     crc: be_u8,
     || {
-      let (sample_byte, block_byte)       = tuple0;
+      let (block_byte, sample_byte)       = tuple0;
       let (channel_assignment, size_byte) = tuple1;
 
       let block_size = match block_byte {
