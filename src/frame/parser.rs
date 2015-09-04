@@ -84,7 +84,7 @@ fn block_sample(input: &[u8]) -> IResult<&[u8], (u8, u8)> {
 fn channel_bits(input: &[u8]) -> IResult<&[u8], (ChannelAssignment, u8)> {
   match take!(input, 1) {
     IResult::Done(i, bytes)   => {
-      let channel_byte       = bytes[0] >> 4
+      let channel_byte       = bytes[0] >> 4;
       let channel_assignment = match channel_byte {
         0b0000...0b0111 => ChannelAssignment::Independent,
         0b1000          => ChannelAssignment::LeftSide,
