@@ -66,11 +66,11 @@ fn blocking_strategy(input: &[u8]) -> IResult<&[u8], bool> {
 fn block_sample(input: &[u8]) -> IResult<&[u8], (u8, u8)> {
   match take!(input, 1) {
     IResult::Done(i, bytes)   => {
+      let block_byte  = bytes[0] >> 4;
       let sample_byte = bytes[0] & 0x0f;
+      let is_valid    = block_byte != 0b0000 && sample_byte != 0b1111;
 
-      if sample_byte != 0x0f {
-        let block_byte = bytes[0] >> 4;
-
+      if is_valid {
         IResult::Done(i, (block_byte, sample_byte))
       } else {
         IResult::Error(Err::Position(ErrorCode::Digit as u32, input))
@@ -84,7 +84,8 @@ fn block_sample(input: &[u8]) -> IResult<&[u8], (u8, u8)> {
 fn channel_bits(input: &[u8]) -> IResult<&[u8], (ChannelAssignment, u8)> {
   match take!(input, 1) {
     IResult::Done(i, bytes)   => {
-      let channel_assignment = match bytes[0] >> 4 {
+      let channel_byte       = bytes[0] >> 4
+      let channel_assignment = match channel_byte {
         0b0000...0b0111 => ChannelAssignment::Independent,
         0b1000          => ChannelAssignment::LeftSide,
         0b1001          => ChannelAssignment::RightSide,
@@ -92,7 +93,18 @@ fn channel_bits(input: &[u8]) -> IResult<&[u8], (ChannelAssignment, u8)> {
         _               => ChannelAssignment::Independent,
       };
       let size_byte = (bytes[0] >> 1) & 0b0111;
-      let is_valid  = (bytes[0] & 0b01) == 0;
+
+      // Checks the validity of:
+      //
+      // * (4 bits) channel assignment
+      // * (3 bits) sample size
+      // * (1 bit) last bit
+      //
+      // All these checks are whether of not they are reserved and should
+      // return an error if so.
+      let is_valid = channel_byte < 0b1011 &&
+                     (size_byte != 0b0011 && size_byte != 0b0111) &&
+                     (bytes[0] & 0b01) == 0;
 
       if is_valid {
         IResult::Done(i, (channel_assignment, size_byte))
@@ -190,7 +202,6 @@ fn header<'a>(input: &'a [u8], stream_info: &StreamInfo)
       let (channel_assignment, size_byte) = tuple1;
 
       let block_size = match block_byte {
-        0b0000          => 0,
         0b0001          => 192,
         0b0010...0b0101 => 576 * 2_u32.pow(block_byte as u32 - 2),
         0b0110 | 0b0111 => alt_block_size.unwrap() + 1,
@@ -214,7 +225,6 @@ fn header<'a>(input: &'a [u8], stream_info: &StreamInfo)
         0b1100 => alt_sample_rate.unwrap() * 1000,
         0b1101 => alt_sample_rate.unwrap(),
         0b1110 => alt_sample_rate.unwrap() * 10,
-        0b1111 => 0,
         _      => unreachable!(),
       };
 
@@ -222,11 +232,9 @@ fn header<'a>(input: &'a [u8], stream_info: &StreamInfo)
         0b0000 => stream_info.bits_per_sample as usize,
         0b0001 => 8,
         0b0010 => 12,
-        0b0011 => 0,
         0b0100 => 16,
         0b0101 => 20,
         0b0110 => 24,
-        0b0111 => 0,
         _      => unreachable!(),
       };
 
