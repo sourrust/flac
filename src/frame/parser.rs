@@ -193,7 +193,6 @@ fn header<'a>(input: &'a [u8], stream_info: &StreamInfo)
       let (channel_assignment, size_byte) = tuple1;
 
       let block_size = match block_byte {
-        0b0000          => 0,
         0b0001          => 192,
         0b0010...0b0101 => 576 * 2_u32.pow(block_byte as u32 - 2),
         0b0110 | 0b0111 => alt_block_size.unwrap() + 1,
@@ -217,7 +216,6 @@ fn header<'a>(input: &'a [u8], stream_info: &StreamInfo)
         0b1100 => alt_sample_rate.unwrap() * 1000,
         0b1101 => alt_sample_rate.unwrap(),
         0b1110 => alt_sample_rate.unwrap() * 10,
-        0b1111 => 0,
         _      => unreachable!(),
       };
 
@@ -225,11 +223,9 @@ fn header<'a>(input: &'a [u8], stream_info: &StreamInfo)
         0b0000 => stream_info.bits_per_sample as usize,
         0b0001 => 8,
         0b0010 => 12,
-        0b0011 => 0,
         0b0100 => 16,
         0b0101 => 20,
         0b0110 => 24,
-        0b0111 => 0,
         _      => unreachable!(),
       };
 
