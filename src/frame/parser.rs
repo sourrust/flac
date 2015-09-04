@@ -66,11 +66,11 @@ fn blocking_strategy(input: &[u8]) -> IResult<&[u8], bool> {
 fn block_sample(input: &[u8]) -> IResult<&[u8], (u8, u8)> {
   match take!(input, 1) {
     IResult::Done(i, bytes)   => {
+      let block_byte  = bytes[0] >> 4;
       let sample_byte = bytes[0] & 0x0f;
+      let is_valid    = block_byte != 0b0000 && sample_byte != 0b1111;
 
-      if sample_byte != 0x0f {
-        let block_byte = bytes[0] >> 4;
-
+      if is_valid {
         IResult::Done(i, (block_byte, sample_byte))
       } else {
         IResult::Error(Err::Position(ErrorCode::Digit as u32, input))
