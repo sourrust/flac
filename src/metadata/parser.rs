@@ -165,7 +165,7 @@ named!(pub cue_sheet <&[u8], BlockData>,
     num_tracks: be_u8 ~
     tracks: count!(cue_sheet_track, num_tracks as usize),
     || {
-      let is_cd = ((bytes[0] >> 7) & 0b01) == 1;
+      let is_cd = (bytes[0] >> 7) == 1;
 
       BlockData::CueSheet(CueSheet {
         media_catalog_number: media_catalog_number.to_owned(),
@@ -189,7 +189,7 @@ named!(cue_sheet_track <&[u8], CueSheetTrack>,
       count!(cue_sheet_track_index, num_indices as usize)
     ),
     || {
-      let is_audio        = ((bytes[0] >> 7) & 0b01) == 0;
+      let is_audio        = (bytes[0] >> 7) == 0;
       let is_pre_emphasis = ((bytes[0] >> 6) & 0b01) == 1;
 
       CueSheetTrack {
