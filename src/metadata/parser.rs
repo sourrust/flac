@@ -18,13 +18,15 @@ use metadata::{
 use utility::to_u32;
 
 macro_rules! skip_bytes (
-  ($input: expr, $length: expr) => (
+  ($input: expr, $length: expr, $offset: expr) => (
     {
       match take!($input, $length) {
         IResult::Done(i, bytes)   => {
-          let is_all_zero = bytes.iter().all(|byte| *byte == 0);
+          let head        = bytes[0] << $offset;
+          let tail        = &bytes[1..];
+          let is_all_zero = tail.iter().all(|byte| *byte == 0);
 
-          if is_all_zero {
+          if head == 0 && is_all_zero {
             IResult::Done(i, bytes)
           } else {
             IResult::Error(Err::Position(ErrorCode::Digit as u32, $input))
@@ -87,7 +89,7 @@ named!(pub stream_info <&[u8], BlockData>,
 );
 
 pub fn padding(input: &[u8], length: u32) -> IResult<&[u8], BlockData> {
-  map!(input, skip_bytes!(length), |_| BlockData::Padding(0))
+  map!(input, skip_bytes!(length, 0), |_| BlockData::Padding(0))
 }
 
 pub fn application(input: &[u8], length: u32) -> IResult<&[u8], BlockData> {
@@ -159,11 +161,13 @@ named!(pub cue_sheet <&[u8], BlockData>,
   chain!(
     media_catalog_number: take_str!(128) ~
     lead_in: be_u64 ~
-    bytes: take!(259) ~ // TODO: last (7 + 258 * 8) bits must be 0
+    // First bit is a flag to check if the cue sheet information is from a
+    // Compact Disc. Rest of the bits should be all zeros.
+    bytes: skip_bytes!(259, 1) ~
     num_tracks: be_u8 ~
     tracks: count!(cue_sheet_track, num_tracks as usize),
     || {
-      let is_cd = ((bytes[0] >> 7) & 0b01) == 1;
+      let is_cd = (bytes[0] >> 7) == 1;
 
       BlockData::CueSheet(CueSheet {
         media_catalog_number: media_catalog_number.to_owned(),
@@ -180,14 +184,17 @@ named!(cue_sheet_track <&[u8], CueSheetTrack>,
     offset: be_u64 ~
     number: be_u8 ~
     isrc: take_str!(12) ~
-    bytes: take!(14) ~ // TODO: last (6 + 13 * 8) bits must be 0
+    // First two bits are flags for checking if the track information is
+    // apart of some audio and if the audio has been recorded with
+    // pre-emphasis.
+    bytes: skip_bytes!(14, 2) ~
     num_indices: be_u8 ~
     indices: cond!(
       num_indices != 0,
       count!(cue_sheet_track_index, num_indices as usize)
     ),
     || {
-      let is_audio        = ((bytes[0] >> 7) & 0b01) == 0;
+      let is_audio        = (bytes[0] >> 7) == 0;
       let is_pre_emphasis = ((bytes[0] >> 6) & 0b01) == 1;
 
       CueSheetTrack {
@@ -206,7 +213,7 @@ named!(cue_sheet_track_index <&[u8], CueSheetTrackIndex>,
   chain!(
     offset: be_u64 ~
     number: be_u8 ~
-    skip_bytes!(3),
+    skip_bytes!(3, 0),
     || {
       CueSheetTrackIndex {
         offset: offset,
