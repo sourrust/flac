@@ -161,7 +161,7 @@ named!(pub cue_sheet <&[u8], BlockData>,
   chain!(
     media_catalog_number: take_str!(128) ~
     lead_in: be_u64 ~
-    bytes: take!(259) ~ // TODO: last (7 + 258 * 8) bits must be 0
+    bytes: skip_bytes!(259, 1) ~
     num_tracks: be_u8 ~
     tracks: count!(cue_sheet_track, num_tracks as usize),
     || {
@@ -182,7 +182,7 @@ named!(cue_sheet_track <&[u8], CueSheetTrack>,
     offset: be_u64 ~
     number: be_u8 ~
     isrc: take_str!(12) ~
-    bytes: take!(14) ~ // TODO: last (6 + 13 * 8) bits must be 0
+    bytes: skip_bytes!(14, 2) ~
     num_indices: be_u8 ~
     indices: cond!(
       num_indices != 0,
