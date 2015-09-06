@@ -89,7 +89,7 @@ named!(pub stream_info <&[u8], BlockData>,
 );
 
 pub fn padding(input: &[u8], length: u32) -> IResult<&[u8], BlockData> {
-  map!(input, skip_bytes!(length), |_| BlockData::Padding(0))
+  map!(input, skip_bytes!(length, 0), |_| BlockData::Padding(0))
 }
 
 pub fn application(input: &[u8], length: u32) -> IResult<&[u8], BlockData> {
@@ -208,7 +208,7 @@ named!(cue_sheet_track_index <&[u8], CueSheetTrackIndex>,
   chain!(
     offset: be_u64 ~
     number: be_u8 ~
-    skip_bytes!(3),
+    skip_bytes!(3, 0),
     || {
       CueSheetTrackIndex {
         offset: offset,
