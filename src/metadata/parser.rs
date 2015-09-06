@@ -18,13 +18,15 @@ use metadata::{
 use utility::to_u32;
 
 macro_rules! skip_bytes (
-  ($input: expr, $length: expr) => (
+  ($input: expr, $length: expr, $offset: expr) => (
     {
       match take!($input, $length) {
         IResult::Done(i, bytes)   => {
-          let is_all_zero = bytes.iter().all(|byte| *byte == 0);
+          let head        = bytes[0] << $offset;
+          let tail        = &bytes[1..];
+          let is_all_zero = tail.iter().all(|byte| *byte == 0);
 
-          if is_all_zero {
+          if head == 0 && is_all_zero {
             IResult::Done(i, bytes)
           } else {
             IResult::Error(Err::Position(ErrorCode::Digit as u32, $input))
