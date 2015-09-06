@@ -161,6 +161,8 @@ named!(pub cue_sheet <&[u8], BlockData>,
   chain!(
     media_catalog_number: take_str!(128) ~
     lead_in: be_u64 ~
+    // First bit is a flag to check if the cue sheet information is from a
+    // Compact Disc. Rest of the bits should be all zeros.
     bytes: skip_bytes!(259, 1) ~
     num_tracks: be_u8 ~
     tracks: count!(cue_sheet_track, num_tracks as usize),
@@ -182,6 +184,9 @@ named!(cue_sheet_track <&[u8], CueSheetTrack>,
     offset: be_u64 ~
     number: be_u8 ~
     isrc: take_str!(12) ~
+    // First two bits are flags for checking if the track information is
+    // apart of some audio and if the audio has been recorded with
+    // pre-emphasis.
     bytes: skip_bytes!(14, 2) ~
     num_indices: be_u8 ~
     indices: cond!(
