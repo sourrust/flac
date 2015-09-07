@@ -64,10 +64,10 @@ fn blocking_strategy(input: &[u8]) -> IResult<&[u8], bool> {
 }
 
 fn block_sample(input: &[u8]) -> IResult<&[u8], (u8, u8)> {
-  match take!(input, 1) {
-    IResult::Done(i, bytes)   => {
-      let block_byte  = bytes[0] >> 4;
-      let sample_byte = bytes[0] & 0x0f;
+  match be_u8(input) {
+    IResult::Done(i, byte)    => {
+      let block_byte  = byte >> 4;
+      let sample_byte = byte & 0x0f;
       let is_valid    = block_byte != 0b0000 && sample_byte != 0b1111;
 
       if is_valid {
@@ -82,9 +82,9 @@ fn block_sample(input: &[u8]) -> IResult<&[u8], (u8, u8)> {
 }
 
 fn channel_bits(input: &[u8]) -> IResult<&[u8], (ChannelAssignment, u8)> {
-  match take!(input, 1) {
-    IResult::Done(i, bytes)   => {
-      let channel_byte       = bytes[0] >> 4;
+  match be_u8(input) {
+    IResult::Done(i, byte)    => {
+      let channel_byte       = byte >> 4;
       let channel_assignment = match channel_byte {
         0b0000...0b0111 => ChannelAssignment::Independent,
         0b1000          => ChannelAssignment::LeftSide,
@@ -92,7 +92,7 @@ fn channel_bits(input: &[u8]) -> IResult<&[u8], (ChannelAssignment, u8)> {
         0b1010          => ChannelAssignment::MiddleSide,
         _               => ChannelAssignment::Independent,
       };
-      let size_byte = (bytes[0] >> 1) & 0b0111;
+      let size_byte = (byte >> 1) & 0b0111;
 
       // Checks the validity of:
       //
@@ -104,7 +104,7 @@ fn channel_bits(input: &[u8]) -> IResult<&[u8], (ChannelAssignment, u8)> {
       // return an error if so.
       let is_valid = channel_byte < 0b1011 &&
                      (size_byte != 0b0011 && size_byte != 0b0111) &&
-                     (bytes[0] & 0b01) == 0;
+                     (byte & 0b01) == 0;
 
       if is_valid {
         IResult::Done(i, (channel_assignment, size_byte))
