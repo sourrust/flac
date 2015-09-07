@@ -47,7 +47,7 @@ fn blocking_strategy(input: &[u8]) -> IResult<&[u8], bool> {
   match take!(input, 2) {
     IResult::Done(i, bytes)   => {
       let sync_code = ((bytes[0] as u16) << 6) +
-                      (bytes[1] as u16) >> 2;
+                      ((bytes[1] as u16) >> 2);
       let is_valid  = ((bytes[1] >> 1) & 0b01) == 0;
 
       if sync_code == 0b11111111111110 && is_valid {
@@ -184,8 +184,8 @@ fn secondary_sample_rate(input: &[u8], sample_byte: u8)
   }
 }
 
-fn header<'a>(input: &'a [u8], stream_info: &StreamInfo)
-              -> IResult<'a, &'a [u8], Header> {
+pub fn header<'a>(input: &'a [u8], stream_info: &StreamInfo)
+                  -> IResult<'a, &'a [u8], Header> {
   let result = chain!(input,
     is_variable_block_size: blocking_strategy ~
     tuple0: block_sample ~
@@ -264,4 +264,39 @@ fn header<'a>(input: &'a [u8], stream_info: &StreamInfo)
   }
 }
 
-named!(footer <&[u8], Footer>, map!(be_u16, Footer));
+named!(pub footer <&[u8], Footer>, map!(be_u16, Footer));
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use frame::{
+    Header, Footer,
+    ChannelAssignment, NumberType,
+  };
+  use metadata::StreamInfo;
+  use nom::IResult;
+
+  #[test]
+  fn test_header() {
+    let input  = b"\xff\xf8\x53\x1c\xf0\x90\x80\x80\x2e";
+    let info   = StreamInfo::new();
+    let result = Header {
+      block_size: 4608,
+      sample_rate: 192000,
+      channel_assignment: ChannelAssignment::Independent,
+      bits_per_sample: 24,
+      number: NumberType::Frame(65536),
+      crc: 0x2e,
+    };
+
+    assert_eq!(header(input, &info), IResult::Done(&[][..], result));
+  }
+
+  #[test]
+  fn test_footer() {
+    let input  = b"\x03\xe8";
+    let result = IResult::Done(&[][..], Footer(0x03e8));
+
+    assert_eq!(footer(input), result);
+  }
+}

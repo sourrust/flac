@@ -5,7 +5,7 @@ pub struct Frame {
   pub footer: Footer,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ChannelAssignment {
   Independent = 0,
   LeftSide    = 1,
@@ -13,12 +13,13 @@ pub enum ChannelAssignment {
   MiddleSide  = 3,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum NumberType {
   Frame(u32),
   Sample(u64),
 }
 
+#[derive(Debug, PartialEq, Eq)]
 pub struct Header {
   pub block_size: u32,
   pub sample_rate: u32,
@@ -28,4 +29,5 @@ pub struct Header {
   pub crc: u8,
 }
 
+#[derive(Debug, PartialEq, Eq)]
 pub struct Footer(pub u16);
