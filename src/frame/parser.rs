@@ -184,8 +184,8 @@ fn secondary_sample_rate(input: &[u8], sample_byte: u8)
   }
 }
 
-fn header<'a>(input: &'a [u8], stream_info: &StreamInfo)
-              -> IResult<'a, &'a [u8], Header> {
+pub fn header<'a>(input: &'a [u8], stream_info: &StreamInfo)
+                  -> IResult<'a, &'a [u8], Header> {
   let result = chain!(input,
     is_variable_block_size: blocking_strategy ~
     tuple0: block_sample ~
@@ -264,4 +264,4 @@ fn header<'a>(input: &'a [u8], stream_info: &StreamInfo)
   }
 }
 
-named!(footer <&[u8], Footer>, map!(be_u16, Footer));
+named!(pub footer <&[u8], Footer>, map!(be_u16, Footer));
