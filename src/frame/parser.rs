@@ -265,3 +265,18 @@ pub fn header<'a>(input: &'a [u8], stream_info: &StreamInfo)
 }
 
 named!(pub footer <&[u8], Footer>, map!(be_u16, Footer));
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use frame:Footer;
+  use nom::IResult;
+
+  #[test]
+  fn test_footer() {
+    let input  = b"\x03\xe8";
+    let result = IResult::Done(&[][..], Footer(0x03e8));
+
+    assert_eq!(footer(input), result);
+  }
+}
