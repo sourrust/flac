@@ -269,8 +269,28 @@ named!(pub footer <&[u8], Footer>, map!(be_u16, Footer));
 #[cfg(test)]
 mod tests {
   use super::*;
-  use frame:Footer;
+  use frame::{
+    Header, Footer,
+    ChannelAssignment, NumberType,
+  };
+  use metadata::StreamInfo;
   use nom::IResult;
+
+  #[test]
+  fn test_header() {
+    let input  = b"\xff\xf8\x53\x1c\xf0\x90\x80\x80\x2e";
+    let info   = StreamInfo::new();
+    let result = Header {
+      block_size: 4608,
+      sample_rate: 192000,
+      channel_assignment: ChannelAssignment::Independent,
+      bits_per_sample: 24,
+      number: NumberType::Frame(65536),
+      crc: 0x2e,
+    };
+
+    assert_eq!(header(input, &info), IResult::Done(&[][..], result));
+  }
 
   #[test]
   fn test_footer() {
