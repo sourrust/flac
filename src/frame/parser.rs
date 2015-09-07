@@ -47,7 +47,7 @@ fn blocking_strategy(input: &[u8]) -> IResult<&[u8], bool> {
   match take!(input, 2) {
     IResult::Done(i, bytes)   => {
       let sync_code = ((bytes[0] as u16) << 6) +
-                      (bytes[1] as u16) >> 2;
+                      ((bytes[1] as u16) >> 2);
       let is_valid  = ((bytes[1] >> 1) & 0b01) == 0;
 
       if sync_code == 0b11111111111110 && is_valid {
