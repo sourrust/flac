@@ -133,9 +133,9 @@ fn utf8_size(input: &[u8], is_u64: bool)
   })
 }
 
-fn sample_or_frame_number(input: &[u8], is_sample: bool,
-                          (size, value): (usize, u8))
-                          -> IResult<&[u8], NumberType> {
+fn number_type(input: &[u8], is_sample: bool,
+               (size, value): (usize, u8))
+               -> IResult<&[u8], NumberType> {
   let mut result   = value as u64;
   let mut is_error = false;
 
@@ -192,8 +192,7 @@ fn header<'a>(input: &'a [u8], stream_info: &StreamInfo)
     tuple1: channel_bits ~
     number_opt: apply!(utf8_size, is_variable_block_size) ~
     number_length: expr_opt!(number_opt) ~
-    number: apply!(sample_or_frame_number, is_variable_block_size,
-                   number_length) ~
+    number: apply!(number_type, is_variable_block_size, number_length) ~
     alt_block_size: apply!(secondary_block_size, tuple0.0) ~
     alt_sample_rate: apply!(secondary_sample_rate, tuple0.1) ~
     crc: be_u8,
