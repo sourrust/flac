@@ -377,13 +377,11 @@ mod tests {
   #[test]
   fn test_header() {
     let inputs = [b"\x80\0\0\x22", b"\x01\0\x04\0", b"\x84\0\0\xf8"];
+    let slice  = &[][..];
 
-    assert!(header(inputs[0]) == IResult::Done(&[], (true, 0, 34)),
-            "Header Test #1");
-    assert!(header(inputs[1]) == IResult::Done(&[], (false, 1, 1024)),
-            "Header Test #2");
-    assert!(header(inputs[2]) == IResult::Done(&[], (true, 4, 248)),
-            "Header Test #3");
+    assert_eq!(header(inputs[0]), IResult::Done(slice, (true, 0, 34)));
+    assert_eq!(header(inputs[1]), IResult::Done(slice, (false, 1, 1024)));
+    assert_eq!(header(inputs[2]), IResult::Done(slice, (true, 4, 248)));
   }
 
   #[test]
@@ -416,8 +414,8 @@ mod tests {
     let result_invalid = IResult::Error(Err::Position(
                            ErrorCode::Digit as u32, &inputs[1][..]));
 
-    assert!(padding(inputs[0], 10) == result_valid, "Valid Padding");
-    assert!(padding(inputs[1], 10) == result_invalid, "Invalid Padding");
+    assert_eq!(padding(inputs[0], 10), result_valid);
+    assert_eq!(padding(inputs[1], 10), result_invalid);
   }
 
   #[test]
@@ -434,10 +432,8 @@ mod tests {
       }))
     ];
 
-    assert!(application(inputs[0], 4) == results[0],
-            "Fake Application, No data");
-    assert!(application(inputs[1], 13) == results[1],
-            "Riff Application, With data");
+    assert_eq!(application(inputs[0], 4), results[0]);
+    assert_eq!(application(inputs[1], 13), results[1]);
   }
 
   #[test]
