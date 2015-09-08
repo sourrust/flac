@@ -278,18 +278,33 @@ mod tests {
 
   #[test]
   fn test_header() {
-    let input  = b"\xff\xf8\x53\x1c\xf0\x90\x80\x80\x2e";
-    let info   = StreamInfo::new();
-    let result = Header {
-      block_size: 4608,
-      sample_rate: 192000,
-      channel_assignment: ChannelAssignment::Independent,
-      bits_per_sample: 24,
-      number: NumberType::Frame(65536),
-      crc: 0x2e,
-    };
+    let inputs   = [ &b"\xff\xf8\x53\x1c\xf0\x90\x80\x80\x2e"[..]
+                   , &b"\xff\xf9\x7c\xa0\xfe\xbf\xbf\xbf\xbf\xbf\xbc\x01\xff\
+                        \x01\x88"[..]
+                   ];
+    let mut info = StreamInfo::new();
+    let results  = [ IResult::Done(&[][..], Header {
+                      block_size: 4608,
+                      sample_rate: 192000,
+                      channel_assignment: ChannelAssignment::Independent,
+                      bits_per_sample: 24,
+                      number: NumberType::Frame(65536),
+                      crc: 0x2e,
+                    })
+                  , IResult::Done(&[][..], Header {
+                      block_size: 512,
+                      sample_rate: 1000,
+                      channel_assignment: ChannelAssignment::MiddleSide,
+                      bits_per_sample: 16,
+                      number: NumberType::Sample(68719476732),
+                      crc: 0x88,
+                    })
+                  ];
 
-    assert_eq!(header(input, &info), IResult::Done(&[][..], result));
+    info.bits_per_sample = 16;
+
+    assert_eq!(header(inputs[0], &info), results[0]);
+    assert_eq!(header(inputs[1], &info), results[1]);
   }
 
   #[test]
