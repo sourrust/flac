@@ -281,6 +281,7 @@ mod tests {
     let inputs   = [ &b"\xff\xf8\x53\x1c\xf0\x90\x80\x80\x2e"[..]
                    , &b"\xff\xf9\x7c\xa0\xfe\xbf\xbf\xbf\xbf\xbf\xbc\x01\xff\
                         \x01\x88"[..]
+                   , &b"\xff\xf8\xc8\x72\x40\x19"[..]
                    ];
     let mut info = StreamInfo::new();
     let results  = [ IResult::Done(&[][..], Header {
@@ -299,12 +300,21 @@ mod tests {
                       number: NumberType::Sample(68719476732),
                       crc: 0x88,
                     })
+                  , IResult::Done(&[][..], Header {
+                      block_size: 4096,
+                      sample_rate: 32000,
+                      channel_assignment: ChannelAssignment::Independent,
+                      bits_per_sample: 8,
+                      number: NumberType::Frame(64),
+                      crc: 0x19,
+                    })
                   ];
 
     info.bits_per_sample = 16;
 
     assert_eq!(header(inputs[0], &info), results[0]);
     assert_eq!(header(inputs[1], &info), results[1]);
+    assert_eq!(header(inputs[2], &info), results[2]);
   }
 
   #[test]
