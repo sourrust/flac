@@ -3,7 +3,6 @@ use nom::{
   le_u32,
   IResult,
   ErrorCode, Err,
-  Needed,
 };
 
 use std::str::from_utf8;
