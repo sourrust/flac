@@ -9,4 +9,4 @@ readme      = "README.md"
 
 [dependencies]
 
-nom = "^0.3.0"
+nom = "^0.4.0"
