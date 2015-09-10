@@ -81,12 +81,17 @@ fn block_sample(input: &[u8]) -> IResult<&[u8], (u8, u8)> {
   }
 }
 
-fn channel_bits(input: &[u8]) -> IResult<&[u8], (ChannelAssignment, u8)> {
+fn channel_bits(input: &[u8]) -> IResult<&[u8], (ChannelAssignment, u8, u8)> {
   match be_u8(input) {
     IResult::Done(i, byte)    => {
+      let mut channels       = 2;
       let channel_byte       = byte >> 4;
       let channel_assignment = match channel_byte {
-        0b0000...0b0111 => ChannelAssignment::Independent,
+        0b0000...0b0111 => {
+          channels = channel_byte + 1;
+
+          ChannelAssignment::Independent
+        }
         0b1000          => ChannelAssignment::LeftSide,
         0b1001          => ChannelAssignment::RightSide,
         0b1010          => ChannelAssignment::MiddleSide,
@@ -107,7 +112,7 @@ fn channel_bits(input: &[u8]) -> IResult<&[u8], (ChannelAssignment, u8)> {
                      (byte & 0b01) == 0;
 
       if is_valid {
-        IResult::Done(i, (channel_assignment, size_byte))
+        IResult::Done(i, (channel_assignment, channels, size_byte))
       } else {
         IResult::Error(Err::Position(ErrorCode::Digit as u32, input))
       }
