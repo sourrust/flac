@@ -201,8 +201,8 @@ pub fn header<'a>(input: &'a [u8], stream_info: &StreamInfo)
     alt_sample_rate: apply!(secondary_sample_rate, tuple0.1) ~
     crc: be_u8,
     || {
-      let (block_byte, sample_byte)       = tuple0;
-      let (channel_assignment, size_byte) = tuple1;
+      let (block_byte, sample_byte)                 = tuple0;
+      let (channel_assignment, channels, size_byte) = tuple1;
 
       let block_size = match block_byte {
         0b0001          => 192,
@@ -244,6 +244,7 @@ pub fn header<'a>(input: &'a [u8], stream_info: &StreamInfo)
       Header {
         block_size: block_size,
         sample_rate: sample_rate,
+        channels: channels,
         channel_assignment: channel_assignment,
         bits_per_sample: bits_per_sample,
         number: number,
