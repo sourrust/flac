@@ -177,10 +177,9 @@ fn secondary_block_size(input: &[u8], block_byte: u8)
 fn secondary_sample_rate(input: &[u8], sample_byte: u8)
                         -> IResult<&[u8], Option<u32>> {
   match sample_byte {
-    0b1100 => opt!(input, map!(take!(1), to_u32)),
-    0b1101 => opt!(input, map!(take!(2), to_u32)),
-    0b1110 => opt!(input, map!(take!(2), to_u32)),
-    _      => IResult::Done(input, None)
+    0b1100          => opt!(input, map!(take!(1), to_u32)),
+    0b1101 | 0b1110 => opt!(input, map!(take!(2), to_u32)),
+    _               => IResult::Done(input, None)
   }
 }
 
