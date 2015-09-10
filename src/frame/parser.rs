@@ -292,6 +292,7 @@ mod tests {
     let results  = [ IResult::Done(&[][..], Header {
                       block_size: 4608,
                       sample_rate: 192000,
+                      channels: 2,
                       channel_assignment: ChannelAssignment::Independent,
                       bits_per_sample: 24,
                       number: NumberType::Frame(65536),
@@ -300,6 +301,7 @@ mod tests {
                   , IResult::Done(&[][..], Header {
                       block_size: 512,
                       sample_rate: 1000,
+                      channels: 2,
                       channel_assignment: ChannelAssignment::MiddleSide,
                       bits_per_sample: 16,
                       number: NumberType::Sample(68719476732),
@@ -308,6 +310,7 @@ mod tests {
                   , IResult::Done(&[][..], Header {
                       block_size: 4096,
                       sample_rate: 32000,
+                      channels: 8,
                       channel_assignment: ChannelAssignment::Independent,
                       bits_per_sample: 8,
                       number: NumberType::Frame(64),
