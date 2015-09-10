@@ -23,6 +23,7 @@ pub enum NumberType {
 pub struct Header {
   pub block_size: u32,
   pub sample_rate: u32,
+  pub channels: u8,
   pub channel_assignment: ChannelAssignment,
   pub bits_per_sample: usize,
   pub number: NumberType,

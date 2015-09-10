@@ -81,12 +81,17 @@ fn block_sample(input: &[u8]) -> IResult<&[u8], (u8, u8)> {
   }
 }
 
-fn channel_bits(input: &[u8]) -> IResult<&[u8], (ChannelAssignment, u8)> {
+fn channel_bits(input: &[u8]) -> IResult<&[u8], (ChannelAssignment, u8, u8)> {
   match be_u8(input) {
     IResult::Done(i, byte)    => {
+      let mut channels       = 2;
       let channel_byte       = byte >> 4;
       let channel_assignment = match channel_byte {
-        0b0000...0b0111 => ChannelAssignment::Independent,
+        0b0000...0b0111 => {
+          channels = channel_byte + 1;
+
+          ChannelAssignment::Independent
+        }
         0b1000          => ChannelAssignment::LeftSide,
         0b1001          => ChannelAssignment::RightSide,
         0b1010          => ChannelAssignment::MiddleSide,
@@ -107,7 +112,7 @@ fn channel_bits(input: &[u8]) -> IResult<&[u8], (ChannelAssignment, u8)> {
                      (byte & 0b01) == 0;
 
       if is_valid {
-        IResult::Done(i, (channel_assignment, size_byte))
+        IResult::Done(i, (channel_assignment, channels, size_byte))
       } else {
         IResult::Error(Err::Position(ErrorCode::Digit as u32, input))
       }
@@ -196,8 +201,8 @@ pub fn header<'a>(input: &'a [u8], stream_info: &StreamInfo)
     alt_sample_rate: apply!(secondary_sample_rate, tuple0.1) ~
     crc: be_u8,
     || {
-      let (block_byte, sample_byte)       = tuple0;
-      let (channel_assignment, size_byte) = tuple1;
+      let (block_byte, sample_byte)                 = tuple0;
+      let (channel_assignment, channels, size_byte) = tuple1;
 
       let block_size = match block_byte {
         0b0001          => 192,
@@ -239,6 +244,7 @@ pub fn header<'a>(input: &'a [u8], stream_info: &StreamInfo)
       Header {
         block_size: block_size,
         sample_rate: sample_rate,
+        channels: channels,
         channel_assignment: channel_assignment,
         bits_per_sample: bits_per_sample,
         number: number,
@@ -286,6 +292,7 @@ mod tests {
     let results  = [ IResult::Done(&[][..], Header {
                       block_size: 4608,
                       sample_rate: 192000,
+                      channels: 2,
                       channel_assignment: ChannelAssignment::Independent,
                       bits_per_sample: 24,
                       number: NumberType::Frame(65536),
@@ -294,6 +301,7 @@ mod tests {
                   , IResult::Done(&[][..], Header {
                       block_size: 512,
                       sample_rate: 1000,
+                      channels: 2,
                       channel_assignment: ChannelAssignment::MiddleSide,
                       bits_per_sample: 16,
                       number: NumberType::Sample(68719476732),
@@ -302,6 +310,7 @@ mod tests {
                   , IResult::Done(&[][..], Header {
                       block_size: 4096,
                       sample_rate: 32000,
+                      channels: 8,
                       channel_assignment: ChannelAssignment::Independent,
                       bits_per_sample: 8,
                       number: NumberType::Frame(64),
