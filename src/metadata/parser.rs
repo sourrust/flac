@@ -188,10 +188,7 @@ named!(cue_sheet_track <&[u8], CueSheetTrack>,
     // pre-emphasis.
     bytes: skip_bytes!(14, 2) ~
     num_indices: be_u8 ~
-    indices: cond!(
-      num_indices != 0,
-      count!(cue_sheet_track_index, num_indices as usize)
-    ),
+    indices: count!(cue_sheet_track_index, num_indices as usize),
     || {
       let is_audio        = (bytes[0] >> 7) == 0;
       let is_pre_emphasis = ((bytes[0] >> 6) & 0b01) == 1;
@@ -202,7 +199,7 @@ named!(cue_sheet_track <&[u8], CueSheetTrack>,
         isrc: isrc.to_owned(),
         is_audio: is_audio,
         is_pre_emphasis: is_pre_emphasis,
-        indices: indices.unwrap_or(vec![]),
+        indices: indices,
       }
     }
   )
