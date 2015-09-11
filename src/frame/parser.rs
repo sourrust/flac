@@ -43,7 +43,7 @@ pub fn frame_parser<'a>(input: &'a [u8], stream_info: &StreamInfo)
   }
 }
 
-fn blocking_strategy(input: &[u8]) -> IResult<&[u8], bool> {
+pub fn blocking_strategy(input: &[u8]) -> IResult<&[u8], bool> {
   match take!(input, 2) {
     IResult::Done(i, bytes)   => {
       let sync_code = ((bytes[0] as u16) << 6) +
