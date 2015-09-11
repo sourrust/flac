@@ -282,6 +282,15 @@ mod tests {
   use nom::IResult;
 
   #[test]
+  fn test_blocking_strategy() {
+    let inputs = [b"\xff\xf8", b"\xff\xf9"];
+    let slice  = &[][..];
+
+    assert_eq!(blocking_strategy(inputs[0]), IResult::Done(slice, false));
+    assert_eq!(blocking_strategy(inputs[1]), IResult::Done(slice, true));
+  }
+
+  #[test]
   fn test_header() {
     let inputs   = [ &b"\xff\xf8\x53\x1c\xf0\x90\x80\x80\x2e"[..]
                    , &b"\xff\xf9\x7c\xa0\xfe\xbf\xbf\xbf\xbf\xbf\xbc\x01\xff\
