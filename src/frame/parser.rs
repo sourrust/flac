@@ -279,15 +279,19 @@ mod tests {
     ChannelAssignment, NumberType,
   };
   use metadata::StreamInfo;
-  use nom::IResult;
+  use nom::{IResult, Err, ErrorCode};
 
   #[test]
   fn test_blocking_strategy() {
-    let inputs = [b"\xff\xf8", b"\xff\xf9"];
+    let inputs = [b"\xff\xf8", b"\xff\xf9", b"\xfe\xf8", b"\xff\xfa"];
     let slice  = &[][..];
+    let error  = |input|
+      IResult::Error(Err::Position(ErrorCode::Digit as u32, input));
 
     assert_eq!(blocking_strategy(inputs[0]), IResult::Done(slice, false));
     assert_eq!(blocking_strategy(inputs[1]), IResult::Done(slice, true));
+    assert_eq!(blocking_strategy(inputs[2]), error(inputs[2]));
+    assert_eq!(blocking_strategy(inputs[3]), error(inputs[3]));
   }
 
   #[test]
