@@ -63,7 +63,7 @@ pub fn blocking_strategy(input: &[u8]) -> IResult<&[u8], bool> {
   }
 }
 
-fn block_sample(input: &[u8]) -> IResult<&[u8], (u8, u8)> {
+pub fn block_sample(input: &[u8]) -> IResult<&[u8], (u8, u8)> {
   match be_u8(input) {
     IResult::Done(i, byte)    => {
       let block_byte  = byte >> 4;
