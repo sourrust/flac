@@ -309,6 +309,22 @@ mod tests {
   }
 
   #[test]
+  fn test_channel_bits() {
+    let inputs  = [b"\x58", b"\x80", b"\xac"];
+    let slice   = &[][..];
+    let results = [ IResult::Done(slice, (ChannelAssignment::Independent,
+                                          6, 4))
+                  , IResult::Done(slice, (ChannelAssignment::LeftSide, 2, 0))
+                  , IResult::Done(slice, (ChannelAssignment::MiddleSide,
+                                          2, 6))
+                  ];
+
+    assert_eq!(channel_bits(inputs[0]), results[0]);
+    assert_eq!(channel_bits(inputs[1]), results[1]);
+    assert_eq!(channel_bits(inputs[2]), results[2]);
+  }
+
+  #[test]
   fn test_header() {
     let inputs   = [ &b"\xff\xf8\x53\x1c\xf0\x90\x80\x80\x2e"[..]
                    , &b"\xff\xf9\x7c\xa0\xfe\xbf\xbf\xbf\xbf\xbf\xbc\x01\xff\
