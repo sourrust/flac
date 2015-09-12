@@ -81,7 +81,8 @@ pub fn block_sample(input: &[u8]) -> IResult<&[u8], (u8, u8)> {
   }
 }
 
-fn channel_bits(input: &[u8]) -> IResult<&[u8], (ChannelAssignment, u8, u8)> {
+pub fn channel_bits(input: &[u8])
+                    -> IResult<&[u8], (ChannelAssignment, u8, u8)> {
   match be_u8(input) {
     IResult::Done(i, byte)    => {
       let mut channels       = 2;
