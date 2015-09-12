@@ -296,11 +296,15 @@ mod tests {
 
   #[test]
   fn test_block_sample() {
-    let inputs = [b"\xf9", b"\x1a"];
+    let inputs = [b"\xf9", b"\x1a", b"\x0b", b"\x4f"];
     let slice  = &[][..];
+    let error  = |input|
+      IResult::Error(Err::Position(ErrorCode::Digit as u32, input));
 
     assert_eq!(block_sample(inputs[0]), IResult::Done(slice, (0x0f, 0x09)));
     assert_eq!(block_sample(inputs[1]), IResult::Done(slice, (0x01, 0x0a)));
+    assert_eq!(block_sample(inputs[2]), error(inputs[2]));
+    assert_eq!(block_sample(inputs[3]), error(inputs[3]));
   }
 
   #[test]
