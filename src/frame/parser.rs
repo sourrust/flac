@@ -295,6 +295,15 @@ mod tests {
   }
 
   #[test]
+  fn test_block_sample() {
+    let inputs = [b"\xf9", b"\x1a"];
+    let slice  = &[][..];
+
+    assert_eq!(block_sample(inputs[0]), IResult::Done(slice, (0x0f, 0x09)));
+    assert_eq!(block_sample(inputs[1]), IResult::Done(slice, (0x01, 0x0a)));
+  }
+
+  #[test]
   fn test_header() {
     let inputs   = [ &b"\xff\xf8\x53\x1c\xf0\x90\x80\x80\x2e"[..]
                    , &b"\xff\xf9\x7c\xa0\xfe\xbf\xbf\xbf\xbf\xbf\xbc\x01\xff\
