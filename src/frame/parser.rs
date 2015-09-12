@@ -310,8 +310,10 @@ mod tests {
 
   #[test]
   fn test_channel_bits() {
-    let inputs  = [b"\x58", b"\x80", b"\xac"];
+    let inputs  = [b"\x58", b"\x80", b"\xac", b"\xf2", b"\xae", b"\x91"];
     let slice   = &[][..];
+    let error   = |input|
+      IResult::Error(Err::Position(ErrorCode::Digit as u32, input));
     let results = [ IResult::Done(slice, (ChannelAssignment::Independent,
                                           6, 4))
                   , IResult::Done(slice, (ChannelAssignment::LeftSide, 2, 0))
@@ -322,6 +324,9 @@ mod tests {
     assert_eq!(channel_bits(inputs[0]), results[0]);
     assert_eq!(channel_bits(inputs[1]), results[1]);
     assert_eq!(channel_bits(inputs[2]), results[2]);
+    assert_eq!(channel_bits(inputs[3]), error(inputs[3]));
+    assert_eq!(channel_bits(inputs[4]), error(inputs[4]));
+    assert_eq!(channel_bits(inputs[5]), error(inputs[5]));
   }
 
   #[test]
