@@ -43,7 +43,7 @@ pub fn frame_parser<'a>(input: &'a [u8], stream_info: &StreamInfo)
   }
 }
 
-fn blocking_strategy(input: &[u8]) -> IResult<&[u8], bool> {
+pub fn blocking_strategy(input: &[u8]) -> IResult<&[u8], bool> {
   match take!(input, 2) {
     IResult::Done(i, bytes)   => {
       let sync_code = ((bytes[0] as u16) << 6) +
@@ -63,7 +63,7 @@ fn blocking_strategy(input: &[u8]) -> IResult<&[u8], bool> {
   }
 }
 
-fn block_sample(input: &[u8]) -> IResult<&[u8], (u8, u8)> {
+pub fn block_sample(input: &[u8]) -> IResult<&[u8], (u8, u8)> {
   match be_u8(input) {
     IResult::Done(i, byte)    => {
       let block_byte  = byte >> 4;
@@ -81,7 +81,8 @@ fn block_sample(input: &[u8]) -> IResult<&[u8], (u8, u8)> {
   }
 }
 
-fn channel_bits(input: &[u8]) -> IResult<&[u8], (ChannelAssignment, u8, u8)> {
+pub fn channel_bits(input: &[u8])
+                    -> IResult<&[u8], (ChannelAssignment, u8, u8)> {
   match be_u8(input) {
     IResult::Done(i, byte)    => {
       let mut channels       = 2;
@@ -279,7 +280,54 @@ mod tests {
     ChannelAssignment, NumberType,
   };
   use metadata::StreamInfo;
-  use nom::IResult;
+  use nom::{IResult, Err, ErrorCode};
+
+  #[test]
+  fn test_blocking_strategy() {
+    let inputs = [b"\xff\xf8", b"\xff\xf9", b"\xfe\xf8", b"\xff\xfa"];
+    let slice  = &[][..];
+    let error  = |input|
+      IResult::Error(Err::Position(ErrorCode::Digit as u32, input));
+
+    assert_eq!(blocking_strategy(inputs[0]), IResult::Done(slice, false));
+    assert_eq!(blocking_strategy(inputs[1]), IResult::Done(slice, true));
+    assert_eq!(blocking_strategy(inputs[2]), error(inputs[2]));
+    assert_eq!(blocking_strategy(inputs[3]), error(inputs[3]));
+  }
+
+  #[test]
+  fn test_block_sample() {
+    let inputs = [b"\xf9", b"\x1a", b"\x0b", b"\x4f"];
+    let slice  = &[][..];
+    let error  = |input|
+      IResult::Error(Err::Position(ErrorCode::Digit as u32, input));
+
+    assert_eq!(block_sample(inputs[0]), IResult::Done(slice, (0x0f, 0x09)));
+    assert_eq!(block_sample(inputs[1]), IResult::Done(slice, (0x01, 0x0a)));
+    assert_eq!(block_sample(inputs[2]), error(inputs[2]));
+    assert_eq!(block_sample(inputs[3]), error(inputs[3]));
+  }
+
+  #[test]
+  fn test_channel_bits() {
+    let inputs  = [b"\x58", b"\x80", b"\xac", b"\xf2", b"\xae", b"\x91"];
+    let slice   = &[][..];
+    let error   = |input|
+      IResult::Error(Err::Position(ErrorCode::Digit as u32, input));
+    let results = [ IResult::Done(slice, (ChannelAssignment::Independent,
+                                          6, 4))
+                  , IResult::Done(slice, (ChannelAssignment::LeftSide, 2, 0))
+                  , IResult::Done(slice, (ChannelAssignment::MiddleSide,
+                                          2, 6))
+                  ];
+
+    assert_eq!(channel_bits(inputs[0]), results[0]);
+    assert_eq!(channel_bits(inputs[1]), results[1]);
+    assert_eq!(channel_bits(inputs[2]), results[2]);
+    assert_eq!(channel_bits(inputs[3]), error(inputs[3]));
+    assert_eq!(channel_bits(inputs[4]), error(inputs[4]));
+    assert_eq!(channel_bits(inputs[5]), error(inputs[5]));
+  }
 
   #[test]
   fn test_header() {
