@@ -171,7 +171,7 @@ pub fn number_type(input: &[u8], is_sample: bool,
   }
 }
 
-fn secondary_block_size(input: &[u8], block_byte: u8)
+pub fn secondary_block_size(input: &[u8], block_byte: u8)
                         -> IResult<&[u8], Option<u32>> {
   match block_byte {
     0b0110 => opt!(input, map!(take!(1), to_u32)),
@@ -180,7 +180,7 @@ fn secondary_block_size(input: &[u8], block_byte: u8)
   }
 }
 
-fn secondary_sample_rate(input: &[u8], sample_byte: u8)
+pub fn secondary_sample_rate(input: &[u8], sample_byte: u8)
                         -> IResult<&[u8], Option<u32>> {
   match sample_byte {
     0b1100          => opt!(input, map!(take!(1), to_u32)),
@@ -366,6 +366,34 @@ mod tests {
     assert_eq!(number_type(inputs[1], true, (2, 0x0a)), results[1]);
     assert_eq!(number_type(inputs[2], false, (5, 0x00)), results[2]);
     assert_eq!(number_type(inputs[3], true, (6, 0x00)), results[3]);
+  }
+
+  #[test]
+  fn test_secondary_block_size() {
+    let inputs  = [&b"\x4b"[..], &b"\x01\0"[..]];
+    let slice   = &[][..];
+    let results = [ IResult::Done(slice, Some(75))
+                  , IResult::Done(slice, Some(256))
+                  , IResult::Done(slice, None)
+                  ];
+
+    assert_eq!(secondary_block_size(inputs[0], 0b0110), results[0]);
+    assert_eq!(secondary_block_size(inputs[1], 0b0111), results[1]);
+    assert_eq!(secondary_block_size(slice, 0b1111), results[2]);
+  }
+
+  #[test]
+  fn test_secondary_sample_rate() {
+    let inputs  = [&b"\x1a"[..], &b"\x10\x04"[..]];
+    let slice   = &[][..];
+    let results = [ IResult::Done(slice, Some(26))
+                  , IResult::Done(slice, Some(4100))
+                  , IResult::Done(slice, None)
+                  ];
+
+    assert_eq!(secondary_sample_rate(inputs[0], 0b1100), results[0]);
+    assert_eq!(secondary_sample_rate(inputs[1], 0b1110), results[1]);
+    assert_eq!(secondary_sample_rate(slice, 0b1111), results[2]);
   }
 
   #[test]
