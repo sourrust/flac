@@ -139,9 +139,9 @@ pub fn utf8_size(input: &[u8], is_u64: bool)
   })
 }
 
-fn number_type(input: &[u8], is_sample: bool,
-               (size, value): (usize, u8))
-               -> IResult<&[u8], NumberType> {
+pub fn number_type(input: &[u8], is_sample: bool,
+                   (size, value): (usize, u8))
+                   -> IResult<&[u8], NumberType> {
   let mut result   = value as u64;
   let mut is_error = false;
 
