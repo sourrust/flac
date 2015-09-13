@@ -123,8 +123,8 @@ pub fn channel_bits(input: &[u8])
   }
 }
 
-fn utf8_size(input: &[u8], is_u64: bool)
-             -> IResult<&[u8], Option<(usize, u8)>> {
+pub fn utf8_size(input: &[u8], is_u64: bool)
+                 -> IResult<&[u8], Option<(usize, u8)>> {
   map!(input, be_u8, |utf8_header| {
     match utf8_header {
       0b00000000...0b01111111 => Some((0, utf8_header)),
@@ -139,9 +139,9 @@ fn utf8_size(input: &[u8], is_u64: bool)
   })
 }
 
-fn number_type(input: &[u8], is_sample: bool,
-               (size, value): (usize, u8))
-               -> IResult<&[u8], NumberType> {
+pub fn number_type(input: &[u8], is_sample: bool,
+                   (size, value): (usize, u8))
+                   -> IResult<&[u8], NumberType> {
   let mut result   = value as u64;
   let mut is_error = false;
 
@@ -327,6 +327,45 @@ mod tests {
     assert_eq!(channel_bits(inputs[3]), error(inputs[3]));
     assert_eq!(channel_bits(inputs[4]), error(inputs[4]));
     assert_eq!(channel_bits(inputs[5]), error(inputs[5]));
+  }
+
+  #[test]
+  fn test_utf8_size() {
+    let inputs  = [b"\x74", b"\xfc", b"\xfe", b"\xfe", b"\xff", b"\xff"];
+    let slice   = &[][..];
+    let results = [ IResult::Done(slice, Some((0, 116)))
+                  , IResult::Done(slice, Some((5, 0)))
+                  , IResult::Done(slice, None)
+                  , IResult::Done(slice, Some((6, 0)))
+                  , IResult::Done(slice, None)
+                  , IResult::Done(slice, None)
+                  ];
+
+    assert_eq!(utf8_size(inputs[0], false), results[0]);
+    assert_eq!(utf8_size(inputs[1], true), results[1]);
+    assert_eq!(utf8_size(inputs[2], false), results[2]);
+    assert_eq!(utf8_size(inputs[3], true), results[3]);
+    assert_eq!(utf8_size(inputs[4], false), results[4]);
+    assert_eq!(utf8_size(inputs[5], true), results[5]);
+  }
+
+  #[test]
+  fn test_number_type() {
+    let inputs  = [ &b"\xa0"[..], &b"\xaa\xaa"[..]
+                  , &b"\x80\x80\x88\x80\x80"[..]
+                  , &b"\xbf\x80\xbf\x80\xbf\x80"[..]
+                  ];
+    let slice   = &[][..];
+    let results = [ IResult::Done(slice, NumberType::Frame(32))
+                  , IResult::Done(slice, NumberType::Sample(43690))
+                  , IResult::Done(slice, NumberType::Frame(32768))
+                  , IResult::Done(slice, NumberType::Sample(67662254016))
+                  ];
+
+    assert_eq!(number_type(inputs[0], false, (1, 0x00)), results[0]);
+    assert_eq!(number_type(inputs[1], true, (2, 0x0a)), results[1]);
+    assert_eq!(number_type(inputs[2], false, (5, 0x00)), results[2]);
+    assert_eq!(number_type(inputs[3], true, (6, 0x00)), results[3]);
   }
 
   #[test]
