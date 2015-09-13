@@ -350,6 +350,25 @@ mod tests {
   }
 
   #[test]
+  fn test_number_type() {
+    let inputs  = [ &b"\xa0"[..], &b"\xaa\xaa"[..]
+                  , &b"\x80\x80\x88\x80\x80"[..]
+                  , &b"\xbf\x80\xbf\x80\xbf\x80"[..]
+                  ];
+    let slice   = &[][..];
+    let results = [ IResult::Done(slice, NumberType::Frame(32))
+                  , IResult::Done(slice, NumberType::Sample(43690))
+                  , IResult::Done(slice, NumberType::Frame(32768))
+                  , IResult::Done(slice, NumberType::Sample(67662254016))
+                  ];
+
+    assert_eq!(number_type(inputs[0], false, (1, 0x00)), results[0]);
+    assert_eq!(number_type(inputs[1], true, (2, 0x0a)), results[1]);
+    assert_eq!(number_type(inputs[2], false, (5, 0x00)), results[2]);
+    assert_eq!(number_type(inputs[3], true, (6, 0x00)), results[3]);
+  }
+
+  #[test]
   fn test_header() {
     let inputs   = [ &b"\xff\xf8\x53\x1c\xf0\x90\x80\x80\x2e"[..]
                    , &b"\xff\xf9\x7c\xa0\xfe\xbf\xbf\xbf\xbf\xbf\xbc\x01\xff\
