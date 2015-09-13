@@ -369,6 +369,20 @@ mod tests {
   }
 
   #[test]
+  fn test_secondary_block_size() {
+    let inputs  = [&b"\x4b"[..], &b"\x01\0"[..]];
+    let slice   = &[][..];
+    let results = [ IResult::Done(slice, Some(75))
+                  , IResult::Done(slice, Some(256))
+                  , IResult::Done(slice, None)
+                  ];
+
+    assert_eq!(secondary_block_size(inputs[0], 0b0110), results[0]);
+    assert_eq!(secondary_block_size(inputs[1], 0b0111), results[1]);
+    assert_eq!(secondary_block_size(slice, 0b1111), results[2]);
+  }
+
+  #[test]
   fn test_header() {
     let inputs   = [ &b"\xff\xf8\x53\x1c\xf0\x90\x80\x80\x2e"[..]
                    , &b"\xff\xf9\x7c\xa0\xfe\xbf\xbf\xbf\xbf\xbf\xbc\x01\xff\
