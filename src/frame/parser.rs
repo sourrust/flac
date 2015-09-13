@@ -123,8 +123,8 @@ pub fn channel_bits(input: &[u8])
   }
 }
 
-fn utf8_size(input: &[u8], is_u64: bool)
-             -> IResult<&[u8], Option<(usize, u8)>> {
+pub fn utf8_size(input: &[u8], is_u64: bool)
+                 -> IResult<&[u8], Option<(usize, u8)>> {
   map!(input, be_u8, |utf8_header| {
     match utf8_header {
       0b00000000...0b01111111 => Some((0, utf8_header)),
