@@ -330,6 +330,26 @@ mod tests {
   }
 
   #[test]
+  fn test_utf8_size() {
+    let inputs  = [b"\x74", b"\xfc", b"\xfe", b"\xfe", b"\xff", b"\xff"];
+    let slice   = &[][..];
+    let results = [ IResult::Done(slice, Some((0, 116)))
+                  , IResult::Done(slice, Some((5, 0)))
+                  , IResult::Done(slice, None)
+                  , IResult::Done(slice, Some((6, 0)))
+                  , IResult::Done(slice, None)
+                  , IResult::Done(slice, None)
+                  ];
+
+    assert_eq!(utf8_size(inputs[0], false), results[0]);
+    assert_eq!(utf8_size(inputs[1], true), results[1]);
+    assert_eq!(utf8_size(inputs[2], false), results[2]);
+    assert_eq!(utf8_size(inputs[3], true), results[3]);
+    assert_eq!(utf8_size(inputs[4], false), results[4]);
+    assert_eq!(utf8_size(inputs[5], true), results[5]);
+  }
+
+  #[test]
   fn test_header() {
     let inputs   = [ &b"\xff\xf8\x53\x1c\xf0\x90\x80\x80\x2e"[..]
                    , &b"\xff\xf9\x7c\xa0\xfe\xbf\xbf\xbf\xbf\xbf\xbc\x01\xff\
