@@ -172,7 +172,7 @@ pub fn number_type(input: &[u8], is_sample: bool,
 }
 
 pub fn secondary_block_size(input: &[u8], block_byte: u8)
-                        -> IResult<&[u8], Option<u32>> {
+                            -> IResult<&[u8], Option<u32>> {
   match block_byte {
     0b0110 => opt!(input, map!(take!(1), to_u32)),
     0b0111 => opt!(input, map!(take!(2), to_u32)),
@@ -181,7 +181,7 @@ pub fn secondary_block_size(input: &[u8], block_byte: u8)
 }
 
 pub fn secondary_sample_rate(input: &[u8], sample_byte: u8)
-                        -> IResult<&[u8], Option<u32>> {
+                             -> IResult<&[u8], Option<u32>> {
   match sample_byte {
     0b1100          => opt!(input, map!(take!(1), to_u32)),
     0b1101 | 0b1110 => opt!(input, map!(take!(2), to_u32)),
