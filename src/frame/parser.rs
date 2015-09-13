@@ -383,6 +383,20 @@ mod tests {
   }
 
   #[test]
+  fn test_secondary_sample_rate() {
+    let inputs  = [&b"\x1a"[..], &b"\x10\x04"[..]];
+    let slice   = &[][..];
+    let results = [ IResult::Done(slice, Some(26))
+                  , IResult::Done(slice, Some(4100))
+                  , IResult::Done(slice, None)
+                  ];
+
+    assert_eq!(secondary_sample_rate(inputs[0], 0b1100), results[0]);
+    assert_eq!(secondary_sample_rate(inputs[1], 0b1110), results[1]);
+    assert_eq!(secondary_sample_rate(slice, 0b1111), results[2]);
+  }
+
+  #[test]
   fn test_header() {
     let inputs   = [ &b"\xff\xf8\x53\x1c\xf0\x90\x80\x80\x2e"[..]
                    , &b"\xff\xf9\x7c\xa0\xfe\xbf\xbf\xbf\xbf\xbf\xbc\x01\xff\
