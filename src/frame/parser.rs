@@ -48,9 +48,10 @@ pub fn blocking_strategy(input: &[u8]) -> IResult<&[u8], bool> {
     IResult::Done(i, bytes)   => {
       let sync_code = ((bytes[0] as u16) << 6) +
                       ((bytes[1] as u16) >> 2);
-      let is_valid  = ((bytes[1] >> 1) & 0b01) == 0;
+      let is_valid  = sync_code == 0b11111111111110 &&
+                      ((bytes[1] >> 1) & 0b01) == 0;
 
-      if sync_code == 0b11111111111110 && is_valid {
+      if is_valid {
         let is_variable_block_size = (bytes[1] & 0b01) == 1;
 
         IResult::Done(i, is_variable_block_size)
