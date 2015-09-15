@@ -60,6 +60,33 @@ const CRC_8_TABLE: [u8; 256] = [
   0xe6, 0xe1, 0xe8, 0xef, 0xfa, 0xfd, 0xf4, 0xf3
 ];
 
+// Pre-generated crc-16 table.
+//
+// Using the polynomial, x^16 + x^15 + x^2 + x^0 (0b1_10000000_00000101) and
+// the initial value of zero, each array entry is evaluated.
+//
+// Algorithm for generating this table:
+//
+// ```
+// // The polynomial get shrunk down to a u16 even with it being a 17 bit
+// // value.
+// let polynomial       = 0x8005
+// let mut crc_16_table = [0; 256]
+//
+// for i in 0..256 {
+//   let mut crc = i as u16;
+//
+//   for _ in 0..16 {
+//     crc = if (crc & 0x8000) != 0 {
+//       (crc << 1) ^ polynomial
+//     } else {
+//       crc << 1
+//     }
+//   }
+//
+//   crc_8_table[i] = crc;
+// }
+// ```
 const CRC_16_TABLE: [u16; 256] = [
   0x0000, 0x8005, 0x800f, 0x000a, 0x801b, 0x001e, 0x0014, 0x8011,
   0x8033, 0x0036, 0x003c, 0x8039, 0x0028, 0x802d, 0x8027, 0x0022,
