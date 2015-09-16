@@ -91,6 +91,11 @@ pub fn block_sample(input: &[u8]) -> IResult<&[u8], (u8, u8)> {
   }
 }
 
+// Parses the fourth byte of a frame header. There are three values that
+// need validation within the byte. First is the channel assignment bits
+// which can't be more than 0b1010. Second is the sample size bits that have
+// two values it can not equal, 0b011 and 0b111. Last is the final bit must
+// be a zero.
 pub fn channel_bits(input: &[u8])
                     -> IResult<&[u8], (ChannelAssignment, u8, u8)> {
   match be_u8(input) {
