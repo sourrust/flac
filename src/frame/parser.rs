@@ -129,6 +129,10 @@ pub fn channel_bits(input: &[u8])
   }
 }
 
+// Similar to the way UTF-8 strings are parsed, only extends to UCS-2 when
+// it is a larger sized header. When we hit the branch that check for the
+// boolean `is_u64` is when the UCS-2 extension happens and all other
+// branches are valid UTF-8 headers.
 pub fn utf8_size(input: &[u8], is_u64: bool)
                  -> IResult<&[u8], Option<(usize, u8)>> {
   map!(input, be_u8, |utf8_header| {
