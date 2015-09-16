@@ -13,6 +13,7 @@ use frame::{
 use metadata::StreamInfo;
 use utility::{crc8, crc16, to_u32};
 
+/// Parses an audio frame
 pub fn frame_parser<'a>(input: &'a [u8], stream_info: &StreamInfo)
                         -> IResult<'a, &'a [u8], Frame> {
   let result = chain!(input,
@@ -43,6 +44,10 @@ pub fn frame_parser<'a>(input: &'a [u8], stream_info: &StreamInfo)
   }
 }
 
+// Parses the first two bytes of a frame header. There are two things that
+// need to be valid inside these two bytes, the 14 bit sync code and the
+// following bit must be zero. The last bit is whether or not the block size
+// is fixed or varied.
 pub fn blocking_strategy(input: &[u8]) -> IResult<&[u8], bool> {
   match take!(input, 2) {
     IResult::Done(i, bytes)   => {
@@ -64,6 +69,10 @@ pub fn blocking_strategy(input: &[u8]) -> IResult<&[u8], bool> {
   }
 }
 
+// Parses the third byte of a frame header. There are two four bit values
+// that can't be a certain value. For block size bits, it can't be zero
+// because that value is reserved. And sample rate bits can't be 0b1111 to
+// prevent sync code fooling.
 pub fn block_sample(input: &[u8]) -> IResult<&[u8], (u8, u8)> {
   match be_u8(input) {
     IResult::Done(i, byte)    => {
@@ -82,6 +91,11 @@ pub fn block_sample(input: &[u8]) -> IResult<&[u8], (u8, u8)> {
   }
 }
 
+// Parses the fourth byte of a frame header. There are three values that
+// need validation within the byte. First is the channel assignment bits
+// which can't be more than 0b1010. Second is the sample size bits that have
+// two values it can not equal, 0b011 and 0b111. Last is the final bit must
+// be a zero.
 pub fn channel_bits(input: &[u8])
                     -> IResult<&[u8], (ChannelAssignment, u8, u8)> {
   match be_u8(input) {
@@ -100,18 +114,9 @@ pub fn channel_bits(input: &[u8])
         _               => ChannelAssignment::Independent,
       };
       let size_byte = (byte >> 1) & 0b0111;
-
-      // Checks the validity of:
-      //
-      // * (4 bits) channel assignment
-      // * (3 bits) sample size
-      // * (1 bit) last bit
-      //
-      // All these checks are whether of not they are reserved and should
-      // return an error if so.
-      let is_valid = channel_byte < 0b1011 &&
-                     (size_byte != 0b0011 && size_byte != 0b0111) &&
-                     (byte & 0b01) == 0;
+      let is_valid  = channel_byte < 0b1011 &&
+                      (size_byte != 0b0011 && size_byte != 0b0111) &&
+                      (byte & 0b01) == 0;
 
       if is_valid {
         IResult::Done(i, (channel_assignment, channels, size_byte))
@@ -124,6 +129,10 @@ pub fn channel_bits(input: &[u8])
   }
 }
 
+// Similar to the way UTF-8 strings are parsed, only extends to UCS-2 when
+// it is a larger sized header. When we hit the branch that check for the
+// boolean `is_u64` is when the UCS-2 extension happens and all other
+// branches are valid UTF-8 headers.
 pub fn utf8_size(input: &[u8], is_u64: bool)
                  -> IResult<&[u8], Option<(usize, u8)>> {
   map!(input, be_u8, |utf8_header| {
@@ -140,6 +149,8 @@ pub fn utf8_size(input: &[u8], is_u64: bool)
   })
 }
 
+// Calculates the value of UTF-8 the next bytes after it's header. The
+// header holds both the size and part of this parsers returning value.
 pub fn number_type(input: &[u8], is_sample: bool,
                    (size, value): (usize, u8))
                    -> IResult<&[u8], NumberType> {
