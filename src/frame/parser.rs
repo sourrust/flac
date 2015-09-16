@@ -114,18 +114,9 @@ pub fn channel_bits(input: &[u8])
         _               => ChannelAssignment::Independent,
       };
       let size_byte = (byte >> 1) & 0b0111;
-
-      // Checks the validity of:
-      //
-      // * (4 bits) channel assignment
-      // * (3 bits) sample size
-      // * (1 bit) last bit
-      //
-      // All these checks are whether of not they are reserved and should
-      // return an error if so.
-      let is_valid = channel_byte < 0b1011 &&
-                     (size_byte != 0b0011 && size_byte != 0b0111) &&
-                     (byte & 0b01) == 0;
+      let is_valid  = channel_byte < 0b1011 &&
+                      (size_byte != 0b0011 && size_byte != 0b0111) &&
+                      (byte & 0b01) == 0;
 
       if is_valid {
         IResult::Done(i, (channel_assignment, channels, size_byte))
