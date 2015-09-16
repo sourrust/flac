@@ -69,6 +69,10 @@ pub fn blocking_strategy(input: &[u8]) -> IResult<&[u8], bool> {
   }
 }
 
+// Parses the third byte of a frame header. There are two four bit values
+// that can't be a certain value. For block size bits, it can't be zero
+// because that value is reserved. And sample rate bits can't be 0b1111 to
+// prevent sync code fooling.
 pub fn block_sample(input: &[u8]) -> IResult<&[u8], (u8, u8)> {
   match be_u8(input) {
     IResult::Done(i, byte)    => {
