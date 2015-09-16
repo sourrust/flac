@@ -149,6 +149,8 @@ pub fn utf8_size(input: &[u8], is_u64: bool)
   })
 }
 
+// Calculates the value of UTF-8 the next bytes after it's header. The
+// header holds both the size and part of this parsers returning value.
 pub fn number_type(input: &[u8], is_sample: bool,
                    (size, value): (usize, u8))
                    -> IResult<&[u8], NumberType> {
