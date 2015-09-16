@@ -44,6 +44,10 @@ pub fn frame_parser<'a>(input: &'a [u8], stream_info: &StreamInfo)
   }
 }
 
+// Parses the first two bytes of a frame header. There are two things that
+// need to be valid inside these two bytes, the 14 bit sync code and the
+// following bit must be zero. The last bit is whether or not the block size
+// is fixed or varied.
 pub fn blocking_strategy(input: &[u8]) -> IResult<&[u8], bool> {
   match take!(input, 2) {
     IResult::Done(i, bytes)   => {
