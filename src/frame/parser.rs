@@ -133,8 +133,8 @@ pub fn channel_bits(input: &[u8])
 // it is a larger sized header. When we hit the branch that check for the
 // boolean `is_u64` is when the UCS-2 extension happens and all other
 // branches are valid UTF-8 headers.
-pub fn utf8_size(input: &[u8], is_u64: bool)
-                 -> IResult<&[u8], Option<(usize, u8)>> {
+pub fn utf8_header(input: &[u8], is_u64: bool)
+                   -> IResult<&[u8], Option<(usize, u8)>> {
   map!(input, be_u8, |utf8_header| {
     match utf8_header {
       0b00000000...0b01111111 => Some((0, utf8_header)),
