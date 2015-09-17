@@ -342,7 +342,7 @@ mod tests {
   }
 
   #[test]
-  fn test_utf8_size() {
+  fn test_utf8_header() {
     let inputs  = [b"\x74", b"\xfc", b"\xfe", b"\xfe", b"\xff", b"\xff"];
     let slice   = &[][..];
     let results = [ IResult::Done(slice, Some((0, 116)))
@@ -353,12 +353,12 @@ mod tests {
                   , IResult::Done(slice, None)
                   ];
 
-    assert_eq!(utf8_size(inputs[0], false), results[0]);
-    assert_eq!(utf8_size(inputs[1], true), results[1]);
-    assert_eq!(utf8_size(inputs[2], false), results[2]);
-    assert_eq!(utf8_size(inputs[3], true), results[3]);
-    assert_eq!(utf8_size(inputs[4], false), results[4]);
-    assert_eq!(utf8_size(inputs[5], true), results[5]);
+    assert_eq!(utf8_header(inputs[0], false), results[0]);
+    assert_eq!(utf8_header(inputs[1], true), results[1]);
+    assert_eq!(utf8_header(inputs[2], false), results[2]);
+    assert_eq!(utf8_header(inputs[3], true), results[3]);
+    assert_eq!(utf8_header(inputs[4], false), results[4]);
+    assert_eq!(utf8_header(inputs[5], true), results[5]);
   }
 
   #[test]
