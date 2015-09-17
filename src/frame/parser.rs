@@ -417,32 +417,32 @@ mod tests {
                    ];
     let mut info = StreamInfo::new();
     let results  = [ IResult::Done(&[][..], Header {
-                      block_size: 4608,
-                      sample_rate: 192000,
-                      channels: 2,
-                      channel_assignment: ChannelAssignment::Independent,
-                      bits_per_sample: 24,
-                      number: NumberType::Frame(65536),
-                      crc: 0x2e,
-                    })
-                  , IResult::Done(&[][..], Header {
-                      block_size: 512,
-                      sample_rate: 1000,
-                      channels: 2,
-                      channel_assignment: ChannelAssignment::MiddleSide,
-                      bits_per_sample: 16,
-                      number: NumberType::Sample(68719476732),
-                      crc: 0x88,
-                    })
-                  , IResult::Done(&[][..], Header {
-                      block_size: 4096,
-                      sample_rate: 32000,
-                      channels: 8,
-                      channel_assignment: ChannelAssignment::Independent,
-                      bits_per_sample: 8,
-                      number: NumberType::Frame(64),
-                      crc: 0x19,
-                    })
+                       block_size: 4608,
+                       sample_rate: 192000,
+                       channels: 2,
+                       channel_assignment: ChannelAssignment::Independent,
+                       bits_per_sample: 24,
+                       number: NumberType::Frame(65536),
+                       crc: 0x2e,
+                     })
+                   , IResult::Done(&[][..], Header {
+                       block_size: 512,
+                       sample_rate: 1000,
+                       channels: 2,
+                       channel_assignment: ChannelAssignment::MiddleSide,
+                       bits_per_sample: 16,
+                       number: NumberType::Sample(68719476732),
+                       crc: 0x88,
+                     })
+                   , IResult::Done(&[][..], Header {
+                       block_size: 4096,
+                       sample_rate: 32000,
+                       channels: 8,
+                       channel_assignment: ChannelAssignment::Independent,
+                       bits_per_sample: 8,
+                       number: NumberType::Frame(64),
+                       crc: 0x19,
+                     })
                   ];
 
     info.bits_per_sample = 16;
