@@ -133,16 +133,16 @@ pub fn channel_bits(input: &[u8])
 // it is a larger sized header. When we hit the branch that check for the
 // boolean `is_u64` is when the UCS-2 extension happens and all other
 // branches are valid UTF-8 headers.
-pub fn utf8_size(input: &[u8], is_u64: bool)
-                 -> IResult<&[u8], Option<(usize, u8)>> {
-  map!(input, be_u8, |utf8_header| {
-    match utf8_header {
-      0b00000000...0b01111111 => Some((0, utf8_header)),
-      0b11000000...0b11011111 => Some((1, utf8_header & 0b00011111)),
-      0b11100000...0b11101111 => Some((2, utf8_header & 0b00001111)),
-      0b11110000...0b11110111 => Some((3, utf8_header & 0b00000111)),
-      0b11111000...0b11111011 => Some((4, utf8_header & 0b00000011)),
-      0b11111100...0b11111101 => Some((5, utf8_header & 0b00000001)),
+pub fn utf8_header(input: &[u8], is_u64: bool)
+                   -> IResult<&[u8], Option<(usize, u8)>> {
+  map!(input, be_u8, |byte| {
+    match byte {
+      0b00000000...0b01111111 => Some((0, byte)),
+      0b11000000...0b11011111 => Some((1, byte & 0b00011111)),
+      0b11100000...0b11101111 => Some((2, byte & 0b00001111)),
+      0b11110000...0b11110111 => Some((3, byte & 0b00000111)),
+      0b11111000...0b11111011 => Some((4, byte & 0b00000011)),
+      0b11111100...0b11111101 => Some((5, byte & 0b00000001)),
       0b11111110              => if is_u64 { Some((6, 0)) } else { None },
       _                       => None,
     }
@@ -207,9 +207,9 @@ pub fn header<'a>(input: &'a [u8], stream_info: &StreamInfo)
     is_variable_block_size: blocking_strategy ~
     tuple0: block_sample ~
     tuple1: channel_bits ~
-    number_opt: apply!(utf8_size, is_variable_block_size) ~
-    number_length: expr_opt!(number_opt) ~
-    number: apply!(number_type, is_variable_block_size, number_length) ~
+    utf8_header_opt: apply!(utf8_header, is_variable_block_size) ~
+    utf8_header_val: expr_opt!(utf8_header_opt) ~
+    number: apply!(number_type, is_variable_block_size, utf8_header_val) ~
     alt_block_size: apply!(secondary_block_size, tuple0.0) ~
     alt_sample_rate: apply!(secondary_sample_rate, tuple0.1) ~
     crc: be_u8,
@@ -342,7 +342,7 @@ mod tests {
   }
 
   #[test]
-  fn test_utf8_size() {
+  fn test_utf8_header() {
     let inputs  = [b"\x74", b"\xfc", b"\xfe", b"\xfe", b"\xff", b"\xff"];
     let slice   = &[][..];
     let results = [ IResult::Done(slice, Some((0, 116)))
@@ -353,12 +353,12 @@ mod tests {
                   , IResult::Done(slice, None)
                   ];
 
-    assert_eq!(utf8_size(inputs[0], false), results[0]);
-    assert_eq!(utf8_size(inputs[1], true), results[1]);
-    assert_eq!(utf8_size(inputs[2], false), results[2]);
-    assert_eq!(utf8_size(inputs[3], true), results[3]);
-    assert_eq!(utf8_size(inputs[4], false), results[4]);
-    assert_eq!(utf8_size(inputs[5], true), results[5]);
+    assert_eq!(utf8_header(inputs[0], false), results[0]);
+    assert_eq!(utf8_header(inputs[1], true), results[1]);
+    assert_eq!(utf8_header(inputs[2], false), results[2]);
+    assert_eq!(utf8_header(inputs[3], true), results[3]);
+    assert_eq!(utf8_header(inputs[4], false), results[4]);
+    assert_eq!(utf8_header(inputs[5], true), results[5]);
   }
 
   #[test]
