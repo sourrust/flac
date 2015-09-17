@@ -207,9 +207,9 @@ pub fn header<'a>(input: &'a [u8], stream_info: &StreamInfo)
     is_variable_block_size: blocking_strategy ~
     tuple0: block_sample ~
     tuple1: channel_bits ~
-    number_opt: apply!(utf8_size, is_variable_block_size) ~
-    number_length: expr_opt!(number_opt) ~
-    number: apply!(number_type, is_variable_block_size, number_length) ~
+    utf8_header_opt: apply!(utf8_header, is_variable_block_size) ~
+    utf8_header_val: expr_opt!(utf8_header_opt) ~
+    number: apply!(number_type, is_variable_block_size, utf8_header_val) ~
     alt_block_size: apply!(secondary_block_size, tuple0.0) ~
     alt_sample_rate: apply!(secondary_sample_rate, tuple0.1) ~
     crc: be_u8,
