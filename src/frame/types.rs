@@ -1,3 +1,4 @@
+/// Maximum number of channels supported in the FLAC format.
 pub const MAX_CHANNELS: usize = 8;
 
 pub struct Frame {
