@@ -7,6 +7,7 @@ pub struct Frame {
   pub footer: Footer,
 }
 
+/// Channel assignment order.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ChannelAssignment {
   Independent = 0,
