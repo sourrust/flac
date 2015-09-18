@@ -1,6 +1,7 @@
 /// Maximum number of channels supported in the FLAC format.
 pub const MAX_CHANNELS: usize = 8;
 
+/// Audio frame that contains one sample for each channel.
 pub struct Frame {
   pub header: Header,
   pub footer: Footer,
@@ -20,6 +21,7 @@ pub enum NumberType {
   Sample(u64),
 }
 
+/// Information regarding the current audio frame.
 #[derive(Debug, PartialEq, Eq)]
 pub struct Header {
   pub block_size: u32,
@@ -31,5 +33,9 @@ pub struct Header {
   pub crc: u8,
 }
 
+/// End of the audio frame.
+///
+/// Contains a CRC-16 value that represents the CRC-16 of everything inside
+/// the frame before the footer.
 #[derive(Debug, PartialEq, Eq)]
 pub struct Footer(pub u16);
