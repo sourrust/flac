@@ -43,13 +43,14 @@ macro_rules! skip_bytes (
 /// The first metadata block should always be `StreamInfo` since that is the
 /// only required `Block`. At the moment `metadata_parser` parser doesn't
 /// check that requirement.
-named!(pub metadata_parser <&[u8], (StreamInfo, Vec<Block>)>,
-  chain!(
+pub fn metadata_parser(input: &[u8])
+                       -> IResult<&[u8], (StreamInfo, Vec<Block>)> {
+  chain!(input,
     tag!("fLaC") ~
     blocks: many_blocks,
     || { blocks }
   )
-);
+}
 
 named!(pub stream_info <&[u8], BlockData>,
   chain!(
