@@ -36,7 +36,7 @@ pub struct Header {
 
 /// End of the audio frame.
 ///
-/// Contains a CRC-16 value that represents the CRC-16 of everything inside
-/// the frame before the footer.
+/// Contains a value that represents the CRC-16 of everything inside the
+/// frame before the footer.
 #[derive(Debug, PartialEq, Eq)]
 pub struct Footer(pub u16);
