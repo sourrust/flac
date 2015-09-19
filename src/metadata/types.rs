@@ -36,7 +36,7 @@ pub enum BlockData {
   Unknown(Vec<u8>),
 }
 
-/// Information regarding the entire audio stream
+/// Information regarding the entire audio stream.
 #[derive(Debug, PartialEq, Eq)]
 pub struct StreamInfo {
   /// Minimum block size, in samples, used in the stream.
