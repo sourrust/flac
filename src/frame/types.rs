@@ -34,12 +34,17 @@ pub enum NumberType {
 /// Information regarding the current audio frame.
 #[derive(Debug, PartialEq, Eq)]
 pub struct Header {
+  /// Number of samples per subframe.
   pub block_size: u32,
+  /// Sample rate in hertz (Hz).
   pub sample_rate: u32,
+  /// Number of channels that also represent the number of subframes.
   pub channels: u8,
   pub channel_assignment: ChannelAssignment,
+  /// Size, in bits, per sample.
   pub bits_per_sample: usize,
   pub number: NumberType,
+  /// CRC-8 of all header bytes before this crc.
   pub crc: u8,
 }
 
