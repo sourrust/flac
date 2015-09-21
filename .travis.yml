@@ -5,4 +5,16 @@ rust:
 os:
   - linux
   - osx
+before_script:
+  - |
+      pip install 'travis-cargo<0.2' --user &&
+      export PATH=$HOME/.local/bin:$PATH
+# Only build and upload documentation once. The current configure for
+# `travis-cargo` is with stable rust, of a non-pull requests, on the master
+# branch. So I need to check for one OS name to avoid repetition.
+after_success:
+  - |
+      [ $TRAVIS_OS_NAME == "linux" ] &&
+      travis-cargo --only stable doc &&
+      travis-cargo --only stable doc-upload
 sudo: false
