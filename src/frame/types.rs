@@ -22,9 +22,12 @@ pub enum ChannelAssignment {
   MiddleSide,
 }
 
+/// Numbering scheme used from the frame.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum NumberType {
+  /// Frame number of first sample in frame.
   Frame(u32),
+  /// Sample number of first sample in frame.
   Sample(u64),
 }
 
