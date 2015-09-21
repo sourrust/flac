@@ -5,6 +5,8 @@
 An implementation of [FLAC][flac], free lossless audio codec, written in
 Rust.
 
+[Documentation][documentation]
+
 ## Implementation Status
 
 The status of this FLAC implementation:
@@ -34,3 +36,4 @@ The status of this FLAC implementation:
 - [ ] encoder
 
 [flac]: https://xiph.org/flac
+[documentation]: https://sourrust.github.io/flac
