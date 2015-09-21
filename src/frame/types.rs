@@ -10,10 +10,10 @@ pub struct Frame {
 /// Channel assignment order.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ChannelAssignment {
-  Independent = 0,
-  LeftSide    = 1,
-  RightSide   = 2,
-  MiddleSide  = 3,
+  Independent,
+  LeftSide,
+  RightSide,
+  MiddleSide,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
