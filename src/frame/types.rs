@@ -12,10 +12,14 @@ pub struct Frame {
 /// Channel assignment order.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ChannelAssignment {
-  Independent = 0,
-  LeftSide    = 1,
-  RightSide   = 2,
-  MiddleSide  = 3,
+  /// Independent channels, from one up to eight.
+  Independent,
+  /// Left and side stereo.
+  LeftSide,
+  /// Right and side stereo.
+  RightSide,
+  /// Middle and side stereo.
+  MiddleSide,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
