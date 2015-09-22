@@ -6,7 +6,6 @@ pub use self::types::{
   Block, BlockData,
   StreamInfo, Application, VorbisComment, CueSheet, Picture,
   SeekPoint, CueSheetTrack, CueSheetTrackIndex, PictureType,
-  MetaDataConsumer,
 };
 
 pub use self::parser::metadata_parser;
