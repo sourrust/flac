@@ -6,8 +6,8 @@ use metadata::{
   Block, BlockData,
   StreamInfo, CueSheet, VorbisComment, Picture,
   PictureType,
-  MetaDataConsumer,
 };
+use metadata::types::MetaDataConsumer;
 
 // Will return true when the unwrapped value of `$option` and `$compare`
 // match or `$option` is `Option::None`, otherwise false.
