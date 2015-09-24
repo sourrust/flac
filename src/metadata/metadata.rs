@@ -52,6 +52,29 @@ pub fn get_metadata(filename: &str) -> Result<Vec<Block>> {
 ///   or there is no `StreamInfo` within the file.
 /// * `ErrorKind::InvalidData` is returned when the data within the file
 ///   isn't valid FLAC data.
+///
+/// # Examples
+///
+/// Handling errors might look something like this:
+///
+/// ```
+/// use flac::metadata;
+///
+/// match metadata::get_stream_info("path/to/file.flac") {
+///   Ok(stream_info) => {
+///     // Use the stream_info variable...
+///   }
+///   Err(error)      => println!("{}", error),
+/// }
+/// ```
+///
+/// Or just ignore the errors:
+///
+/// ```no_run
+/// use flac::metadata;
+///
+/// let stream_info = metadata::get_stream_info("path/to/file.flac").unwrap();
+/// ```
 pub fn get_stream_info(filename: &str) -> Result<StreamInfo> {
   get_metadata(filename).and_then(|blocks| {
     let error_str  = "metadata: couldn't find StreamInfo";
