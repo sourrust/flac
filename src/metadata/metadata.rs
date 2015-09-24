@@ -100,6 +100,30 @@ pub fn get_stream_info(filename: &str) -> Result<StreamInfo> {
 ///   or there is no `VorbisComment` within the file.
 /// * `ErrorKind::InvalidData` is returned when the data within the file
 ///   isn't valid FLAC data.
+///
+/// # Examples
+///
+/// Handling errors might look something like this:
+///
+/// ```
+/// use flac::metadata;
+///
+/// match metadata::get_vorbis_comment("path/to/file.flac") {
+///   Ok(vorbis_comment) => {
+///     // Use the vorbis_comment variable...
+///   }
+///   Err(error)         => println!("{}", error),
+/// }
+/// ```
+///
+/// Or just ignore the errors:
+///
+/// ```no_run
+/// use flac::metadata;
+///
+/// let vorbis_comment =
+///   metadata::get_vorbis_comment("path/to/file.flac").unwrap();
+/// ```
 pub fn get_vorbis_comment(filename: &str) -> Result<VorbisComment> {
   get_metadata(filename).and_then(|blocks| {
     let error_str  = "metadata: couldn't find VorbisComment";
