@@ -265,9 +265,9 @@ pub fn get_picture(filename: &str,
       if let BlockData::Picture(picture) = block.data {
         let area = (picture.width as u64) * (picture.height as u64);
 
-        if optional_eq!(picture.picture_type, picture_type) &&
-           optional_eq!(picture.mime_type, mime_type) &&
-           optional_eq!(picture.description, description) &&
+        if optional_eq(picture_type, picture.picture_type) &&
+           optional_eq(mime_type, &picture.mime_type) &&
+           optional_eq(description, &picture.description) &&
            picture.width <= max_width_num &&
            picture.height <= max_height_num &&
            picture.depth <= max_depth_num &&
