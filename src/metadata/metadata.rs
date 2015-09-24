@@ -293,13 +293,13 @@ mod tests {
   #[test]
   #[should_panic]
   fn test_panic_optional_eq() {
-    assert!(optional_eq!(0, Some(1)));
+    assert!(optional_eq(Some(1), 0));
   }
 
   #[test]
   fn test_optional_eq() {
-    assert!(optional_eq!(0, None), "Should always return true when None");
-    assert!(optional_eq!(0, Some(0)), "Should return true (Some(0) == 0)");
+    assert!(optional_eq(None, 0), "Should always return true when None");
+    assert!(optional_eq(Some(0), 0), "Should return true (Some(0) == 0)");
   }
 
   #[test]
