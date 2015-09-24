@@ -205,6 +205,41 @@ pub fn get_cue_sheet(filename: &str) -> Result<CueSheet> {
 ///   given constraints.
 /// * `ErrorKind::InvalidData` is returned when the data within the file
 ///   isn't valid FLAC data.
+///
+/// # Examples
+///
+/// Handling errors might look something like this:
+///
+/// ```
+/// use flac::metadata;
+/// use flac::metadata::PictureType;
+///
+/// let result = metadata::get_picture("path/to/file.flac",
+///                                    Some(PictureType::FileIcon),
+///                                    Some("image/gif"),
+///                                    None, None, None,
+///                                    None, None);
+///
+/// match result {
+///   Ok(picture) => {
+///     // Use the picture variable...
+///   }
+///   Err(error)  => println!("{}", error),
+/// }
+/// ```
+///
+/// Or just ignore the errors:
+///
+/// ```no_run
+/// use flac::metadata;
+/// use flac::metadata::PictureType;
+///
+/// let picture = metadata::get_picture("path/to/file.flac",
+///                                     Some(PictureType::FileIcon),
+///                                     Some("image/gif"),
+///                                     None, None, None,
+///                                     None, None).unwrap();
+/// ```
 pub fn get_picture(filename: &str,
                    picture_type: Option<PictureType>,
                    mime_type: Option<&str>,
