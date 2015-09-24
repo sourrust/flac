@@ -148,6 +148,29 @@ pub fn get_vorbis_comment(filename: &str) -> Result<VorbisComment> {
 ///   or there is no `CueSheet` within the file.
 /// * `ErrorKind::InvalidData` is returned when the data within the file
 ///   isn't valid FLAC data.
+///
+/// # Examples
+///
+/// Handling errors might look something like this:
+///
+/// ```
+/// use flac::metadata;
+///
+/// match metadata::get_cue_sheet("path/to/file.flac") {
+///   Ok(cue_sheet) => {
+///     // Use the cue_sheet variable...
+///   }
+///   Err(error)    => println!("{}", error),
+/// }
+/// ```
+///
+/// Or just ignore the errors
+///
+/// ```no_run
+/// use flac::metadata;
+///
+/// let cue_sheet = metadata::get_cue_sheet("path/to/file.flac").unwrap();
+/// ```
 pub fn get_cue_sheet(filename: &str) -> Result<CueSheet> {
   get_metadata(filename).and_then(|blocks| {
     let error_str  = "metadata: couldn't find CueSheet";
