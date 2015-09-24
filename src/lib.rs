@@ -1,3 +1,6 @@
+//! An implementation of [FLAC](https://xiph.org/flac), free lossless audio
+//! codec, written in Rust.
+
 #[macro_use]
 extern crate nom;
 
