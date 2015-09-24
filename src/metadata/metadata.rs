@@ -11,11 +11,10 @@ use metadata::types::MetaDataConsumer;
 
 // Will return true when the unwrapped value of `$option` and `$compare`
 // match or `$option` is `Option::None`, otherwise false.
-macro_rules! optional_eq (
-  ($compare: expr, $option: expr) => (
-    $option.map_or(true, |compare| $compare == compare);
-  );
-);
+#[inline]
+pub fn optional_eq<T: Eq>(option: Option<T>, other: T) -> bool {
+  option.map_or(true, |value| value == other)
+}
 
 // With the given filename, return all metadata blocks available.
 //
@@ -266,9 +265,9 @@ pub fn get_picture(filename: &str,
       if let BlockData::Picture(picture) = block.data {
         let area = (picture.width as u64) * (picture.height as u64);
 
-        if optional_eq!(picture.picture_type, picture_type) &&
-           optional_eq!(picture.mime_type, mime_type) &&
-           optional_eq!(picture.description, description) &&
+        if optional_eq(picture_type, picture.picture_type) &&
+           optional_eq(mime_type, &picture.mime_type) &&
+           optional_eq(description, &picture.description) &&
            picture.width <= max_width_num &&
            picture.height <= max_height_num &&
            picture.depth <= max_depth_num &&
@@ -294,13 +293,13 @@ mod tests {
   #[test]
   #[should_panic]
   fn test_panic_optional_eq() {
-    assert!(optional_eq!(0, Some(1)));
+    assert!(optional_eq(Some(1), 0));
   }
 
   #[test]
   fn test_optional_eq() {
-    assert!(optional_eq!(0, None), "Should always return true when None");
-    assert!(optional_eq!(0, Some(0)), "Should return true (Some(0) == 0)");
+    assert!(optional_eq(None, 0), "Should always return true when None");
+    assert!(optional_eq(Some(0), 0), "Should return true (Some(0) == 0)");
   }
 
   #[test]
