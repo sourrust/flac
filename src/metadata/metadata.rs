@@ -52,6 +52,29 @@ pub fn get_metadata(filename: &str) -> Result<Vec<Block>> {
 ///   or there is no `StreamInfo` within the file.
 /// * `ErrorKind::InvalidData` is returned when the data within the file
 ///   isn't valid FLAC data.
+///
+/// # Examples
+///
+/// Handling errors might look something like this:
+///
+/// ```
+/// use flac::metadata;
+///
+/// match metadata::get_stream_info("path/to/file.flac") {
+///   Ok(stream_info) => {
+///     // Use the stream_info variable...
+///   }
+///   Err(error)      => println!("{}", error),
+/// }
+/// ```
+///
+/// Or just ignore the errors:
+///
+/// ```no_run
+/// use flac::metadata;
+///
+/// let stream_info = metadata::get_stream_info("path/to/file.flac").unwrap();
+/// ```
 pub fn get_stream_info(filename: &str) -> Result<StreamInfo> {
   get_metadata(filename).and_then(|blocks| {
     let error_str  = "metadata: couldn't find StreamInfo";
@@ -77,6 +100,30 @@ pub fn get_stream_info(filename: &str) -> Result<StreamInfo> {
 ///   or there is no `VorbisComment` within the file.
 /// * `ErrorKind::InvalidData` is returned when the data within the file
 ///   isn't valid FLAC data.
+///
+/// # Examples
+///
+/// Handling errors might look something like this:
+///
+/// ```
+/// use flac::metadata;
+///
+/// match metadata::get_vorbis_comment("path/to/file.flac") {
+///   Ok(vorbis_comment) => {
+///     // Use the vorbis_comment variable...
+///   }
+///   Err(error)         => println!("{}", error),
+/// }
+/// ```
+///
+/// Or just ignore the errors:
+///
+/// ```no_run
+/// use flac::metadata;
+///
+/// let vorbis_comment =
+///   metadata::get_vorbis_comment("path/to/file.flac").unwrap();
+/// ```
 pub fn get_vorbis_comment(filename: &str) -> Result<VorbisComment> {
   get_metadata(filename).and_then(|blocks| {
     let error_str  = "metadata: couldn't find VorbisComment";
@@ -101,6 +148,29 @@ pub fn get_vorbis_comment(filename: &str) -> Result<VorbisComment> {
 ///   or there is no `CueSheet` within the file.
 /// * `ErrorKind::InvalidData` is returned when the data within the file
 ///   isn't valid FLAC data.
+///
+/// # Examples
+///
+/// Handling errors might look something like this:
+///
+/// ```
+/// use flac::metadata;
+///
+/// match metadata::get_cue_sheet("path/to/file.flac") {
+///   Ok(cue_sheet) => {
+///     // Use the cue_sheet variable...
+///   }
+///   Err(error)    => println!("{}", error),
+/// }
+/// ```
+///
+/// Or just ignore the errors
+///
+/// ```no_run
+/// use flac::metadata;
+///
+/// let cue_sheet = metadata::get_cue_sheet("path/to/file.flac").unwrap();
+/// ```
 pub fn get_cue_sheet(filename: &str) -> Result<CueSheet> {
   get_metadata(filename).and_then(|blocks| {
     let error_str  = "metadata: couldn't find CueSheet";
@@ -135,6 +205,41 @@ pub fn get_cue_sheet(filename: &str) -> Result<CueSheet> {
 ///   given constraints.
 /// * `ErrorKind::InvalidData` is returned when the data within the file
 ///   isn't valid FLAC data.
+///
+/// # Examples
+///
+/// Handling errors might look something like this:
+///
+/// ```
+/// use flac::metadata;
+/// use flac::metadata::PictureType;
+///
+/// let result = metadata::get_picture("path/to/file.flac",
+///                                    Some(PictureType::FileIcon),
+///                                    Some("image/gif"),
+///                                    None, None, None,
+///                                    None, None);
+///
+/// match result {
+///   Ok(picture) => {
+///     // Use the picture variable...
+///   }
+///   Err(error)  => println!("{}", error),
+/// }
+/// ```
+///
+/// Or just ignore the errors:
+///
+/// ```no_run
+/// use flac::metadata;
+/// use flac::metadata::PictureType;
+///
+/// let picture = metadata::get_picture("path/to/file.flac",
+///                                     Some(PictureType::FileIcon),
+///                                     Some("image/gif"),
+///                                     None, None, None,
+///                                     None, None).unwrap();
+/// ```
 pub fn get_picture(filename: &str,
                    picture_type: Option<PictureType>,
                    mime_type: Option<&str>,

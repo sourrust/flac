@@ -1,3 +1,5 @@
+//! Provides an interface for dealing with FLAC metadata blocks.
+
 mod types;
 mod parser;
 mod metadata;
