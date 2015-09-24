@@ -11,11 +11,10 @@ use metadata::types::MetaDataConsumer;
 
 // Will return true when the unwrapped value of `$option` and `$compare`
 // match or `$option` is `Option::None`, otherwise false.
-macro_rules! optional_eq (
-  ($compare: expr, $option: expr) => (
-    $option.map_or(true, |compare| $compare == compare);
-  );
-);
+#[inline]
+pub fn optional_eq<T: Eq>(option: Option<T>, other: T) -> bool {
+  option.map_or(true, |value| value == other)
+}
 
 // With the given filename, return all metadata blocks available.
 //
