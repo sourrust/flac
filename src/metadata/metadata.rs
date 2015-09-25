@@ -9,8 +9,8 @@ use metadata::{
 };
 use metadata::types::MetaDataConsumer;
 
-// Will return true when the unwrapped value of `$option` and `$compare`
-// match or `$option` is `Option::None`, otherwise false.
+// Will return true when the unwrapped value of `option` and `other` match
+// or `option` is `Option::None`, otherwise false.
 #[inline]
 pub fn optional_eq<T: Eq>(option: Option<T>, other: T) -> bool {
   option.map_or(true, |value| value == other)
