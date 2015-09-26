@@ -124,6 +124,7 @@ pub struct CueSheet {
   pub tracks: Vec<CueSheetTrack>,
 }
 
+/// Track information inside a cue sheet.
 #[derive(Debug, PartialEq, Eq)]
 pub struct CueSheetTrack {
   /// Track offset, in samples, relative to the beginning of the FLAC audio
@@ -141,6 +142,7 @@ pub struct CueSheetTrack {
   pub indices: Vec<CueSheetTrackIndex>,
 }
 
+/// An index point within a track, inside of a cue sheet.
 #[derive(Debug, PartialEq, Eq)]
 pub struct CueSheetTrackIndex {
   /// Offset, in samples, relative to the track offset of the index point.
