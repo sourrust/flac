@@ -137,7 +137,7 @@ pub struct CueSheetTrack {
   pub is_audio: bool,
   /// Whether the cue sheet track is pre-emphasis.
   pub is_pre_emphasis: bool,
-  /// For all tracks expect the lead-out track.
+  /// For all tracks except the lead-out track.
   pub indices: Vec<CueSheetTrackIndex>,
 }
 
