@@ -179,26 +179,47 @@ pub struct Picture {
 /// The picture type according to the ID3v2 attached picture frame.
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum PictureType {
+  /// Other picture type not categorized in this enum.
   Other,
+  /// 32x32 pixels 'file icon'.
   FileIconStandard,
+  /// Other, or non-standard, file icon.
   FileIcon,
+  /// Cover (front).
   FrontCover,
+  /// Cover (back).
   BackCover,
+  /// Leaflet page.
   LeafletPage,
+  /// Media, like label side of a CD.
   Media,
+  /// Lead artist, lead performer, or soloist.
   LeadArtist,
+  /// Artist or performer.
   Artist,
+  /// Conductor.
   Conductor,
+  /// Band or orchestra.
   Band,
+  /// Composer.
   Composer,
+  /// Lyricist or text writer.
   Lyricist,
+  /// Recording location.
   RecordingLocation,
+  /// During recording.
   DuringRecording,
+  /// During performance.
   DuringPerformace,
+  /// Movie, or video, screen capture.
   VideoScreenCapture,
+  /// A bright colored fish.
   Fish,
+  /// Illustration.
   Illustration,
+  /// Band, or artist, logotype.
   BandLogo,
+  /// Publisher, or studio, logotype.
   PublisherLogo,
 }
 
