@@ -4,6 +4,9 @@ use nom::{
   Needed,
 };
 
+use frame;
+use frame::subframe;
+
 fn leading_zeros(input: (&[u8], usize)) -> IResult<(&[u8], usize), u32> {
   let (bytes, mut offset) = input;
 
@@ -70,4 +73,23 @@ fn header(input: (&[u8], usize)) -> IResult<(&[u8], usize), (u8, bool)> {
     IResult::Error(error)     => IResult::Error(error),
     IResult::Incomplete(need) => IResult::Incomplete(need),
   }
+}
+
+fn data<'a>(input: (&'a [u8], usize),
+            frame_header: &frame::Header,
+            subframe_type: usize,
+            wasted_bits: usize)
+            -> IResult<'a, (&'a [u8], usize), subframe::Data> {
+  let bits_per_sample = frame_header.bits_per_sample - wasted_bits;
+  let block_size      = frame_header.block_size as usize;
+
+  match subframe_type {
+    0b000000 => constant(input, bits_per_sample),
+    _        => IResult::Error(Err::Position(ErrorCode::Alt as u32, input.0))
+  }
+}
+
+fn constant(input: (&[u8], usize), bits_per_sample: usize)
+            -> IResult<(&[u8], usize), subframe::Data> {
+  map!(input, take_bits!(i32, bits_per_sample), subframe::Data::Constant)
 }

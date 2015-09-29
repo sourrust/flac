@@ -28,7 +28,7 @@ The status of this FLAC implementation:
     - [x] footer
     - [ ] sub-frame
       - [x] header
-      - [ ] constant
+      - [x] constant
       - [ ] fixed
       - [ ] LPC
       - [ ] verbatim
