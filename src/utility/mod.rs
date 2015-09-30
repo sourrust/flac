@@ -1,4 +1,6 @@
 mod crc;
+#[macro_use]
+mod macros;
 
 pub use self::crc::{crc8, crc16};
 
