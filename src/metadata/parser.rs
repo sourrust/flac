@@ -45,11 +45,7 @@ macro_rules! skip_bytes (
 /// check that requirement.
 pub fn metadata_parser(input: &[u8])
                        -> IResult<&[u8], (StreamInfo, Vec<Block>)> {
-  chain!(input,
-    tag!("fLaC") ~
-    blocks: many_blocks,
-    || { blocks }
-  )
+  preceded!(input, tag!("fLaC"), many_blocks)
 }
 
 named!(pub stream_info <&[u8], BlockData>,
