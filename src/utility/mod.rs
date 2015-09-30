@@ -4,7 +4,7 @@ mod macros;
 
 pub use self::crc::{crc8, crc16};
 
-// Convert one to four byte slices in an unsigned 32-bit number.
+// Convert one to four byte slices into an unsigned 32-bit number.
 //
 // NOTE: This assumes big-endian since most numbers in the FLAC binary are
 // that endianness.
