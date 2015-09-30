@@ -4,9 +4,10 @@
 #[macro_use]
 extern crate nom;
 
+#[macro_use]
+mod utility;
 pub mod metadata;
 pub mod frame;
-mod utility;
 
 use metadata::metadata_parser;
 use frame::frame_parser;
