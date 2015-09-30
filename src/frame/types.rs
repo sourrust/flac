@@ -40,9 +40,11 @@ pub struct Header {
   pub sample_rate: u32,
   /// Number of channels that also represent the number of subframes.
   pub channels: u8,
+  /// Channel assignment order.
   pub channel_assignment: ChannelAssignment,
   /// Size, in bits, per sample.
   pub bits_per_sample: usize,
+  /// Numbering scheme used from the frame.
   pub number: NumberType,
   /// CRC-8 of all header bytes before this crc.
   pub crc: u8,
