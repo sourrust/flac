@@ -85,6 +85,7 @@ fn data<'a>(input: (&'a [u8], usize),
 
   match subframe_type {
     0b000000 => constant(input, bits_per_sample),
+    0b000001 => verbatim(input, bits_per_sample, block_size),
     _        => IResult::Error(Err::Position(ErrorCode::Alt as u32, input.0))
   }
 }
