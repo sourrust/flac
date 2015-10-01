@@ -22,3 +22,46 @@ macro_rules! skip_bytes (
     }
   );
 );
+
+macro_rules! count_bits (
+  ($input: expr, $submac: ident!( $($args:tt)* ), $count: expr) => (
+    {
+      let mut input    = $input;
+      let mut count    = 0;
+      let mut is_error = false;
+      let mut result   = Vec::with_capacity($count);
+
+      loop {
+        if count == $count {
+          break;
+        }
+
+        match $submac!(input, $($args)*) {
+          $crate::nom::IResult::Done(i, o)    => {
+            result.push(o);
+
+            input  = i;
+            count += 1;
+          }
+          $crate::nom::IResult::Error(_)      => {
+            is_error = true;
+            break;
+          }
+          $crate::nom::IResult::Incomplete(_) => break,
+        }
+      }
+
+      if is_error {
+        $crate::nom::IResult::Error($crate::nom::Err::Position(
+          $crate::nom::ErrorCode::Count as u32, $input.0))
+      } else if count == $count {
+        $crate::nom::IResult::Done(input, result)
+      } else {
+        $crate::nom::IResult::Incomplete($crate::nom::Needed::Unknown)
+      }
+    }
+  );
+  ($i: expr, $f: expr, $count: expr) => (
+    count_bits!($i, call!($f), $count);
+  );
+);
