@@ -85,6 +85,7 @@ fn data<'a>(input: (&'a [u8], usize),
 
   match subframe_type {
     0b000000 => constant(input, bits_per_sample),
+    0b000001 => verbatim(input, bits_per_sample, block_size),
     _        => IResult::Error(Err::Position(ErrorCode::Alt as u32, input.0))
   }
 }
@@ -92,4 +93,11 @@ fn data<'a>(input: (&'a [u8], usize),
 fn constant(input: (&[u8], usize), bits_per_sample: usize)
             -> IResult<(&[u8], usize), subframe::Data> {
   map!(input, take_bits!(i32, bits_per_sample), subframe::Data::Constant)
+}
+
+fn verbatim(input: (&[u8], usize), bits_per_sample: usize, block_size: usize)
+            -> IResult<(&[u8], usize), subframe::Data> {
+  // TODO: Use nom's `count!` macro as soon as it is fixed for bit parsers.
+  map!(input, count_bits!(take_bits!(i32, bits_per_sample), block_size),
+       subframe::Data::Verbatim)
 }
