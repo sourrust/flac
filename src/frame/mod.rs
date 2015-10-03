@@ -10,4 +10,4 @@ pub use self::types::{
 };
 
 pub use self::parser::frame_parser;
-pub use self::subframe::SubFrame;
+pub use self::subframe::{subframe_parser, SubFrame};
