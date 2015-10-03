@@ -6,6 +6,7 @@ use nom::{
 
 use frame;
 use frame::subframe;
+use frame::SubFrame;
 
 fn leading_zeros(input: (&[u8], usize)) -> IResult<(&[u8], usize), u32> {
   let (bytes, mut offset) = input;
@@ -45,6 +46,26 @@ fn leading_zeros(input: (&[u8], usize)) -> IResult<(&[u8], usize), u32> {
   } else {
     IResult::Error(Err::Position(ErrorCode::TakeUntil as u32, bytes))
   }
+}
+
+pub fn subframe_parser<'a>(input: (&'a [u8], usize),
+                           frame_header: &frame::Header)
+                           -> IResult<'a, (&'a [u8], usize), SubFrame> {
+  chain!(input,
+    subframe_header: header ~
+    wasted_bits: map!(
+      cond!(subframe_header.1, leading_zeros),
+      |option: Option<u32>| option.map_or(0, |zeros| zeros + 1)
+    ) ~
+    subframe_data: apply!(data, frame_header, subframe_header.0 as usize,
+                          wasted_bits as usize),
+    || {
+      SubFrame {
+        data: subframe_data,
+        wasted_bits: wasted_bits,
+      }
+    }
+  )
 }
 
 fn header(input: (&[u8], usize)) -> IResult<(&[u8], usize), (u8, bool)> {
