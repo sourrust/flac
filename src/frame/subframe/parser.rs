@@ -7,6 +7,7 @@ use nom::{
 use frame;
 use frame::subframe;
 use frame::SubFrame;
+use frame::subframe::{CodingMethod, PartitionedRiceContents};
 
 fn leading_zeros(input: (&[u8], usize)) -> IResult<(&[u8], usize), u32> {
   let (bytes, mut offset) = input;
@@ -111,6 +112,75 @@ fn verbatim(input: (&[u8], usize), bits_per_sample: usize, block_size: usize)
   // TODO: Use nom's `count!` macro as soon as it is fixed for bit parsers.
   map!(input, count_bits!(take_bits!(i32, bits_per_sample), block_size),
        subframe::Data::Verbatim)
+}
+
+fn rice_partition(input: (&[u8], usize),
+                  partition_order: u32,
+                  predictor_order: usize,
+                  block_size: usize,
+                  method: CodingMethod)
+                  -> IResult<(&[u8], usize),
+                             (subframe::EntropyCodingMethod, Vec<i32>)> {
+  let (param_size, escape_code) = match method {
+    CodingMethod::PartitionedRice  => (4, 0b1111),
+    CodingMethod::PartitionedRice2 => (5, 0b11111),
+  };
+
+  // Adjust block size to not include allocation for warm up samples
+  let residual_size = block_size - predictor_order;
+
+  let mut mut_input = input;
+  let mut residual  = Vec::with_capacity(residual_size);
+  let mut sample    = 0;
+  let mut contents  = PartitionedRiceContents::new(partition_order);
+
+  unsafe { residual.set_len(residual_size) }
+
+  let partitions = 2_usize.pow(partition_order);
+
+  for partition in 0..partitions {
+    let offset = if partition_order == 0 {
+      block_size - predictor_order
+    } else if partition > 0 {
+      block_size / partitions
+    } else {
+      (block_size / partitions) - predictor_order
+    };
+    let start = sample;
+    let end   = sample + offset;
+
+    let result = chain!(mut_input,
+      rice_parameter: take_bits!(u32, param_size) ~
+      size: cond!(rice_parameter == escape_code, take_bits!(usize, 5)) ~
+      data: apply!(residual_data,
+        size, rice_parameter,
+        &mut contents.raw_bits[partition],
+        &mut residual[start..end]
+      ),
+      || { rice_parameter }
+    );
+
+    match result {
+      IResult::Done(i, parameter) => {
+        mut_input = i;
+        sample    = end;
+
+        contents.parameters[partition] = parameter;
+      }
+      IResult::Error(error)       => return IResult::Error(error),
+      IResult::Incomplete(need)   => return IResult::Incomplete(need),
+    }
+  }
+
+  let entropy_coding_method = subframe::EntropyCodingMethod {
+    method_type: method,
+    data: subframe::PartitionedRice {
+      order: partition_order,
+      contents: contents,
+    },
+  };
+
+  IResult::Done(mut_input, (entropy_coding_method, residual))
 }
 
 fn residual_data<'a>(input: (&'a [u8], usize),
