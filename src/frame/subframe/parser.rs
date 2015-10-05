@@ -112,3 +112,13 @@ fn verbatim(input: (&[u8], usize), bits_per_sample: usize, block_size: usize)
   map!(input, count_bits!(take_bits!(i32, bits_per_sample), block_size),
        subframe::Data::Verbatim)
 }
+
+fn unencoded_residuals<'a>(input: (&'a [u8], usize),
+                           bits_per_sample: usize,
+                           raw_bit: &mut u32,
+                           samples: &mut [i32])
+                           -> IResult<'a, (&'a[u8], usize), ()> {
+  *raw_bit = bits_per_sample as u32;
+
+  count_slice!(input, take_bits!(i32, bits_per_sample), &mut samples[..])
+}
