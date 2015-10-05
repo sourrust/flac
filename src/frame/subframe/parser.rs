@@ -113,6 +113,19 @@ fn verbatim(input: (&[u8], usize), bits_per_sample: usize, block_size: usize)
        subframe::Data::Verbatim)
 }
 
+fn residual_data<'a>(input: (&'a [u8], usize),
+                     option: Option<usize>,
+                     rice_parameter: u32,
+                     raw_bit: &mut u32,
+                     samples: &mut [i32])
+                     -> IResult<'a, (&'a [u8], usize), ()> {
+  if let Some(size) = option {
+    unencoded_residuals(input, size, raw_bit, samples)
+  } else {
+    encoded_residuals(input, rice_parameter, raw_bit, samples)
+  }
+}
+
 fn unencoded_residuals<'a>(input: (&'a [u8], usize),
                            bits_per_sample: usize,
                            raw_bit: &mut u32,
