@@ -96,15 +96,41 @@ fn data<'a>(input: (&'a [u8], usize),
   let block_size      = frame_header.block_size as usize;
 
   match subframe_type {
-    0b000000 => constant(input, bits_per_sample),
-    0b000001 => verbatim(input, bits_per_sample, block_size),
-    _        => IResult::Error(Err::Position(ErrorCode::Alt as u32, input.0))
+    0b000000            => constant(input, bits_per_sample),
+    0b000001            => verbatim(input, bits_per_sample, block_size),
+    0b001000...0b001100 => fixed(input, subframe_type & 0b0111,
+                                 bits_per_sample, block_size),
+    _                   => IResult::Error(Err::Position(
+                             ErrorCode::Alt as u32, input.0))
   }
 }
 
 fn constant(input: (&[u8], usize), bits_per_sample: usize)
             -> IResult<(&[u8], usize), subframe::Data> {
   map!(input, take_bits!(i32, bits_per_sample), subframe::Data::Constant)
+}
+
+fn fixed(input: (&[u8], usize),
+         order: usize,
+         bits_per_sample: usize,
+         block_size: usize)
+         -> IResult<(&[u8], usize), subframe::Data> {
+  let mut warmup = [0; subframe::MAX_FIXED_ORDER];
+
+  chain!(input,
+    count_slice!(take_bits!(i32, bits_per_sample), &mut warmup[0..order]) ~
+    tuple: apply!(residual, order, block_size),
+    || {
+      let data = tuple;
+
+      subframe::Data::Fixed(subframe::Fixed {
+        entropy_coding_method: data.0,
+        order: order as u8,
+        warmup: warmup,
+        residual: data.1,
+      })
+    }
+  )
 }
 
 fn verbatim(input: (&[u8], usize), bits_per_sample: usize, block_size: usize)
