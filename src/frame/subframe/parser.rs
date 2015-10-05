@@ -122,3 +122,51 @@ fn unencoded_residuals<'a>(input: (&'a [u8], usize),
 
   count_slice!(input, take_bits!(i32, bits_per_sample), &mut samples[..])
 }
+
+fn encoded_residuals<'a>(input: (&'a [u8], usize),
+                         parameter: u32,
+                         raw_bit: &mut u32,
+                         samples: &mut [i32])
+                         -> IResult<'a, (&'a[u8], usize), ()> {
+  let length = samples.len();
+
+  let mut count     = 0;
+  let mut is_error  = false;
+  let mut mut_input = input;
+
+  *raw_bit = 0;
+
+  for sample in samples {
+    let result = chain!(mut_input,
+      quotient: leading_zeros ~
+      remainder: take_bits!(u32, parameter as usize),
+      || {
+        let value = quotient * parameter + remainder;
+
+        ((value as i32) >> 1) ^ -((value as i32) & 1)
+      });
+
+    match result {
+      IResult::Done(i, value) => {
+        mut_input = i;
+        count    += 1;
+
+        *sample = value
+      }
+      IResult::Error(_)       => {
+        is_error = true;
+
+        break;
+      }
+      IResult::Incomplete(_)  => break,
+    }
+  }
+
+  if is_error {
+    IResult::Error(Err::Position(ErrorCode::Count as u32, input.0))
+  } else if count == length {
+    IResult::Done(mut_input, ())
+  } else {
+    IResult::Incomplete(Needed::Unknown)
+  }
+}
