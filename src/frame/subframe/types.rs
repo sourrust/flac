@@ -39,3 +39,22 @@ pub struct PartitionedRiceContents {
   pub raw_bits: Vec<u32>,
   pub capacity_by_order: u32,
 }
+
+impl PartitionedRiceContents {
+  pub fn new(capacity_by_order: u32) -> PartitionedRiceContents {
+    let capacity       = 2_usize.pow(capacity_by_order);
+    let mut parameters = Vec::with_capacity(capacity);
+    let mut raw_bits   = Vec::with_capacity(capacity);
+
+    unsafe {
+      parameters.set_len(capacity);
+      raw_bits.set_len(capacity);
+    }
+
+    PartitionedRiceContents {
+      parameters: parameters,
+      raw_bits: raw_bits,
+      capacity_by_order: capacity_by_order,
+    }
+  }
+}
