@@ -114,6 +114,21 @@ fn verbatim(input: (&[u8], usize), bits_per_sample: usize, block_size: usize)
        subframe::Data::Verbatim)
 }
 
+fn coding_method(input: (&[u8], usize))
+                 -> IResult<(&[u8], usize), CodingMethod> {
+  match take_bits!(input, u8, 2) {
+    IResult::Done(i, method)  => {
+      match method {
+        0 => IResult::Done(i, CodingMethod::PartitionedRice),
+        1 => IResult::Done(i, CodingMethod::PartitionedRice2),
+        _ => IResult::Error(Err::Position(ErrorCode::Alt as u32, input.0)),
+      }
+    }
+    IResult::Error(error)     => IResult::Error(error),
+    IResult::Incomplete(need) => IResult::Incomplete(need),
+  }
+}
+
 fn rice_partition(input: (&[u8], usize),
                   partition_order: u32,
                   predictor_order: usize,
