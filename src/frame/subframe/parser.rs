@@ -129,6 +129,22 @@ fn coding_method(input: (&[u8], usize))
   }
 }
 
+fn residual(input: (&[u8], usize),
+            predictor_order: usize,
+            block_size: usize)
+            -> IResult<(&[u8], usize),
+                       (subframe::EntropyCodingMethod, Vec<i32>)> {
+  match pair!(input, coding_method, take_bits!(u32, 4)) {
+    IResult::Done(i, data)    => {
+      let (method, order) = data;
+
+      rice_partition(i, order, predictor_order, block_size, method)
+    }
+    IResult::Error(error)     => IResult::Error(error),
+    IResult::Incomplete(need) => IResult::Incomplete(need),
+  }
+}
+
 fn rice_partition(input: (&[u8], usize),
                   partition_order: u32,
                   predictor_order: usize,
