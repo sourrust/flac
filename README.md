@@ -30,7 +30,7 @@ The status of this FLAC implementation:
       - [x] header
       - [x] constant
       - [x] fixed
-      - [ ] LPC
+      - [x] LPC
       - [x] verbatim
 - [ ] decoder
 - [ ] encoder

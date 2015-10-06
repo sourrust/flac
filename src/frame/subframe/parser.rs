@@ -100,6 +100,8 @@ fn data<'a>(input: (&'a [u8], usize),
     0b000001            => verbatim(input, bits_per_sample, block_size),
     0b001000...0b001100 => fixed(input, subframe_type & 0b0111,
                                  bits_per_sample, block_size),
+    0b100000...0b111111 => lpc(input, (subframe_type & 0b011111) + 1,
+                               bits_per_sample, block_size),
     _                   => IResult::Error(Err::Position(
                              ErrorCode::Alt as u32, input.0))
   }
@@ -126,6 +128,54 @@ fn fixed(input: (&[u8], usize),
       subframe::Data::Fixed(subframe::Fixed {
         entropy_coding_method: data.0,
         order: order as u8,
+        warmup: warmup,
+        residual: data.1,
+      })
+    }
+  )
+}
+
+fn qlp_coefficient_precision(input: (&[u8], usize))
+                             -> IResult<(&[u8], usize), u8> {
+  match take_bits!(input, u8, 4) {
+    IResult::Done(i, precision) => {
+      if precision == 0b1111 {
+        IResult::Error(Err::Position(ErrorCode::Digit as u32, input.0))
+      } else {
+        IResult::Done(i, precision + 1)
+      }
+    }
+    IResult::Error(error)       => IResult::Error(error),
+    IResult::Incomplete(need)   => IResult::Incomplete(need),
+  }
+}
+
+fn lpc(input: (&[u8], usize),
+       order: usize,
+       bits_per_sample: usize,
+       block_size: usize)
+       -> IResult<(&[u8], usize), subframe::Data> {
+  let mut warmup           = [0; subframe::MAX_LPC_ORDER];
+  let mut qlp_coefficients = [0; subframe::MAX_LPC_ORDER];
+
+  chain!(input,
+    count_slice!(take_bits!(i32, bits_per_sample), &mut warmup[0..order]) ~
+    qlp_coeff_precision: qlp_coefficient_precision ~
+    quantization_level: take_bits!(i8, 5) ~
+    count_slice!(
+      take_bits!(i32, qlp_coeff_precision as usize),
+      &mut qlp_coefficients[0..order]
+    ) ~
+    tuple: apply!(residual, order, block_size),
+    || {
+      let data = tuple;
+
+      subframe::Data::LPC(subframe::LPC {
+        entropy_coding_method: data.0,
+        order: order as u8,
+        qlp_coeff_precision: qlp_coeff_precision,
+        quantization_level: quantization_level,
+        qlp_coefficients: qlp_coefficients,
         warmup: warmup,
         residual: data.1,
       })

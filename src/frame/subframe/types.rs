@@ -1,4 +1,5 @@
 pub const MAX_FIXED_ORDER: usize = 4;
+pub const MAX_LPC_ORDER: usize   = 32;
 
 pub struct SubFrame {
   pub data: Data,
@@ -9,12 +10,23 @@ pub enum Data {
   Constant(i32),
   Verbatim(Vec<i32>),
   Fixed(Fixed),
+  LPC(LPC),
 }
 
 pub struct Fixed {
   pub entropy_coding_method: EntropyCodingMethod,
   pub order: u8,
   pub warmup: [i32; MAX_FIXED_ORDER],
+  pub residual: Vec<i32>,
+}
+
+pub struct LPC {
+  pub entropy_coding_method: EntropyCodingMethod,
+  pub order: u8,
+  pub qlp_coeff_precision: u8,
+  pub quantization_level: i8,
+  pub qlp_coefficients: [i32; MAX_LPC_ORDER],
+  pub warmup: [i32; MAX_LPC_ORDER],
   pub residual: Vec<i32>,
 }
 

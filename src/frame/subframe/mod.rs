@@ -2,10 +2,10 @@ mod types;
 mod parser;
 
 pub use self::types::{
-  MAX_FIXED_ORDER,
+  MAX_FIXED_ORDER, MAX_LPC_ORDER,
   SubFrame,
   Data,
-  Fixed,
+  Fixed, LPC,
   EntropyCodingMethod, CodingMethod, PartitionedRice, PartitionedRiceContents,
 };
 
