@@ -133,6 +133,21 @@ fn fixed(input: (&[u8], usize),
   )
 }
 
+fn qlp_coefficient_precision(input: (&[u8], usize))
+                             -> IResult<(&[u8], usize), u8> {
+  match take_bits!(input, u8, 4) {
+    IResult::Done(i, precision) => {
+      if precision == 0b1111 {
+        IResult::Error(Err::Position(ErrorCode::Digit as u32, input.0))
+      } else {
+        IResult::Done(i, precision + 1)
+      }
+    }
+    IResult::Error(error)       => IResult::Error(error),
+    IResult::Incomplete(need)   => IResult::Incomplete(need),
+  }
+}
+
 fn verbatim(input: (&[u8], usize), bits_per_sample: usize, block_size: usize)
             -> IResult<(&[u8], usize), subframe::Data> {
   // TODO: Use nom's `count!` macro as soon as it is fixed for bit parsers.
