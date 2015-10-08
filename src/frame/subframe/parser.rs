@@ -84,14 +84,18 @@ fn adjust_bits_per_sample(frame_header: &frame::Header,
 pub fn subframe_parser<'a>(input: (&'a [u8], usize),
                            frame_header: &frame::Header)
                            -> IResult<'a, (&'a [u8], usize), SubFrame> {
+  let block_size      = frame_header.block_size as usize;
+  let bits_per_sample = adjust_bits_per_sample(frame_header, *channel);
+
   chain!(input,
     subframe_header: header ~
     wasted_bits: map!(
       cond!(subframe_header.1, leading_zeros),
       |option: Option<u32>| option.map_or(0, |zeros| zeros + 1)
     ) ~
-    subframe_data: apply!(data, frame_header, subframe_header.0 as usize,
-                          wasted_bits as usize),
+    subframe_data: apply!(data,
+      bits_per_sample - (wasted_bits as usize),
+      block_size, subframe_header.0),
     || {
       SubFrame {
         data: subframe_data,
@@ -119,14 +123,11 @@ fn header(input: (&[u8], usize)) -> IResult<(&[u8], usize), (usize, bool)> {
   }
 }
 
-fn data<'a>(input: (&'a [u8], usize),
-            frame_header: &frame::Header,
-            subframe_type: usize,
-            wasted_bits: usize)
-            -> IResult<'a, (&'a [u8], usize), subframe::Data> {
-  let bits_per_sample = frame_header.bits_per_sample - wasted_bits;
-  let block_size      = frame_header.block_size as usize;
-
+fn data(input: (&[u8], usize),
+        bits_per_sample: usize,
+        block_size: usize,
+        subframe_type: usize)
+        -> IResult<(&[u8], usize), subframe::Data> {
   match subframe_type {
     0b000000            => constant(input, bits_per_sample),
     0b000001            => verbatim(input, bits_per_sample, block_size),
