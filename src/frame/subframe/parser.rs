@@ -5,7 +5,7 @@ use nom::{
 };
 
 use frame;
-use frame::subframe;
+use frame::{subframe, ChannelAssignment};
 use frame::SubFrame;
 use frame::subframe::{CodingMethod, PartitionedRiceContents};
 
@@ -46,6 +46,38 @@ fn leading_zeros(input: (&[u8], usize)) -> IResult<(&[u8], usize), u32> {
     IResult::Incomplete(Needed::Size(index + 1))
   } else {
     IResult::Error(Err::Position(ErrorCode::TakeUntil as u32, bytes))
+  }
+}
+
+fn adjust_bits_per_sample(frame_header: &frame::Header,
+                          channel: usize)
+                          -> usize {
+  let bits_per_sample = frame_header.bits_per_sample;
+
+  match frame_header.channel_assignment {
+    // Independent doesn't adjust bits per sample.
+    ChannelAssignment::Independent => bits_per_sample,
+    ChannelAssignment::LeftSide    => {
+      if channel == 1 {
+        bits_per_sample + 1
+      } else {
+        bits_per_sample
+      }
+    }
+    ChannelAssignment::RightSide   => {
+      if channel == 0 {
+        bits_per_sample + 1
+      } else {
+        bits_per_sample
+      }
+    }
+    ChannelAssignment::MiddleSide  => {
+      if channel == 1 {
+        bits_per_sample + 1
+      } else {
+        bits_per_sample
+      }
+    }
   }
 }
 
