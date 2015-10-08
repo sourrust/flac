@@ -4,10 +4,15 @@ use nom::{
   ErrorCode, Err,
 };
 
+use std::mem;
+
 use frame::{
+  MAX_CHANNELS,
   ChannelAssignment, NumberType,
   Frame,
   Header, Footer,
+  SubFrame,
+  subframe_parser,
 };
 
 use metadata::StreamInfo;
@@ -16,12 +21,30 @@ use utility::{crc8, crc16, to_u32};
 /// Parses an audio frame
 pub fn frame_parser<'a>(input: &'a [u8], stream_info: &StreamInfo)
                         -> IResult<'a, &'a [u8], Frame> {
+  // Unsafe way to initialize subframe data, but I would rather do this
+  // than have `SubFrame` derive `Copy` to do something like:
+  //
+  // ```
+  // let mut subframe = [SubFrame {
+  //                       data: subframe::Constant(0),
+  //                       wasted_bits: 0,
+  //                     }; MAX_CHANNELS];
+  // ```
+  let mut subframes: [SubFrame; MAX_CHANNELS] = unsafe { mem::zeroed() };
+
   let result = chain!(input,
     frame_header: apply!(header, stream_info) ~
+    bits!(
+      count_slice!(
+        apply!(subframe_parser, &frame_header),
+        &mut subframes[0..(frame_header.channels as usize)]
+      )
+    ) ~
     frame_footer: footer,
     || {
       Frame {
         header: frame_header,
+        subframes: subframes,
         footer: frame_footer,
       }
     }
