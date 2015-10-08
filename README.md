@@ -11,7 +11,7 @@ Rust.
 
 The status of this FLAC implementation:
 
-- [ ] Parser
+- [x] Parser
   - [x] metadata
     - [x] header
     - [x] data
@@ -23,10 +23,10 @@ The status of this FLAC implementation:
       - [x] cuesheet
       - [x] picture
       - [x] unknown
-  - [ ] frame
+  - [x] frame
     - [x] header
     - [x] footer
-    - [ ] sub-frame
+    - [x] sub-frame
       - [x] header
       - [x] constant
       - [x] fixed

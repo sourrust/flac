@@ -1,3 +1,5 @@
+use frame::SubFrame;
+
 /// Maximum number of channels supported in the FLAC format.
 pub const MAX_CHANNELS: usize = 8;
 
@@ -5,6 +7,7 @@ pub const MAX_CHANNELS: usize = 8;
 pub struct Frame {
   /// Information regarding the current audio frame.
   pub header: Header,
+  pub subframes: [SubFrame; MAX_CHANNELS],
   /// CRC-16 of all frame bytes before this footer.
   pub footer: Footer,
 }

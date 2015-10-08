@@ -5,7 +5,7 @@ use nom::{
 };
 
 use frame;
-use frame::subframe;
+use frame::{subframe, ChannelAssignment};
 use frame::SubFrame;
 use frame::subframe::{CodingMethod, PartitionedRiceContents};
 
@@ -49,18 +49,59 @@ fn leading_zeros(input: (&[u8], usize)) -> IResult<(&[u8], usize), u32> {
   }
 }
 
+fn adjust_bits_per_sample(frame_header: &frame::Header,
+                          channel: usize)
+                          -> usize {
+  let bits_per_sample = frame_header.bits_per_sample;
+
+  match frame_header.channel_assignment {
+    // Independent doesn't adjust bits per sample.
+    ChannelAssignment::Independent => bits_per_sample,
+    ChannelAssignment::LeftSide    => {
+      if channel == 1 {
+        bits_per_sample + 1
+      } else {
+        bits_per_sample
+      }
+    }
+    ChannelAssignment::RightSide   => {
+      if channel == 0 {
+        bits_per_sample + 1
+      } else {
+        bits_per_sample
+      }
+    }
+    ChannelAssignment::MiddleSide  => {
+      if channel == 1 {
+        bits_per_sample + 1
+      } else {
+        bits_per_sample
+      }
+    }
+  }
+}
+
 pub fn subframe_parser<'a>(input: (&'a [u8], usize),
+                           channel: &mut usize,
                            frame_header: &frame::Header)
                            -> IResult<'a, (&'a [u8], usize), SubFrame> {
+  let block_size      = frame_header.block_size as usize;
+  let bits_per_sample = adjust_bits_per_sample(frame_header, *channel);
+
   chain!(input,
     subframe_header: header ~
     wasted_bits: map!(
       cond!(subframe_header.1, leading_zeros),
       |option: Option<u32>| option.map_or(0, |zeros| zeros + 1)
     ) ~
-    subframe_data: apply!(data, frame_header, subframe_header.0 as usize,
-                          wasted_bits as usize),
+    subframe_data: apply!(data,
+      bits_per_sample - (wasted_bits as usize),
+      block_size, subframe_header.0),
     || {
+      // Iterate over the current channel being parsed. This probably should
+      // be abstracted away, but for now this is the solution.
+      *channel += 1;
+
       SubFrame {
         data: subframe_data,
         wasted_bits: wasted_bits,
@@ -69,7 +110,7 @@ pub fn subframe_parser<'a>(input: (&'a [u8], usize),
   )
 }
 
-fn header(input: (&[u8], usize)) -> IResult<(&[u8], usize), (u8, bool)> {
+fn header(input: (&[u8], usize)) -> IResult<(&[u8], usize), (usize, bool)> {
   match take_bits!(input, u8, 8) {
     IResult::Done(i, byte)    => {
       let is_valid        = (byte >> 7) == 0;
@@ -77,7 +118,7 @@ fn header(input: (&[u8], usize)) -> IResult<(&[u8], usize), (u8, bool)> {
       let has_wasted_bits = (byte & 0b01) == 1;
 
       if is_valid {
-        IResult::Done(i, (subframe_type, has_wasted_bits))
+        IResult::Done(i, (subframe_type as usize, has_wasted_bits))
       } else {
         IResult::Error(Err::Position(ErrorCode::Digit as u32, input.0))
       }
@@ -87,14 +128,11 @@ fn header(input: (&[u8], usize)) -> IResult<(&[u8], usize), (u8, bool)> {
   }
 }
 
-fn data<'a>(input: (&'a [u8], usize),
-            frame_header: &frame::Header,
-            subframe_type: usize,
-            wasted_bits: usize)
-            -> IResult<'a, (&'a [u8], usize), subframe::Data> {
-  let bits_per_sample = frame_header.bits_per_sample - wasted_bits;
-  let block_size      = frame_header.block_size as usize;
-
+fn data(input: (&[u8], usize),
+        bits_per_sample: usize,
+        block_size: usize,
+        subframe_type: usize)
+        -> IResult<(&[u8], usize), subframe::Data> {
   match subframe_type {
     0b000000            => constant(input, bits_per_sample),
     0b000001            => verbatim(input, bits_per_sample, block_size),
