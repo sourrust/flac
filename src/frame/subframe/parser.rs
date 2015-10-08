@@ -69,7 +69,7 @@ pub fn subframe_parser<'a>(input: (&'a [u8], usize),
   )
 }
 
-fn header(input: (&[u8], usize)) -> IResult<(&[u8], usize), (u8, bool)> {
+fn header(input: (&[u8], usize)) -> IResult<(&[u8], usize), (usize, bool)> {
   match take_bits!(input, u8, 8) {
     IResult::Done(i, byte)    => {
       let is_valid        = (byte >> 7) == 0;
@@ -77,7 +77,7 @@ fn header(input: (&[u8], usize)) -> IResult<(&[u8], usize), (u8, bool)> {
       let has_wasted_bits = (byte & 0b01) == 1;
 
       if is_valid {
-        IResult::Done(i, (subframe_type, has_wasted_bits))
+        IResult::Done(i, (subframe_type as usize, has_wasted_bits))
       } else {
         IResult::Error(Err::Position(ErrorCode::Digit as u32, input.0))
       }
