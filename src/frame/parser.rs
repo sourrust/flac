@@ -31,12 +31,13 @@ pub fn frame_parser<'a>(input: &'a [u8], stream_info: &StreamInfo)
   //                     }; MAX_CHANNELS];
   // ```
   let mut subframes: [SubFrame; MAX_CHANNELS] = unsafe { mem::zeroed() };
+  let mut channel = 0;
 
   let result = chain!(input,
     frame_header: apply!(header, stream_info) ~
     bits!(
       count_slice!(
-        apply!(subframe_parser, &frame_header),
+        apply!(subframe_parser, &mut channel, &frame_header),
         &mut subframes[0..(frame_header.channels as usize)]
       )
     ) ~

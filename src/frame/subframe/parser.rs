@@ -82,6 +82,7 @@ fn adjust_bits_per_sample(frame_header: &frame::Header,
 }
 
 pub fn subframe_parser<'a>(input: (&'a [u8], usize),
+                           channel: &mut usize,
                            frame_header: &frame::Header)
                            -> IResult<'a, (&'a [u8], usize), SubFrame> {
   let block_size      = frame_header.block_size as usize;
@@ -97,6 +98,10 @@ pub fn subframe_parser<'a>(input: (&'a [u8], usize),
       bits_per_sample - (wasted_bits as usize),
       block_size, subframe_header.0),
     || {
+      // Iterate over the current channel being parsed. This probably should
+      // be abstracted away, but for now this is the solution.
+      *channel += 1;
+
       SubFrame {
         data: subframe_data,
         wasted_bits: wasted_bits,
