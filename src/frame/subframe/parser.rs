@@ -398,3 +398,40 @@ fn encoded_residuals<'a>(input: (&'a [u8], usize),
     IResult::Incomplete(Needed::Unknown)
   }
 }
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use nom::IResult;
+
+  #[test]
+  fn test_leading_zeros() {
+    let inputs  = [ (&[0b10000000][..], 0)
+                  , (&[0b11000000][..], 1)
+                  , (&[0b00000001][..], 0)
+                  , (&[0b11111111][..], 7)
+                  , (&[0b00000000, 0b10000000][..], 0)
+                  , (&[0b10000000, 0b10000000][..], 1)
+                  , (&[0b00000000, 0b00000001][..], 0)
+                  , (&[0b11111110, 0b00000010][..], 7)
+                  ];
+    let results = [ IResult::Done((&inputs[0].0[..], 1), 0)
+                  , IResult::Done((&inputs[1].0[..], 2), 0)
+                  , IResult::Done((&[][..], 0), 7)
+                  , IResult::Done((&[][..], 0), 0)
+                  , IResult::Done((&inputs[4].0[1..], 1), 8)
+                  , IResult::Done((&inputs[5].0[1..], 1), 7)
+                  , IResult::Done((&[][..], 0), 15)
+                  , IResult::Done((&inputs[7].0[1..], 7), 7)
+                  ];
+
+    assert_eq!(leading_zeros(inputs[0]), results[0]);
+    assert_eq!(leading_zeros(inputs[1]), results[1]);
+    assert_eq!(leading_zeros(inputs[2]), results[2]);
+    assert_eq!(leading_zeros(inputs[3]), results[3]);
+    assert_eq!(leading_zeros(inputs[4]), results[4]);
+    assert_eq!(leading_zeros(inputs[5]), results[5]);
+    assert_eq!(leading_zeros(inputs[6]), results[6]);
+    assert_eq!(leading_zeros(inputs[7]), results[7]);
+  }
+}
