@@ -9,7 +9,7 @@ use frame::{subframe, ChannelAssignment};
 use frame::SubFrame;
 use frame::subframe::{CodingMethod, PartitionedRiceContents};
 
-fn leading_zeros(input: (&[u8], usize)) -> IResult<(&[u8], usize), u32> {
+pub fn leading_zeros(input: (&[u8], usize)) -> IResult<(&[u8], usize), u32> {
   let (bytes, mut offset) = input;
 
   let mut index     = 0;
