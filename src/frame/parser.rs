@@ -101,7 +101,7 @@ pub fn block_sample(input: &[u8]) -> IResult<&[u8], (u8, u8)> {
   match be_u8(input) {
     IResult::Done(i, byte)    => {
       let block_byte  = byte >> 4;
-      let sample_byte = byte & 0x0f;
+      let sample_byte = byte & 0b1111;
       let is_valid    = block_byte != 0b0000 && sample_byte != 0b1111;
 
       if is_valid {
