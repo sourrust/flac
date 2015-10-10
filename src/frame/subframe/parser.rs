@@ -408,6 +408,9 @@ mod tests {
     Err, ErrorCode
   };
 
+  use frame;
+  use frame::{ChannelAssignment, NumberType};
+
   #[test]
   fn test_leading_zeros() {
     let inputs  = [ (&[0b10000000][..], 0)
@@ -457,5 +460,36 @@ mod tests {
     assert_eq!(header(inputs[1]), results[1]);
     assert_eq!(header(inputs[2]), results[2]);
     assert_eq!(header(inputs[3]), results[3]);
+  }
+
+  #[test]
+  fn test_adjust_bits_per_sample() {
+    let mut frame_header = frame::Header {
+      block_size: 512,
+      sample_rate: 41000,
+      channels: 2,
+      channel_assignment: ChannelAssignment::Independent,
+      bits_per_sample: 16,
+      number: NumberType::Sample(40),
+      crc: 0xc4,
+    };
+
+    assert_eq!(adjust_bits_per_sample(&frame_header, 0), 16);
+    assert_eq!(adjust_bits_per_sample(&frame_header, 1), 16);
+
+    frame_header.channel_assignment = ChannelAssignment::LeftSide;
+
+    assert_eq!(adjust_bits_per_sample(&frame_header, 0), 16);
+    assert_eq!(adjust_bits_per_sample(&frame_header, 1), 17);
+
+    frame_header.channel_assignment = ChannelAssignment::RightSide;
+
+    assert_eq!(adjust_bits_per_sample(&frame_header, 0), 17);
+    assert_eq!(adjust_bits_per_sample(&frame_header, 1), 16);
+
+    frame_header.channel_assignment = ChannelAssignment::MiddleSide;
+
+    assert_eq!(adjust_bits_per_sample(&frame_header, 0), 16);
+    assert_eq!(adjust_bits_per_sample(&frame_header, 1), 17);
   }
 }
