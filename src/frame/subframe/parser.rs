@@ -403,7 +403,10 @@ fn encoded_residuals<'a>(input: (&'a [u8], usize),
 #[cfg(test)]
 mod tests {
   use super::*;
-  use nom::IResult;
+  use nom::{
+    IResult,
+    Err, ErrorCode
+  };
 
   #[test]
   fn test_leading_zeros() {
@@ -434,5 +437,25 @@ mod tests {
     assert_eq!(leading_zeros(inputs[5]), results[5]);
     assert_eq!(leading_zeros(inputs[6]), results[6]);
     assert_eq!(leading_zeros(inputs[7]), results[7]);
+  }
+
+  #[test]
+  fn test_header() {
+    let inputs  = [ (&[0b01010100][..], 0)
+                  , (&[0b00011111][..], 0)
+                  , (&[0b00000000][..], 0)
+                  , (&[0b10000000][..], 0)
+                  ];
+    let results = [ IResult::Done((&[][..], 0), (0b101010, false))
+                  , IResult::Done((&[][..], 0), (0b001111, true))
+                  , IResult::Done((&[][..], 0), (0b000000, false))
+                  , IResult::Error(Err::Position(ErrorCode::Digit as u32,
+                                                 &inputs[3].0))
+                  ];
+
+    assert_eq!(header(inputs[0]), results[0]);
+    assert_eq!(header(inputs[1]), results[1]);
+    assert_eq!(header(inputs[2]), results[2]);
+    assert_eq!(header(inputs[3]), results[3]);
   }
 }
