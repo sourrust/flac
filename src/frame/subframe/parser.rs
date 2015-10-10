@@ -49,9 +49,9 @@ pub fn leading_zeros(input: (&[u8], usize)) -> IResult<(&[u8], usize), u32> {
   }
 }
 
-fn adjust_bits_per_sample(frame_header: &frame::Header,
-                          channel: usize)
-                          -> usize {
+pub fn adjust_bits_per_sample(frame_header: &frame::Header,
+                              channel: usize)
+                              -> usize {
   let bits_per_sample = frame_header.bits_per_sample;
 
   match frame_header.channel_assignment {
@@ -110,7 +110,8 @@ pub fn subframe_parser<'a>(input: (&'a [u8], usize),
   )
 }
 
-fn header(input: (&[u8], usize)) -> IResult<(&[u8], usize), (usize, bool)> {
+pub fn header(input: (&[u8], usize))
+              -> IResult<(&[u8], usize), (usize, bool)> {
   match take_bits!(input, u8, 8) {
     IResult::Done(i, byte)    => {
       let is_valid        = (byte >> 7) == 0;
@@ -402,7 +403,13 @@ fn encoded_residuals<'a>(input: (&'a [u8], usize),
 #[cfg(test)]
 mod tests {
   use super::*;
-  use nom::IResult;
+  use nom::{
+    IResult,
+    Err, ErrorCode
+  };
+
+  use frame;
+  use frame::{ChannelAssignment, NumberType};
 
   #[test]
   fn test_leading_zeros() {
@@ -433,5 +440,56 @@ mod tests {
     assert_eq!(leading_zeros(inputs[5]), results[5]);
     assert_eq!(leading_zeros(inputs[6]), results[6]);
     assert_eq!(leading_zeros(inputs[7]), results[7]);
+  }
+
+  #[test]
+  fn test_header() {
+    let inputs  = [ (&[0b01010100][..], 0)
+                  , (&[0b00011111][..], 0)
+                  , (&[0b00000000][..], 0)
+                  , (&[0b10000000][..], 0)
+                  ];
+    let results = [ IResult::Done((&[][..], 0), (0b101010, false))
+                  , IResult::Done((&[][..], 0), (0b001111, true))
+                  , IResult::Done((&[][..], 0), (0b000000, false))
+                  , IResult::Error(Err::Position(ErrorCode::Digit as u32,
+                                                 &inputs[3].0))
+                  ];
+
+    assert_eq!(header(inputs[0]), results[0]);
+    assert_eq!(header(inputs[1]), results[1]);
+    assert_eq!(header(inputs[2]), results[2]);
+    assert_eq!(header(inputs[3]), results[3]);
+  }
+
+  #[test]
+  fn test_adjust_bits_per_sample() {
+    let mut frame_header = frame::Header {
+      block_size: 512,
+      sample_rate: 41000,
+      channels: 2,
+      channel_assignment: ChannelAssignment::Independent,
+      bits_per_sample: 16,
+      number: NumberType::Sample(40),
+      crc: 0xc4,
+    };
+
+    assert_eq!(adjust_bits_per_sample(&frame_header, 0), 16);
+    assert_eq!(adjust_bits_per_sample(&frame_header, 1), 16);
+
+    frame_header.channel_assignment = ChannelAssignment::LeftSide;
+
+    assert_eq!(adjust_bits_per_sample(&frame_header, 0), 16);
+    assert_eq!(adjust_bits_per_sample(&frame_header, 1), 17);
+
+    frame_header.channel_assignment = ChannelAssignment::RightSide;
+
+    assert_eq!(adjust_bits_per_sample(&frame_header, 0), 17);
+    assert_eq!(adjust_bits_per_sample(&frame_header, 1), 16);
+
+    frame_header.channel_assignment = ChannelAssignment::MiddleSide;
+
+    assert_eq!(adjust_bits_per_sample(&frame_header, 0), 16);
+    assert_eq!(adjust_bits_per_sample(&frame_header, 1), 17);
   }
 }
