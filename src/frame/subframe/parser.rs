@@ -110,7 +110,8 @@ pub fn subframe_parser<'a>(input: (&'a [u8], usize),
   )
 }
 
-fn header(input: (&[u8], usize)) -> IResult<(&[u8], usize), (usize, bool)> {
+pub fn header(input: (&[u8], usize))
+              -> IResult<(&[u8], usize), (usize, bool)> {
   match take_bits!(input, u8, 8) {
     IResult::Done(i, byte)    => {
       let is_valid        = (byte >> 7) == 0;
