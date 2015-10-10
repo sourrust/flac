@@ -49,9 +49,9 @@ pub fn leading_zeros(input: (&[u8], usize)) -> IResult<(&[u8], usize), u32> {
   }
 }
 
-fn adjust_bits_per_sample(frame_header: &frame::Header,
-                          channel: usize)
-                          -> usize {
+pub fn adjust_bits_per_sample(frame_header: &frame::Header,
+                              channel: usize)
+                              -> usize {
   let bits_per_sample = frame_header.bits_per_sample;
 
   match frame_header.channel_assignment {
