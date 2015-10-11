@@ -146,8 +146,8 @@ fn data(input: (&[u8], usize),
   }
 }
 
-fn constant(input: (&[u8], usize), bits_per_sample: usize)
-            -> IResult<(&[u8], usize), subframe::Data> {
+pub fn constant(input: (&[u8], usize), bits_per_sample: usize)
+                -> IResult<(&[u8], usize), subframe::Data> {
   map!(input, take_bits!(i32, bits_per_sample), subframe::Data::Constant)
 }
 
