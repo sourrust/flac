@@ -508,4 +508,20 @@ mod tests {
     assert_eq!(constant(inputs[0], 16), results[0]);
     assert_eq!(constant(inputs[1], 5), results[1]);
   }
+
+  #[test]
+  fn test_verbatim() {
+    let inputs  = [ (&b"\xff\x80\0\x0a\xff\x65\0\0\x04\x28\xff\x28\
+                        \0\0\xff\xe7"[..], 0)
+                  , (&b"\xe2\x81\x07\x80\x89"[..], 0)
+                  ];
+    let results = [ IResult::Done((&[][..], 0), Data::Verbatim(vec![
+                                  -128, 10, -155, 0, 1064, -216, 0, -25]))
+                  , IResult::Done((&[][..], 0), Data::Verbatim(vec![
+                                  -4, 10, 0, -16, 15, 0, 4, 9]))
+                  ];
+
+    assert_eq!(verbatim(inputs[0], 16, 8), results[0]);
+    assert_eq!(verbatim(inputs[1], 5, 8), results[1]);
+  }
 }
