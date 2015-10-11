@@ -6,6 +6,7 @@ pub struct SubFrame {
   pub wasted_bits: u32,
 }
 
+#[derive(Debug, PartialEq, Eq)]
 pub enum Data {
   Constant(i32),
   Verbatim(Vec<i32>),
@@ -13,6 +14,7 @@ pub enum Data {
   LPC(LPC),
 }
 
+#[derive(Debug, PartialEq, Eq)]
 pub struct Fixed {
   pub entropy_coding_method: EntropyCodingMethod,
   pub order: u8,
@@ -20,6 +22,7 @@ pub struct Fixed {
   pub residual: Vec<i32>,
 }
 
+#[derive(Debug, PartialEq, Eq)]
 pub struct LPC {
   pub entropy_coding_method: EntropyCodingMethod,
   pub order: u8,
@@ -30,6 +33,7 @@ pub struct LPC {
   pub residual: Vec<i32>,
 }
 
+#[derive(Debug, PartialEq, Eq)]
 pub struct EntropyCodingMethod {
   pub method_type: CodingMethod,
   pub data: PartitionedRice,
@@ -41,11 +45,13 @@ pub enum CodingMethod {
   PartitionedRice2,
 }
 
+#[derive(Debug, PartialEq, Eq)]
 pub struct PartitionedRice {
   pub order: u32,
   pub contents: PartitionedRiceContents,
 }
 
+#[derive(Debug, PartialEq, Eq)]
 pub struct PartitionedRiceContents {
   pub parameters: Vec<u32>,
   pub raw_bits: Vec<u32>,
