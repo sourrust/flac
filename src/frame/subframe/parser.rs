@@ -410,6 +410,7 @@ mod tests {
 
   use frame;
   use frame::{ChannelAssignment, NumberType};
+  use frame::subframe::Data;
 
   #[test]
   fn test_leading_zeros() {
@@ -491,5 +492,18 @@ mod tests {
 
     assert_eq!(adjust_bits_per_sample(&frame_header, 0), 16);
     assert_eq!(adjust_bits_per_sample(&frame_header, 1), 17);
+  }
+
+  #[test]
+  fn test_constant() {
+    let inputs  = [ (&b"\0\x80"[..], 0)
+                  , (&b"\x18"[..], 3)
+                  ];
+    let results = [ IResult::Done((&[][..], 0), Data::Constant(128))
+                  , IResult::Done((&[][..], 0), Data::Constant(-8))
+                  ];
+
+    assert_eq!(constant(inputs[0], 16), results[0]);
+    assert_eq!(constant(inputs[1], 5), results[1]);
   }
 }
