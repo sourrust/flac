@@ -103,3 +103,15 @@ macro_rules! count_bits (
     count_bits!($i, call!($f), $count);
   );
 );
+
+macro_rules! take_signed_bits (
+  ($input: expr, $count: expr) => (
+    map!($input, take_bits!(u32, $count), |value| {
+      if $count >= 32 || value < (1 << ($count - 1)) {
+        value as i32
+      } else {
+        (value as i32).wrapping_sub(1 << $count)
+      }
+    });
+  );
+);
