@@ -114,4 +114,7 @@ macro_rules! take_signed_bits (
       }
     });
   );
+  ($input: expr, $count: expr) => (
+    take_signed_bits!($input, i32, $count);
+  );
 );
