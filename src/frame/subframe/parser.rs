@@ -412,7 +412,12 @@ mod tests {
 
   use frame;
   use frame::{ChannelAssignment, NumberType};
-  use frame::subframe::Data;
+  use frame::subframe::{
+    Data,
+    Fixed,
+    EntropyCodingMethod, CodingMethod, PartitionedRice,
+    PartitionedRiceContents,
+  };
 
   #[test]
   fn test_leading_zeros() {
@@ -523,5 +528,50 @@ mod tests {
 
     assert_eq!(verbatim(inputs[0], 16, 8), results[0]);
     assert_eq!(verbatim(inputs[1], 5, 8), results[1]);
+  }
+
+  #[test]
+  fn test_fixed() {
+    let inputs  = [ (&b"\xe8\0\x40\xaf\x02\x01\x04\x80\x42\x92\x84\x65\
+                        \x64"[..], 0)
+                  , (&b"\xf5\x47\xf0\xff\xdc\0\x42\0\x8e\xf9\xbc\x08\x08\
+                        \x10"[..],0)
+                  ];
+    let results = [ IResult::Done((&[][..], 0), Data::Fixed(Fixed {
+                      entropy_coding_method: EntropyCodingMethod {
+                        method_type: CodingMethod::PartitionedRice,
+                        data: PartitionedRice {
+                          order: 0,
+                          contents: PartitionedRiceContents {
+                            parameters: vec![8],
+                            raw_bits: vec![0],
+                            capacity_by_order: 0,
+                          },
+                        },
+                      },
+                      order: 4,
+                      warmup: [-24, 0, 64, -81],
+                      residual: vec![22, 0, 5, 24, -17, 54],
+                    }))
+                  , IResult::Done((&[][..], 0), Data::Fixed(Fixed {
+                      entropy_coding_method: EntropyCodingMethod {
+                        method_type: CodingMethod::PartitionedRice2,
+                        data: PartitionedRice {
+                          order: 1,
+                          contents: PartitionedRiceContents {
+                            parameters: vec![31, 31],
+                            raw_bits: vec![16, 6],
+                            capacity_by_order: 1,
+                          },
+                        },
+                      },
+                      order: 2,
+                      warmup: [-1, 5, 0, 0],
+                      residual: vec![-36, 66, 142, -4, 2, 0, -32, 16],
+                    }))
+                  ];
+
+    assert_eq!(fixed(inputs[0], 4, 8, 10), results[0]);
+    assert_eq!(fixed(inputs[1], 2, 4, 10), results[1]);
   }
 }
