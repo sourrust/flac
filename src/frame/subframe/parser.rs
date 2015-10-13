@@ -351,7 +351,7 @@ fn unencoded_residuals<'a>(input: (&'a [u8], usize),
                            -> IResult<'a, (&'a[u8], usize), ()> {
   *raw_bit = bits_per_sample as u32;
 
-  count_slice!(input, take_bits!(i32, bits_per_sample), &mut samples[..])
+  count_slice!(input, take_signed_bits!(bits_per_sample), &mut samples[..])
 }
 
 fn encoded_residuals<'a>(input: (&'a [u8], usize),
