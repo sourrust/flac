@@ -159,7 +159,7 @@ pub fn fixed(input: (&[u8], usize),
   let mut warmup = [0; subframe::MAX_FIXED_ORDER];
 
   chain!(input,
-    count_slice!(take_bits!(i32, bits_per_sample), &mut warmup[0..order]) ~
+    count_slice!(take_signed_bits!(bits_per_sample), &mut warmup[0..order]) ~
     tuple: apply!(residual, order, block_size),
     || {
       let data = tuple;
