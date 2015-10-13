@@ -151,11 +151,11 @@ pub fn constant(input: (&[u8], usize), bits_per_sample: usize)
   map!(input, take_signed_bits!(bits_per_sample), subframe::Data::Constant)
 }
 
-fn fixed(input: (&[u8], usize),
-         order: usize,
-         bits_per_sample: usize,
-         block_size: usize)
-         -> IResult<(&[u8], usize), subframe::Data> {
+pub fn fixed(input: (&[u8], usize),
+             order: usize,
+             bits_per_sample: usize,
+             block_size: usize)
+             -> IResult<(&[u8], usize), subframe::Data> {
   let mut warmup = [0; subframe::MAX_FIXED_ORDER];
 
   chain!(input,
