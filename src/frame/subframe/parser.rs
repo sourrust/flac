@@ -535,7 +535,7 @@ mod tests {
     let inputs  = [ (&b"\xe8\0\x40\xaf\x02\x01\x04\x80\x42\x92\x84\x65\
                         \x64"[..], 0)
                   , (&b"\xf5\x47\xf0\xff\xdc\0\x42\0\x8e\xf9\xbc\x08\x08\
-                        \x10"[..],0)
+                        \x10"[..], 0)
                   ];
     let results = [ IResult::Done((&[][..], 0), Data::Fixed(Fixed {
                       entropy_coding_method: EntropyCodingMethod {
