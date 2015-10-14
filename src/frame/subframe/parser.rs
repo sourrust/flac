@@ -189,11 +189,11 @@ fn qlp_coefficient_precision(input: (&[u8], usize))
   }
 }
 
-fn lpc(input: (&[u8], usize),
-       order: usize,
-       bits_per_sample: usize,
-       block_size: usize)
-       -> IResult<(&[u8], usize), subframe::Data> {
+pub fn lpc(input: (&[u8], usize),
+           order: usize,
+           bits_per_sample: usize,
+           block_size: usize)
+           -> IResult<(&[u8], usize), subframe::Data> {
   let mut warmup           = [0; subframe::MAX_LPC_ORDER];
   let mut qlp_coefficients = [0; subframe::MAX_LPC_ORDER];
 
