@@ -198,11 +198,11 @@ pub fn lpc(input: (&[u8], usize),
   let mut qlp_coefficients = [0; subframe::MAX_LPC_ORDER];
 
   chain!(input,
-    count_slice!(take_bits!(i32, bits_per_sample), &mut warmup[0..order]) ~
+    count_slice!(take_signed_bits!(bits_per_sample), &mut warmup[0..order]) ~
     qlp_coeff_precision: qlp_coefficient_precision ~
-    quantization_level: take_bits!(i8, 5) ~
+    quantization_level: take_signed_bits!(i8, 5) ~
     count_slice!(
-      take_bits!(i32, qlp_coeff_precision as usize),
+      take_signed_bits!(qlp_coeff_precision as usize),
       &mut qlp_coefficients[0..order]
     ) ~
     tuple: apply!(residual, order, block_size),
