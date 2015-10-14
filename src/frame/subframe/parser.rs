@@ -414,7 +414,7 @@ mod tests {
   use frame::{ChannelAssignment, NumberType};
   use frame::subframe::{
     Data,
-    Fixed,
+    Fixed, LPC,
     EntropyCodingMethod, CodingMethod, PartitionedRice,
     PartitionedRiceContents,
   };
@@ -573,5 +573,40 @@ mod tests {
 
     assert_eq!(fixed(inputs[0], 4, 8, 10), results[0]);
     assert_eq!(fixed(inputs[1], 2, 4, 10), results[1]);
+  }
+
+  #[test]
+  fn test_lpc() {
+    let inputs  = [ (&b"\xe8\0\x40\xaf\x74\x73\x19\0\x75\x81\xe8\x16\0\x05\
+                        \x18\xef\x36"[..], 0)
+                  ];
+    let results = [ IResult::Done((&[][..], 0), Data::LPC(LPC {
+                      entropy_coding_method: EntropyCodingMethod {
+                        method_type: CodingMethod::PartitionedRice,
+                        data: PartitionedRice {
+                          order: 0,
+                          contents: PartitionedRiceContents {
+                            parameters: vec![15],
+                            raw_bits: vec![8],
+                            capacity_by_order: 0,
+                          },
+                        },
+                      },
+                      order: 4,
+                      warmup: [ -24, 0, 64, -81, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                              , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                              , 0, 0
+                              ],
+                      qlp_coeff_precision: 8,
+                      quantization_level: 8,
+                      qlp_coefficients: [ -26, 50, 0, -21, 0, 0, 0, 0, 0, 0, 0
+                                        , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                                        , 0, 0, 0, 0, 0, 0, 0, 0, 0
+                                        ],
+                      residual: vec![22, 0, 5, 24, -17, 54],
+                    }))
+                  ];
+
+    assert_eq!(lpc(inputs[0], 4, 8, 10), results[0]);
   }
 }
