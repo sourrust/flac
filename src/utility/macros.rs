@@ -120,3 +120,25 @@ macro_rules! take_signed_bits (
     take_signed_bits!($input, i32, $count);
   );
 );
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use nom::{
+    IResult,
+    Err, ErrorCode
+  };
+
+  #[test]
+  fn test_take_signed_bits() {
+    let inputs      = [ (&[0b00100000][..], 2)
+                      , (&[0b00011111][..], 2)
+                      ];
+    let results_i8  = [ IResult::Done((&[][..], 0), -32)
+                      , IResult::Done((&[][..], 0), 31)
+                      ];
+
+    assert_eq!(take_signed_bits!(inputs[0], i8, 6), results_i8[0]);
+    assert_eq!(take_signed_bits!(inputs[1], i8, 6), results_i8[1]);
+  }
+}
