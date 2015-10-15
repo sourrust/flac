@@ -120,3 +120,39 @@ macro_rules! take_signed_bits (
     take_signed_bits!($input, i32, $count);
   );
 );
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use nom::{
+    IResult,
+    Err, ErrorCode
+  };
+
+  #[test]
+  fn test_take_signed_bits() {
+    let inputs      = [ (&[0b00100000][..], 2)
+                      , (&[0b00011111][..], 2)
+                      , (&[0b00001000, 0b00000000][..], 4)
+                      , (&[0b00000111, 0b11111111][..], 4)
+                      , (&[0b10000000, 0b00000000, 0b00000000][..], 0)
+                      , (&[0b01111111, 0b11111111, 0b11111111][..], 0)
+                      ];
+    let results_i8  = [ IResult::Done((&[][..], 0), -32)
+                      , IResult::Done((&[][..], 0), 31)
+                      ];
+    let results_i16 = [ IResult::Done((&[][..], 0), -2048)
+                      , IResult::Done((&[][..], 0), 2047)
+                      ];
+    let results_i32 = [ IResult::Done((&[][..], 0), -8388608)
+                      , IResult::Done((&[][..], 0), 8388607)
+                      ];
+
+    assert_eq!(take_signed_bits!(inputs[0], i8, 6), results_i8[0]);
+    assert_eq!(take_signed_bits!(inputs[1], i8, 6), results_i8[1]);
+    assert_eq!(take_signed_bits!(inputs[2], i16, 12), results_i16[0]);
+    assert_eq!(take_signed_bits!(inputs[3], i16, 12), results_i16[1]);
+    assert_eq!(take_signed_bits!(inputs[4], i32, 24), results_i32[0]);
+    assert_eq!(take_signed_bits!(inputs[5], i32, 24), results_i32[1]);
+  }
+}
