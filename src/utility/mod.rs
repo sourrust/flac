@@ -19,6 +19,14 @@ pub fn to_u32(bytes: &[u8]) -> u32 {
   )
 }
 
+pub fn extend_sign(value: u32, bit_count: usize) -> i32 {
+  if bit_count >= 32 || value < (1 << (bit_count - 1)) {
+    value as i32
+  } else {
+    (value as i32).wrapping_sub(1 << bit_count)
+  }
+}
+
 #[cfg(test)]
 mod tests {
   use super::*;
