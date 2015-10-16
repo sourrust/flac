@@ -579,7 +579,11 @@ mod tests {
   fn test_lpc() {
     let inputs  = [ (&b"\xe8\0\x40\xaf\x74\x73\x19\0\x75\x81\xe8\x16\0\x05\
                         \x18\xef\x36"[..], 0)
+                  , (&b"\x84\x01\xb6\xc2\x37\xf9\xd3\x82\x4a\xa2\x3b\xe9\xfc\
+                        \x2b\x66\xea\x36\xcb\x85\x72\xc5\x13\x14\xed\x1b\
+                        \x3f"[..], 0)
                   ];
+    let slice = (&[27, 63][..], 2);
     let results = [ IResult::Done((&[][..], 0), Data::LPC(LPC {
                       entropy_coding_method: EntropyCodingMethod {
                         method_type: CodingMethod::PartitionedRice,
@@ -605,8 +609,36 @@ mod tests {
                                         ],
                       residual: vec![22, 0, 5, 24, -17, 54],
                     }))
+                  , IResult::Done(slice, Data::LPC(LPC {
+                      entropy_coding_method: EntropyCodingMethod {
+                        method_type: CodingMethod::PartitionedRice2,
+                        data: PartitionedRice {
+                          order: 1,
+                          contents: PartitionedRiceContents {
+                            parameters: vec![3, 5],
+                            raw_bits: vec![0, 0],
+                            capacity_by_order: 1,
+                          },
+                        },
+                      },
+                      order: 8,
+                      warmup: [ -8, 4, 0, 1, -5, 6, -4, 2,  0, 0, 0, 0, 0, 0
+                              , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                              , 0, 0
+                              ],
+                      qlp_coeff_precision: 4,
+                      quantization_level: 15,
+                      qlp_coefficients: [ -1, 3, -6, 7, 0, 4, -7, 5, 0, 0, 0
+                                        , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                                        , 0, 0, 0, 0, 0, 0, 0, 0, 0
+                                        ],
+                      residual: vec![ -2, 3, -1, -4, 2, -14, 14, -7, 11, 9, 12
+                                    , 8, -3, 1, 1, 11, 6, -13
+                                    ],
+                    }))
                   ];
 
     assert_eq!(lpc(inputs[0], 4, 8, 10), results[0]);
+    assert_eq!(lpc(inputs[1], 8, 4, 26), results[1]);
   }
 }
