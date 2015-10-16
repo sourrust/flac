@@ -107,13 +107,7 @@ macro_rules! count_bits (
 macro_rules! take_signed_bits (
   ($input: expr, $signed_type: ty, $count: expr) => (
     map!($input, take_bits!(u32, $count), |value| {
-      let max_count = ::std::mem::size_of::<$signed_type>() * 8;
-
-      if $count >= max_count || value < (1 << ($count - 1)) {
-        value as $signed_type
-      } else {
-        (value as $signed_type).wrapping_sub(1 << $count)
-      }
+      ::utility::extend_sign(value, $count) as $signed_type
     });
   );
   ($input: expr, $count: expr) => (
