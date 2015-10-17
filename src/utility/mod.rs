@@ -46,4 +46,22 @@ mod tests {
     assert_eq!(to_u32(&bytes[1..4]), 0x00234567);
     assert_eq!(to_u32(&bytes[4..]), 0x89abcdef);
   }
+
+  #[test]
+  fn test_extend_sign() {
+    assert_eq!(extend_sign(32, 6), -32);
+    assert_eq!(extend_sign(31, 6), 31);
+    assert_eq!(extend_sign(128, 8), -128);
+    assert_eq!(extend_sign(127, 8), 127);
+
+    assert_eq!(extend_sign(2048, 12), -2048);
+    assert_eq!(extend_sign(2047, 12), 2047);
+    assert_eq!(extend_sign(32768, 16), -32768);
+    assert_eq!(extend_sign(32767, 16), 32767);
+
+    assert_eq!(extend_sign(8388608, 24), -8388608);
+    assert_eq!(extend_sign(8388607, 24), 8388607);
+    assert_eq!(extend_sign(2147483648, 32), -2147483648);
+    assert_eq!(extend_sign(2147483647, 32), 2147483647);
+  }
 }
