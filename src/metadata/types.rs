@@ -224,9 +224,9 @@ pub enum PictureType {
 }
 
 enum ParserState {
-  FLAC,
+  Marker,
   Header,
-  MetaData,
+  Block((bool, u8, u32)),
 }
 
 pub struct MetaDataConsumer {
