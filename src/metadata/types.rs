@@ -231,19 +231,13 @@ enum ParserState {
 
 pub struct MetaDataConsumer {
   state: ParserState,
-  is_last: bool,
-  block_type: u8,
-  length: u32,
   pub data: Vec<Block>
 }
 
 impl MetaDataConsumer {
   pub fn new() -> MetaDataConsumer {
     MetaDataConsumer {
-      state: ParserState::FLAC,
-      is_last: false,
-      block_type: 127,
-      length: 0,
+      state: ParserState::Marker,
       data: Vec::new(),
     }
   }
