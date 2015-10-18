@@ -263,7 +263,7 @@ impl MetaDataConsumer {
 
         ConsumerState::Await(4, length)
       }
-      IResult::Error(_)      => ConsumerState::ConsumerError(0),
+      IResult::Error(_)      => ConsumerState::ConsumerError(1),
       IResult::Incomplete(_) => ConsumerState::Await(0, 4),
     }
   }
@@ -288,7 +288,7 @@ impl MetaDataConsumer {
           ConsumerState::Await(length as usize, 4)
         }
       }
-      IResult::Error(_)      => ConsumerState::ConsumerError(0),
+      IResult::Error(_)      => ConsumerState::ConsumerError(2),
       IResult::Incomplete(_) => ConsumerState::Await(0, length as usize),
     }
   }
@@ -304,7 +304,12 @@ impl Consumer for MetaDataConsumer {
   }
 
   fn failed(&mut self, error_code: u32) {
-    println!("Failed with error code: {}", error_code);
+    println!("{}", match error_code {
+      0 => "Couldn't parse FLAC stream marker.",
+      1 => "Couldn't parse metadata block header.",
+      2 => "Couldn't parse metadata block data.",
+      _ => "Unknown error.",
+    });
   }
 
   fn end(&mut self) {}
