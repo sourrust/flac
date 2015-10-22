@@ -370,6 +370,7 @@ fn encoded_residuals<'a>(input: (&'a [u8], usize),
   for sample in samples {
     let result = chain!(mut_input,
       quotient: leading_zeros ~
+      // TODO: Figure out the varied remainder bit size
       remainder: take_bits!(u32, parameter as usize),
       || {
         let value = quotient * parameter + remainder;
