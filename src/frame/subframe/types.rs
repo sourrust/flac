@@ -4,6 +4,7 @@ pub const MAX_FIXED_ORDER: usize = 4;
 /// Maximum LPC order permitted by the format.
 pub const MAX_LPC_ORDER: usize   = 32;
 
+/// A single channel of audio data.
 pub struct SubFrame {
   pub data: Data,
   pub wasted_bits: u32,
