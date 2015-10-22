@@ -81,6 +81,7 @@ pub fn adjust_bits_per_sample(frame_header: &frame::Header,
   }
 }
 
+/// Parse a single channel of audio data.
 pub fn subframe_parser<'a>(input: (&'a [u8], usize),
                            channel: &mut usize,
                            frame_header: &frame::Header)
@@ -370,6 +371,7 @@ fn encoded_residuals<'a>(input: (&'a [u8], usize),
   for sample in samples {
     let result = chain!(mut_input,
       quotient: leading_zeros ~
+      // TODO: Figure out the varied remainder bit size
       remainder: take_bits!(u32, parameter as usize),
       || {
         let value = quotient * parameter + remainder;
