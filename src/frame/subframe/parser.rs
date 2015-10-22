@@ -81,6 +81,7 @@ pub fn adjust_bits_per_sample(frame_header: &frame::Header,
   }
 }
 
+/// Parse a single channel of audio data.
 pub fn subframe_parser<'a>(input: (&'a [u8], usize),
                            channel: &mut usize,
                            frame_header: &frame::Header)
