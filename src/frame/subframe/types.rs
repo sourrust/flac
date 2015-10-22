@@ -1,4 +1,7 @@
+/// Maximum order of the fixed predictors permitted by the format.
 pub const MAX_FIXED_ORDER: usize = 4;
+
+/// Maximum LPC order permitted by the format.
 pub const MAX_LPC_ORDER: usize   = 32;
 
 pub struct SubFrame {
