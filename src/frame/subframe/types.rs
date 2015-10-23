@@ -19,6 +19,7 @@ pub enum Data {
   LPC(LPC),
 }
 
+/// Fixed linear prediction subframe.
 #[derive(Debug, PartialEq, Eq)]
 pub struct Fixed {
   pub entropy_coding_method: EntropyCodingMethod,
@@ -27,6 +28,7 @@ pub struct Fixed {
   pub residual: Vec<i32>,
 }
 
+/// Finite Impulse Response (FIR) linear prediction subframe.
 #[derive(Debug, PartialEq, Eq)]
 pub struct LPC {
   pub entropy_coding_method: EntropyCodingMethod,
