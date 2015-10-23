@@ -52,12 +52,14 @@ pub enum CodingMethod {
   PartitionedRice2,
 }
 
+/// Header for a Rice partitioned residual.
 #[derive(Debug, PartialEq, Eq)]
 pub struct PartitionedRice {
   pub order: u32,
   pub contents: PartitionedRiceContents,
 }
 
+/// Contents of a Rice partitioned residual.
 #[derive(Debug, PartialEq, Eq)]
 pub struct PartitionedRiceContents {
   pub parameters: Vec<u32>,
