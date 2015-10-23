@@ -40,12 +40,14 @@ pub struct LPC {
   pub residual: Vec<i32>,
 }
 
+/// Header for the entropy coding method.
 #[derive(Debug, PartialEq, Eq)]
 pub struct EntropyCodingMethod {
   pub method_type: CodingMethod,
   pub data: PartitionedRice,
 }
 
+/// The available entropy coding methods.
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum CodingMethod {
   PartitionedRice,
