@@ -19,6 +19,7 @@ pub enum Data {
   LPC(LPC),
 }
 
+/// Fixed linear prediction subframe.
 #[derive(Debug, PartialEq, Eq)]
 pub struct Fixed {
   pub entropy_coding_method: EntropyCodingMethod,
@@ -27,6 +28,7 @@ pub struct Fixed {
   pub residual: Vec<i32>,
 }
 
+/// Finite Impulse Response (FIR) linear prediction subframe.
 #[derive(Debug, PartialEq, Eq)]
 pub struct LPC {
   pub entropy_coding_method: EntropyCodingMethod,
@@ -38,24 +40,28 @@ pub struct LPC {
   pub residual: Vec<i32>,
 }
 
+/// Header for the entropy coding method.
 #[derive(Debug, PartialEq, Eq)]
 pub struct EntropyCodingMethod {
   pub method_type: CodingMethod,
   pub data: PartitionedRice,
 }
 
+/// The available entropy coding methods.
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum CodingMethod {
   PartitionedRice,
   PartitionedRice2,
 }
 
+/// Header for a Rice partitioned residual.
 #[derive(Debug, PartialEq, Eq)]
 pub struct PartitionedRice {
   pub order: u32,
   pub contents: PartitionedRiceContents,
 }
 
+/// Contents of a Rice partitioned residual.
 #[derive(Debug, PartialEq, Eq)]
 pub struct PartitionedRiceContents {
   pub parameters: Vec<u32>,
