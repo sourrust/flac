@@ -6,37 +6,54 @@ pub const MAX_LPC_ORDER: usize   = 32;
 
 /// A single channel of audio data.
 pub struct SubFrame {
+  /// Data containing one of the four different types of subframes.
   pub data: Data,
+  /// Number of wasted bits within each sample.
   pub wasted_bits: u32,
 }
 
 /// General enum that holds all the different subframe data types.
 #[derive(Debug, PartialEq, Eq)]
 pub enum Data {
+  /// A single value that represents a constant subframe.
   Constant(i32),
+  /// An uncompressed suframe.
   Verbatim(Vec<i32>),
+  /// Fixed linear prediction subframe.
   Fixed(Fixed),
+  /// FIR linear prediction subframe.
   LPC(LPC),
 }
 
 /// Fixed linear prediction subframe.
 #[derive(Debug, PartialEq, Eq)]
 pub struct Fixed {
+  /// Residual coding method.
   pub entropy_coding_method: EntropyCodingMethod,
+  /// Polynomial order.
   pub order: u8,
+  /// Samples used to warm up, or prime, the predictor.
   pub warmup: [i32; MAX_FIXED_ORDER],
+  /// Remaining samples after the warm up samples.
   pub residual: Vec<i32>,
 }
 
 /// Finite Impulse Response (FIR) linear prediction subframe.
 #[derive(Debug, PartialEq, Eq)]
 pub struct LPC {
+  /// Residual coding method.
   pub entropy_coding_method: EntropyCodingMethod,
+  /// FIR order.
   pub order: u8,
+  /// Quantized FIR filter coefficient precision in bits.
   pub qlp_coeff_precision: u8,
+  /// Quantized linear predictor coefficient shift needed in bits.
   pub quantization_level: i8,
+  /// FIR filter coefficients.
   pub qlp_coefficients: [i32; MAX_LPC_ORDER],
+  /// Samples used to warm up, or prime, the predictor.
   pub warmup: [i32; MAX_LPC_ORDER],
+  /// Remaining samples after the warm up samples.
   pub residual: Vec<i32>,
 }
 
