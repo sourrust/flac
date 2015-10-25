@@ -28,9 +28,13 @@ pub enum Data {
 /// Fixed linear prediction subframe.
 #[derive(Debug, PartialEq, Eq)]
 pub struct Fixed {
+  /// Residual coding method.
   pub entropy_coding_method: EntropyCodingMethod,
+  /// Polynomial order.
   pub order: u8,
+  /// Samples used to warm up, or prime, the predictor.
   pub warmup: [i32; MAX_FIXED_ORDER],
+  /// Remaining samples after the warm up samples.
   pub residual: Vec<i32>,
 }
 
