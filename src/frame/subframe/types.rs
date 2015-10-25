@@ -41,12 +41,19 @@ pub struct Fixed {
 /// Finite Impulse Response (FIR) linear prediction subframe.
 #[derive(Debug, PartialEq, Eq)]
 pub struct LPC {
+  /// Residual coding method.
   pub entropy_coding_method: EntropyCodingMethod,
+  /// FIR order.
   pub order: u8,
+  /// Quantized FIR filter coefficient precision in bits.
   pub qlp_coeff_precision: u8,
+  /// Quantized linear predictor coefficient shift needed in bits.
   pub quantization_level: i8,
+  /// FIR filter coefficients.
   pub qlp_coefficients: [i32; MAX_LPC_ORDER],
+  /// Samples used to warm up, or prime, the predictor.
   pub warmup: [i32; MAX_LPC_ORDER],
+  /// Remaining samples after the warm up samples.
   pub residual: Vec<i32>,
 }
 
