@@ -11,7 +11,7 @@ pub struct Block {
   /// The length, in bytes, of the block being parsed. This does not include
   /// the metadata block header.
   pub length: u32,
-  /// Block data containing on of the eight different types of metadata.
+  /// Block data containing one of the eight different types of metadata.
   pub data: BlockData,
 }
 
