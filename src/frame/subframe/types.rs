@@ -15,9 +15,13 @@ pub struct SubFrame {
 /// General enum that holds all the different subframe data types.
 #[derive(Debug, PartialEq, Eq)]
 pub enum Data {
+  /// A single value that represents a constant subframe.
   Constant(i32),
+  /// An uncompressed suframe.
   Verbatim(Vec<i32>),
+  /// Fixed linear prediction subframe.
   Fixed(Fixed),
+  /// FIR linear prediction subframe.
   LPC(LPC),
 }
 
