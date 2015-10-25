@@ -6,7 +6,9 @@ pub const MAX_LPC_ORDER: usize   = 32;
 
 /// A single channel of audio data.
 pub struct SubFrame {
+  /// Data containing one of the four different types of subframes.
   pub data: Data,
+  /// Number of wasted bits within each sample.
   pub wasted_bits: u32,
 }
 
