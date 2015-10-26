@@ -78,7 +78,9 @@ pub enum CodingMethod {
 /// Header for a Rice partitioned residual.
 #[derive(Debug, PartialEq, Eq)]
 pub struct PartitionedRice {
+  /// Partition order.
   pub order: u32,
+  /// Rice parameters and/or raw bits.
   pub contents: PartitionedRiceContents,
 }
 
