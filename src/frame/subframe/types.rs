@@ -69,7 +69,9 @@ pub struct EntropyCodingMethod {
 /// The available entropy coding methods.
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum CodingMethod {
+  /// Coding partition with a 4-bit Rice parameter.
   PartitionedRice,
+  /// Coding partition with a 5-bit Rice parameter.
   PartitionedRice2,
 }
 
