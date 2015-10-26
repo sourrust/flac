@@ -277,15 +277,14 @@ fn rice_partition(input: (&[u8], usize),
 
   // Adjust block size to not include allocation for warm up samples
   let residual_size = block_size - predictor_order;
+  let partitions    = 2_usize.pow(partition_order);
 
   let mut mut_input = input;
   let mut residual  = Vec::with_capacity(residual_size);
   let mut sample    = 0;
-  let mut contents  = PartitionedRiceContents::new(partition_order);
+  let mut contents  = PartitionedRiceContents::new(partitions);
 
   unsafe { residual.set_len(residual_size) }
-
-  let partitions = 2_usize.pow(partition_order);
 
   for partition in 0..partitions {
     let offset = if partition_order == 0 {
