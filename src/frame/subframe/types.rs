@@ -87,7 +87,9 @@ pub struct PartitionedRice {
 /// Contents of a Rice partitioned residual.
 #[derive(Debug, PartialEq, Eq)]
 pub struct PartitionedRiceContents {
+  /// Rice parameters for each context.
   pub parameters: Vec<u32>,
+  /// Widths for escaped-coded partitions.
   pub raw_bits: Vec<u32>,
 }
 
