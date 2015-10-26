@@ -546,7 +546,6 @@ mod tests {
                           contents: PartitionedRiceContents {
                             parameters: vec![8],
                             raw_bits: vec![0],
-                            capacity_by_order: 0,
                           },
                         },
                       },
@@ -562,7 +561,6 @@ mod tests {
                           contents: PartitionedRiceContents {
                             parameters: vec![31, 31],
                             raw_bits: vec![16, 6],
-                            capacity_by_order: 1,
                           },
                         },
                       },
@@ -593,7 +591,6 @@ mod tests {
                           contents: PartitionedRiceContents {
                             parameters: vec![15],
                             raw_bits: vec![8],
-                            capacity_by_order: 0,
                           },
                         },
                       },
@@ -618,7 +615,6 @@ mod tests {
                           contents: PartitionedRiceContents {
                             parameters: vec![3, 5],
                             raw_bits: vec![0, 0],
-                            capacity_by_order: 1,
                           },
                         },
                       },
