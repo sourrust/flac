@@ -17,7 +17,7 @@ pub struct SubFrame {
 pub enum Data {
   /// A single value that represents a constant subframe.
   Constant(i32),
-  /// An uncompressed suframe.
+  /// An uncompressed subframe.
   Verbatim(Vec<i32>),
   /// Fixed linear prediction subframe.
   Fixed(Fixed),
