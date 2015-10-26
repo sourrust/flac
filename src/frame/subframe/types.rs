@@ -60,7 +60,9 @@ pub struct LPC {
 /// Header for the entropy coding method.
 #[derive(Debug, PartialEq, Eq)]
 pub struct EntropyCodingMethod {
+  /// The type of coding method being used.
   pub method_type: CodingMethod,
+  /// Data for each entropy coding method partition.
   pub data: PartitionedRice,
 }
 
