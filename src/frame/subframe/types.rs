@@ -17,7 +17,7 @@ pub struct SubFrame {
 pub enum Data {
   /// A single value that represents a constant subframe.
   Constant(i32),
-  /// An uncompressed suframe.
+  /// An uncompressed subframe.
   Verbatim(Vec<i32>),
   /// Fixed linear prediction subframe.
   Fixed(Fixed),
@@ -60,28 +60,36 @@ pub struct LPC {
 /// Header for the entropy coding method.
 #[derive(Debug, PartialEq, Eq)]
 pub struct EntropyCodingMethod {
+  /// The type of coding method being used.
   pub method_type: CodingMethod,
+  /// Data for each entropy coding method partition.
   pub data: PartitionedRice,
 }
 
 /// The available entropy coding methods.
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum CodingMethod {
+  /// Coding partition with a 4-bit Rice parameter.
   PartitionedRice,
+  /// Coding partition with a 5-bit Rice parameter.
   PartitionedRice2,
 }
 
 /// Header for a Rice partitioned residual.
 #[derive(Debug, PartialEq, Eq)]
 pub struct PartitionedRice {
+  /// Partition order.
   pub order: u32,
+  /// Rice parameters and/or raw bits.
   pub contents: PartitionedRiceContents,
 }
 
 /// Contents of a Rice partitioned residual.
 #[derive(Debug, PartialEq, Eq)]
 pub struct PartitionedRiceContents {
+  /// Rice parameters for each context.
   pub parameters: Vec<u32>,
+  /// Widths for escaped-coded partitions.
   pub raw_bits: Vec<u32>,
 }
 
