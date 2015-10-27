@@ -53,6 +53,8 @@ pub fn leading_zeros(input: (&[u8], usize)) -> IResult<(&[u8], usize), u32> {
   }
 }
 
+// The channel's bits per sample that gets adjusted are the side channels
+// for `LeftSide`, `MiddleSide`, and `RightSide`.
 pub fn adjust_bits_per_sample(frame_header: &frame::Header,
                               channel: usize)
                               -> usize {
