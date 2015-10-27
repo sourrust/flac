@@ -9,6 +9,10 @@ use frame::{subframe, ChannelAssignment};
 use frame::SubFrame;
 use frame::subframe::{CodingMethod, PartitionedRiceContents};
 
+// Parser used to parse unary notation. Naming the parser `leading_zeros`
+// was something that felt more clear in the code. It actually tells the
+// caller what the parser doing considering unary notation can -- and more
+// commonly -- be leading ones.
 pub fn leading_zeros(input: (&[u8], usize)) -> IResult<(&[u8], usize), u32> {
   let (bytes, mut offset) = input;
 
