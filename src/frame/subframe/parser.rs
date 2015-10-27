@@ -117,6 +117,9 @@ pub fn subframe_parser<'a>(input: (&'a [u8], usize),
   )
 }
 
+// Parses the first byte of the subframe. The first bit must be zero to
+// prevent sync-fooling, next six bits determines the subframe data type.
+// Last bit is is there is wasted bits per sample, value one being true.
 pub fn header(input: (&[u8], usize))
               -> IResult<(&[u8], usize), (usize, bool)> {
   match take_bits!(input, u8, 8) {
