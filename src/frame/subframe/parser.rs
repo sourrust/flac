@@ -9,6 +9,10 @@ use frame::{subframe, ChannelAssignment};
 use frame::SubFrame;
 use frame::subframe::{CodingMethod, PartitionedRiceContents};
 
+// Parser used to parse unary notation. Naming the parser `leading_zeros`
+// was something that felt more clear in the code. It actually tells the
+// caller what the parser doing considering unary notation can -- and more
+// commonly -- be leading ones.
 pub fn leading_zeros(input: (&[u8], usize)) -> IResult<(&[u8], usize), u32> {
   let (bytes, mut offset) = input;
 
@@ -49,13 +53,15 @@ pub fn leading_zeros(input: (&[u8], usize)) -> IResult<(&[u8], usize), u32> {
   }
 }
 
+// The channel's bits per sample that gets adjusted are the side channels
+// for `LeftSide`, `MiddleSide`, and `RightSide`. The `Independent` channel
+// assignment  doesn't get adjust on any of the channels.
 pub fn adjust_bits_per_sample(frame_header: &frame::Header,
                               channel: usize)
                               -> usize {
   let bits_per_sample = frame_header.bits_per_sample;
 
   match frame_header.channel_assignment {
-    // Independent doesn't adjust bits per sample.
     ChannelAssignment::Independent => bits_per_sample,
     ChannelAssignment::LeftSide    => {
       if channel == 1 {
@@ -111,6 +117,9 @@ pub fn subframe_parser<'a>(input: (&'a [u8], usize),
   )
 }
 
+// Parses the first byte of the subframe. The first bit must be zero to
+// prevent sync-fooling, next six bits determines the subframe data type.
+// Last bit is is there is wasted bits per sample, value one being true.
 pub fn header(input: (&[u8], usize))
               -> IResult<(&[u8], usize), (usize, bool)> {
   match take_bits!(input, u8, 8) {
