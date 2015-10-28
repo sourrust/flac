@@ -184,6 +184,8 @@ pub fn fixed(input: (&[u8], usize),
   )
 }
 
+// This parser finds the bit length for each quantized linear predictor
+// coefficient. To preven sync fooling, four bit value cant be all onces.
 fn qlp_coefficient_precision(input: (&[u8], usize))
                              -> IResult<(&[u8], usize), u8> {
   match take_bits!(input, u8, 4) {
@@ -241,6 +243,8 @@ pub fn verbatim(input: (&[u8], usize),
        subframe::Data::Verbatim)
 }
 
+// Parser for figuring out the partitioned Rice coding, which there are only
+// two, and the parser with fail when value is greater than one.
 fn coding_method(input: (&[u8], usize))
                  -> IResult<(&[u8], usize), CodingMethod> {
   match take_bits!(input, u8, 2) {
