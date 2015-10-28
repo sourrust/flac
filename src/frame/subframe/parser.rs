@@ -184,6 +184,8 @@ pub fn fixed(input: (&[u8], usize),
   )
 }
 
+// This parser finds the bit length for each quantized linear predictor
+// coefficient. To preven sync fooling, four bit value cant be all onces.
 fn qlp_coefficient_precision(input: (&[u8], usize))
                              -> IResult<(&[u8], usize), u8> {
   match take_bits!(input, u8, 4) {
