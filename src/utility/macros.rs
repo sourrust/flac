@@ -1,3 +1,6 @@
+// A parser combinator that scans for zeros in a number of bytes. When the
+// current byte is all zeros, the parser fails. The last argument is the bit
+// offset relative the first byte being parsed.
 macro_rules! skip_bytes (
   ($input: expr, $length: expr, $offset: expr) => (
     {
