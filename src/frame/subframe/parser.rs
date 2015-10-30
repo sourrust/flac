@@ -372,7 +372,8 @@ fn encoded_residuals<'a>(input: (&'a [u8], usize),
                          raw_bit: &mut u32,
                          samples: &mut [i32])
                          -> IResult<'a, (&'a[u8], usize), ()> {
-  let length = samples.len();
+  let length  = samples.len();
+  let modulus = 2_u32.pow(parameter);
 
   let mut count     = 0;
   let mut is_error  = false;
@@ -386,7 +387,7 @@ fn encoded_residuals<'a>(input: (&'a [u8], usize),
       // TODO: Figure out the varied remainder bit size
       remainder: take_bits!(u32, parameter as usize),
       || {
-        let value = quotient * parameter + remainder;
+        let value = quotient * modulus + remainder;
 
         ((value as i32) >> 1) ^ -((value as i32) & 1)
       });
@@ -564,7 +565,7 @@ mod tests {
                       },
                       order: 4,
                       warmup: [-24, 0, 64, -81],
-                      residual: vec![22, 0, 5, 24, -17, 54],
+                      residual: vec![642, 0, 5, 148, -141, 178],
                     }))
                   , IResult::Done((&[][..], 0), Data::Fixed(Fixed {
                       entropy_coding_method: EntropyCodingMethod {
@@ -642,8 +643,8 @@ mod tests {
                                         , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
                                         , 0, 0, 0, 0, 0, 0, 0, 0, 0
                                         ],
-                      residual: vec![ -2, 3, -1, -4, 2, -14, 14, -7, 11, 9, 12
-                                    , 8, -3, 1, 1, 11, 6, -13
+                      residual: vec![ -2, 3, -1, -4, 2, 27, -28, 20, 11, 9
+                                    , 12, -22, -3, 1, 1, -25, -20, 26
                                     ],
                     }))
                   ];
