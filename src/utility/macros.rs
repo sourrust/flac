@@ -1,3 +1,6 @@
+// A parser combinator that scans for zeros in a number of bytes. When the
+// current byte is all zeros, the parser fails. The last argument is the bit
+// offset relative the first byte being parsed.
 macro_rules! skip_bytes (
   ($input: expr, $length: expr, $offset: expr) => (
     {
@@ -23,6 +26,9 @@ macro_rules! skip_bytes (
   );
 );
 
+// A parser combiner for previously allocated buffers that can be passed
+// in as mutable slices. The macro will parse and fill the total length of
+// the passed in slice.
 macro_rules! count_slice (
   ($input: expr, $submac: ident!( $($args:tt)* ), $result: expr) => (
     {
@@ -61,6 +67,9 @@ macro_rules! count_slice (
   );
 );
 
+// A replacement for the default `count!` macro. This is specifically for
+// bit parsers and will be removed as soon as the generic version of the
+// macro comes out with the 1.0.0 release.
 macro_rules! count_bits (
   ($input: expr, $submac: ident!( $($args:tt)* ), $count: expr) => (
     {
@@ -104,6 +113,9 @@ macro_rules! count_bits (
   );
 );
 
+// A parser combinator for converting parsed unsigned numbers into signed
+// two's complement based numbers. Without an explicit type passed in, the
+// default return type is `i32`.
 macro_rules! take_signed_bits (
   ($input: expr, $signed_type: ty, $count: expr) => (
     map!($input, take_bits!(u32, $count), |value| {
