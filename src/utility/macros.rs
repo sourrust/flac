@@ -113,6 +113,9 @@ macro_rules! count_bits (
   );
 );
 
+// A parser combinator for converting parsed unsigned numbers into signed
+// two's complement based numbers. Without an explicit type passed in, the
+// default return type is `i32`.
 macro_rules! take_signed_bits (
   ($input: expr, $signed_type: ty, $count: expr) => (
     map!($input, take_bits!(u32, $count), |value| {
