@@ -565,7 +565,7 @@ mod tests {
                       },
                       order: 4,
                       warmup: [-24, 0, 64, -81],
-                      residual: vec![22, 0, 5, 24, -17, 54],
+                      residual: vec![642, 0, 5, 148, -141, 178],
                     }))
                   , IResult::Done((&[][..], 0), Data::Fixed(Fixed {
                       entropy_coding_method: EntropyCodingMethod {
@@ -643,8 +643,8 @@ mod tests {
                                         , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
                                         , 0, 0, 0, 0, 0, 0, 0, 0, 0
                                         ],
-                      residual: vec![ -2, 3, -1, -4, 2, -14, 14, -7, 11, 9, 12
-                                    , 8, -3, 1, 1, 11, 6, -13
+                      residual: vec![ -2, 3, -1, -4, 2, 27, -28, 20, 11, 9
+                                    , 12, -22, -3, 1, 1, -25, -20, 26
                                     ],
                     }))
                   ];
