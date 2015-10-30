@@ -372,7 +372,8 @@ fn encoded_residuals<'a>(input: (&'a [u8], usize),
                          raw_bit: &mut u32,
                          samples: &mut [i32])
                          -> IResult<'a, (&'a[u8], usize), ()> {
-  let length = samples.len();
+  let length  = samples.len();
+  let modulus = 2_u32.pow(parameter);
 
   let mut count     = 0;
   let mut is_error  = false;
@@ -386,7 +387,7 @@ fn encoded_residuals<'a>(input: (&'a [u8], usize),
       // TODO: Figure out the varied remainder bit size
       remainder: take_bits!(u32, parameter as usize),
       || {
-        let value = quotient * parameter + remainder;
+        let value = quotient * modulus + remainder;
 
         ((value as i32) >> 1) ^ -((value as i32) & 1)
       });
