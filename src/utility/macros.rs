@@ -26,6 +26,9 @@ macro_rules! skip_bytes (
   );
 );
 
+// A parser combiner for previously allocated buffers that can be passed
+// in as mutable slices. The macro will parse and fill the total length of
+// the passed in slice.
 macro_rules! count_slice (
   ($input: expr, $submac: ident!( $($args:tt)* ), $result: expr) => (
     {
