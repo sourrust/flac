@@ -67,6 +67,9 @@ macro_rules! count_slice (
   );
 );
 
+// A replacement for the default `count!` macro. This is specifically for
+// bit parsers and will be removed as soon as the generic version of the
+// macro comes out with the 1.0.0 release.
 macro_rules! count_bits (
   ($input: expr, $submac: ident!( $($args:tt)* ), $count: expr) => (
     {
