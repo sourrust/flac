@@ -91,7 +91,7 @@ pub fn adjust_bits_per_sample(frame_header: &frame::Header,
 pub fn subframe_parser<'a>(input: (&'a [u8], usize),
                            channel: &mut usize,
                            frame_header: &frame::Header)
-                           -> IResult<'a, (&'a [u8], usize), SubFrame> {
+                           -> IResult<(&'a [u8], usize), SubFrame> {
   let block_size      = frame_header.block_size as usize;
   let bits_per_sample = adjust_bits_per_sample(frame_header, *channel);
 
@@ -349,7 +349,7 @@ fn residual_data<'a>(input: (&'a [u8], usize),
                      rice_parameter: u32,
                      raw_bit: &mut u32,
                      samples: &mut [i32])
-                     -> IResult<'a, (&'a [u8], usize), ()> {
+                     -> IResult<(&'a [u8], usize), ()> {
   if let Some(size) = option {
     unencoded_residuals(input, size, raw_bit, samples)
   } else {
@@ -361,7 +361,7 @@ fn unencoded_residuals<'a>(input: (&'a [u8], usize),
                            bits_per_sample: usize,
                            raw_bit: &mut u32,
                            samples: &mut [i32])
-                           -> IResult<'a, (&'a[u8], usize), ()> {
+                           -> IResult<(&'a[u8], usize), ()> {
   *raw_bit = bits_per_sample as u32;
 
   count_slice!(input, take_signed_bits!(bits_per_sample), &mut samples[..])
@@ -371,7 +371,7 @@ fn encoded_residuals<'a>(input: (&'a [u8], usize),
                          parameter: u32,
                          raw_bit: &mut u32,
                          samples: &mut [i32])
-                         -> IResult<'a, (&'a[u8], usize), ()> {
+                         -> IResult<(&'a[u8], usize), ()> {
   let length  = samples.len();
   let modulus = 2_u32.pow(parameter);
 

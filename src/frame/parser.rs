@@ -20,7 +20,7 @@ use utility::{crc8, crc16, to_u32};
 
 /// Parses an audio frame
 pub fn frame_parser<'a>(input: &'a [u8], stream_info: &StreamInfo)
-                        -> IResult<'a, &'a [u8], Frame> {
+                        -> IResult<&'a [u8], Frame> {
   // Unsafe way to initialize subframe data, but I would rather do this
   // than have `SubFrame` derive `Copy` to do something like:
   //
@@ -226,7 +226,7 @@ pub fn secondary_sample_rate(input: &[u8], sample_byte: u8)
 }
 
 pub fn header<'a>(input: &'a [u8], stream_info: &StreamInfo)
-                  -> IResult<'a, &'a [u8], Header> {
+                  -> IResult<&'a [u8], Header> {
   let result = chain!(input,
     is_variable_block_size: blocking_strategy ~
     tuple0: block_sample ~
