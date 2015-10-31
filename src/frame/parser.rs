@@ -318,12 +318,14 @@ mod tests {
   use metadata::StreamInfo;
   use nom::{IResult, Err, ErrorKind};
 
+  fn error<O>(input: &[u8]) -> IResult<&[u8], O> {
+    IResult::Error(Err::Position(ErrorKind::Digit, input))
+  }
+
   #[test]
   fn test_blocking_strategy() {
     let inputs = [b"\xff\xf8", b"\xff\xf9", b"\xfe\xf8", b"\xff\xfa"];
     let slice  = &[][..];
-    let error  = |input|
-      IResult::Error(Err::Position(ErrorCode::Digit as u32, input));
 
     assert_eq!(blocking_strategy(inputs[0]), IResult::Done(slice, false));
     assert_eq!(blocking_strategy(inputs[1]), IResult::Done(slice, true));
@@ -335,8 +337,6 @@ mod tests {
   fn test_block_sample() {
     let inputs = [b"\xf9", b"\x1a", b"\x0b", b"\x4f"];
     let slice  = &[][..];
-    let error  = |input|
-      IResult::Error(Err::Position(ErrorCode::Digit as u32, input));
 
     assert_eq!(block_sample(inputs[0]), IResult::Done(slice, (0x0f, 0x09)));
     assert_eq!(block_sample(inputs[1]), IResult::Done(slice, (0x01, 0x0a)));
@@ -348,8 +348,6 @@ mod tests {
   fn test_channel_bits() {
     let inputs  = [b"\x58", b"\x80", b"\xac", b"\xf2", b"\xae", b"\x91"];
     let slice   = &[][..];
-    let error   = |input|
-      IResult::Error(Err::Position(ErrorCode::Digit as u32, input));
     let results = [ IResult::Done(slice, (ChannelAssignment::Independent,
                                           6, 4))
                   , IResult::Done(slice, (ChannelAssignment::LeftSide, 2, 0))
