@@ -33,6 +33,13 @@ The status of this FLAC implementation:
       - [x] LPC
       - [x] verbatim
 - [ ] decoder
+  - [ ] frame
+    - [ ] left side
+    - [ ] right side
+    - [ ] middle side
+  - [ ] sub-frame
+    - [ ] fixed restoration
+    - [ ] LPC restoration
 - [ ] encoder
 
 [flac]: https://xiph.org/flac
