@@ -14,7 +14,7 @@ macro_rules! skip_bytes (
             $crate::nom::IResult::Done(i, bytes)
           } else {
             $crate::nom::IResult::Error($crate::nom::Err::Position(
-              $crate::nom::ErrorCode::Digit as u32, $input))
+              $crate::nom::ErrorKind::Digit, $input))
           }
         }
         $crate::nom::IResult::Error(error)     =>
@@ -54,7 +54,7 @@ macro_rules! count_slice (
 
       if is_error {
         $crate::nom::IResult::Error($crate::nom::Err::Position(
-          $crate::nom::ErrorCode::Count as u32, $input.0))
+          $crate::nom::ErrorKind::Count, $input))
       } else if count == $result.len() {
         $crate::nom::IResult::Done(input, ())
       } else {
