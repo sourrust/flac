@@ -1,4 +1,4 @@
-use nom::{Consumer, FileProducer};
+use nom::{ConsumerState, FileProducer, Producer};
 use std::io::{Error, ErrorKind, Result};
 use std::u32;
 
@@ -27,10 +27,13 @@ pub fn optional_eq<T: Eq>(option: Option<T>, other: T) -> bool {
 // * `ErrorKind::InvalidData` is returned when the data within the file
 //   isn't valid FLAC data.
 pub fn get_metadata(filename: &str) -> Result<Vec<Block>> {
-  FileProducer::new(filename, 1024).and_then(|mut producer| {
+  // TODO: There is a bug where the produced hangs when the buffer is to
+  // small for the awaited ampunt of data. Will change back to 1024 as soon
+  // as it is fixed.
+  FileProducer::new(filename, 10240).and_then(|mut producer| {
     let mut consumer = MetaDataConsumer::new();
 
-    consumer.run(&mut producer);
+    while let &ConsumerState::Continue(_) = producer.apply(&mut consumer) {}
 
     if !consumer.data.is_empty() {
       Ok(consumer.data)
