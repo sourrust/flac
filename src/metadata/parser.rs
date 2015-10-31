@@ -5,7 +5,6 @@ use nom::{
   ErrorKind, Err,
 };
 
-use std::str::from_utf8;
 use std::collections::HashMap;
 
 use metadata::{
