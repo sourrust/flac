@@ -238,8 +238,7 @@ pub fn verbatim(input: (&[u8], usize),
                 bits_per_sample: usize,
                 block_size: usize)
                 -> IResult<(&[u8], usize), subframe::Data> {
-  // TODO: Use nom's `count!` macro as soon as it is fixed for bit parsers.
-  map!(input, count_bits!(take_signed_bits!(bits_per_sample), block_size),
+  map!(input, count!(take_signed_bits!(bits_per_sample), block_size),
        subframe::Data::Verbatim)
 }
 
