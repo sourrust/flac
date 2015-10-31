@@ -1,6 +1,6 @@
 use nom::{
   IResult,
-  ErrorCode, Err,
+  ErrorKind, Err,
   Needed,
 };
 
@@ -49,7 +49,7 @@ pub fn leading_zeros(input: (&[u8], usize)) -> IResult<(&[u8], usize), u32> {
   } else if index + 1 > bytes_len {
     IResult::Incomplete(Needed::Size(index + 1))
   } else {
-    IResult::Error(Err::Position(ErrorCode::TakeUntil as u32, bytes))
+    IResult::Error(Err::Position(ErrorKind::TakeUntil, (bytes, offset)))
   }
 }
 
@@ -91,7 +91,7 @@ pub fn adjust_bits_per_sample(frame_header: &frame::Header,
 pub fn subframe_parser<'a>(input: (&'a [u8], usize),
                            channel: &mut usize,
                            frame_header: &frame::Header)
-                           -> IResult<'a, (&'a [u8], usize), SubFrame> {
+                           -> IResult<(&'a [u8], usize), SubFrame> {
   let block_size      = frame_header.block_size as usize;
   let bits_per_sample = adjust_bits_per_sample(frame_header, *channel);
 
@@ -131,7 +131,7 @@ pub fn header(input: (&[u8], usize))
       if is_valid {
         IResult::Done(i, (subframe_type as usize, has_wasted_bits))
       } else {
-        IResult::Error(Err::Position(ErrorCode::Digit as u32, input.0))
+        IResult::Error(Err::Position(ErrorKind::Digit, input))
       }
     }
     IResult::Error(error)     => IResult::Error(error),
@@ -152,7 +152,7 @@ fn data(input: (&[u8], usize),
     0b100000...0b111111 => lpc(input, (subframe_type & 0b011111) + 1,
                                bits_per_sample, block_size),
     _                   => IResult::Error(Err::Position(
-                             ErrorCode::Alt as u32, input.0))
+                             ErrorKind::Alt, input))
   }
 }
 
@@ -191,7 +191,7 @@ fn qlp_coefficient_precision(input: (&[u8], usize))
   match take_bits!(input, u8, 4) {
     IResult::Done(i, precision) => {
       if precision == 0b1111 {
-        IResult::Error(Err::Position(ErrorCode::Digit as u32, input.0))
+        IResult::Error(Err::Position(ErrorKind::Digit, input))
       } else {
         IResult::Done(i, precision + 1)
       }
@@ -238,8 +238,7 @@ pub fn verbatim(input: (&[u8], usize),
                 bits_per_sample: usize,
                 block_size: usize)
                 -> IResult<(&[u8], usize), subframe::Data> {
-  // TODO: Use nom's `count!` macro as soon as it is fixed for bit parsers.
-  map!(input, count_bits!(take_signed_bits!(bits_per_sample), block_size),
+  map!(input, count!(take_signed_bits!(bits_per_sample), block_size),
        subframe::Data::Verbatim)
 }
 
@@ -252,7 +251,7 @@ fn coding_method(input: (&[u8], usize))
       match method {
         0 => IResult::Done(i, CodingMethod::PartitionedRice),
         1 => IResult::Done(i, CodingMethod::PartitionedRice2),
-        _ => IResult::Error(Err::Position(ErrorCode::Alt as u32, input.0)),
+        _ => IResult::Error(Err::Position(ErrorKind::Alt, input)),
       }
     }
     IResult::Error(error)     => IResult::Error(error),
@@ -349,7 +348,7 @@ fn residual_data<'a>(input: (&'a [u8], usize),
                      rice_parameter: u32,
                      raw_bit: &mut u32,
                      samples: &mut [i32])
-                     -> IResult<'a, (&'a [u8], usize), ()> {
+                     -> IResult<(&'a [u8], usize), ()> {
   if let Some(size) = option {
     unencoded_residuals(input, size, raw_bit, samples)
   } else {
@@ -361,7 +360,7 @@ fn unencoded_residuals<'a>(input: (&'a [u8], usize),
                            bits_per_sample: usize,
                            raw_bit: &mut u32,
                            samples: &mut [i32])
-                           -> IResult<'a, (&'a[u8], usize), ()> {
+                           -> IResult<(&'a[u8], usize), ()> {
   *raw_bit = bits_per_sample as u32;
 
   count_slice!(input, take_signed_bits!(bits_per_sample), &mut samples[..])
@@ -371,7 +370,7 @@ fn encoded_residuals<'a>(input: (&'a [u8], usize),
                          parameter: u32,
                          raw_bit: &mut u32,
                          samples: &mut [i32])
-                         -> IResult<'a, (&'a[u8], usize), ()> {
+                         -> IResult<(&'a[u8], usize), ()> {
   let length  = samples.len();
   let modulus = 2_u32.pow(parameter);
 
@@ -409,7 +408,7 @@ fn encoded_residuals<'a>(input: (&'a [u8], usize),
   }
 
   if is_error {
-    IResult::Error(Err::Position(ErrorCode::Count as u32, input.0))
+    IResult::Error(Err::Position(ErrorKind::Count, input))
   } else if count == length {
     IResult::Done(mut_input, ())
   } else {
@@ -422,7 +421,7 @@ mod tests {
   use super::*;
   use nom::{
     IResult,
-    Err, ErrorCode
+    Err, ErrorKind
   };
 
   use frame;
@@ -475,8 +474,7 @@ mod tests {
     let results = [ IResult::Done((&[][..], 0), (0b101010, false))
                   , IResult::Done((&[][..], 0), (0b001111, true))
                   , IResult::Done((&[][..], 0), (0b000000, false))
-                  , IResult::Error(Err::Position(ErrorCode::Digit as u32,
-                                                 &inputs[3].0))
+                  , IResult::Error(Err::Position(ErrorKind::Digit, inputs[3]))
                   ];
 
     assert_eq!(header(inputs[0]), results[0]);

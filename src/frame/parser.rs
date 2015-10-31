@@ -1,7 +1,7 @@
 use nom::{
   be_u8, be_u16,
   IResult,
-  ErrorCode, Err,
+  ErrorKind, Err,
 };
 
 use std::mem;
@@ -20,7 +20,7 @@ use utility::{crc8, crc16, to_u32};
 
 /// Parses an audio frame
 pub fn frame_parser<'a>(input: &'a [u8], stream_info: &StreamInfo)
-                        -> IResult<'a, &'a [u8], Frame> {
+                        -> IResult<&'a [u8], Frame> {
   // Unsafe way to initialize subframe data, but I would rather do this
   // than have `SubFrame` derive `Copy` to do something like:
   //
@@ -60,7 +60,7 @@ pub fn frame_parser<'a>(input: &'a [u8], stream_info: &StreamInfo)
       if crc16(&input[0..end]) == crc {
         IResult::Done(i, frame)
       } else {
-        IResult::Error(Err::Position(ErrorCode::Digit as u32, input))
+        IResult::Error(Err::Position(ErrorKind::Digit, input))
       }
     }
     IResult::Error(error)     => IResult::Error(error),
@@ -85,7 +85,7 @@ pub fn blocking_strategy(input: &[u8]) -> IResult<&[u8], bool> {
 
         IResult::Done(i, is_variable_block_size)
       } else {
-        IResult::Error(Err::Position(ErrorCode::Digit as u32, input))
+        IResult::Error(Err::Position(ErrorKind::Digit, input))
       }
     }
     IResult::Error(error)     => IResult::Error(error),
@@ -107,7 +107,7 @@ pub fn block_sample(input: &[u8]) -> IResult<&[u8], (u8, u8)> {
       if is_valid {
         IResult::Done(i, (block_byte, sample_byte))
       } else {
-        IResult::Error(Err::Position(ErrorCode::Digit as u32, input))
+        IResult::Error(Err::Position(ErrorKind::Digit, input))
       }
     }
     IResult::Error(error)     => IResult::Error(error),
@@ -145,7 +145,7 @@ pub fn channel_bits(input: &[u8])
       if is_valid {
         IResult::Done(i, (channel_assignment, channels, size_byte))
       } else {
-        IResult::Error(Err::Position(ErrorCode::Digit as u32, input))
+        IResult::Error(Err::Position(ErrorKind::Digit, input))
       }
     }
     IResult::Error(error)     => IResult::Error(error),
@@ -195,7 +195,7 @@ pub fn number_type(input: &[u8], is_sample: bool,
       }
 
       if is_error {
-        IResult::Error(Err::Position(ErrorCode::Digit as u32, input))
+        IResult::Error(Err::Position(ErrorKind::Digit, input))
       } else if is_sample {
         IResult::Done(i, NumberType::Sample(result))
       } else {
@@ -226,7 +226,7 @@ pub fn secondary_sample_rate(input: &[u8], sample_byte: u8)
 }
 
 pub fn header<'a>(input: &'a [u8], stream_info: &StreamInfo)
-                  -> IResult<'a, &'a [u8], Header> {
+                  -> IResult<&'a [u8], Header> {
   let result = chain!(input,
     is_variable_block_size: blocking_strategy ~
     tuple0: block_sample ~
@@ -298,7 +298,7 @@ pub fn header<'a>(input: &'a [u8], stream_info: &StreamInfo)
       if crc8(&input[0..end]) == frame_header.crc {
         IResult::Done(i, frame_header)
       } else {
-        IResult::Error(Err::Position(ErrorCode::Digit as u32, input))
+        IResult::Error(Err::Position(ErrorKind::Digit, input))
       }
     }
     IResult::Error(error)          => IResult::Error(error),
@@ -316,14 +316,16 @@ mod tests {
     ChannelAssignment, NumberType,
   };
   use metadata::StreamInfo;
-  use nom::{IResult, Err, ErrorCode};
+  use nom::{IResult, Err, ErrorKind};
+
+  fn error<O>(input: &[u8]) -> IResult<&[u8], O> {
+    IResult::Error(Err::Position(ErrorKind::Digit, input))
+  }
 
   #[test]
   fn test_blocking_strategy() {
     let inputs = [b"\xff\xf8", b"\xff\xf9", b"\xfe\xf8", b"\xff\xfa"];
     let slice  = &[][..];
-    let error  = |input|
-      IResult::Error(Err::Position(ErrorCode::Digit as u32, input));
 
     assert_eq!(blocking_strategy(inputs[0]), IResult::Done(slice, false));
     assert_eq!(blocking_strategy(inputs[1]), IResult::Done(slice, true));
@@ -335,8 +337,6 @@ mod tests {
   fn test_block_sample() {
     let inputs = [b"\xf9", b"\x1a", b"\x0b", b"\x4f"];
     let slice  = &[][..];
-    let error  = |input|
-      IResult::Error(Err::Position(ErrorCode::Digit as u32, input));
 
     assert_eq!(block_sample(inputs[0]), IResult::Done(slice, (0x0f, 0x09)));
     assert_eq!(block_sample(inputs[1]), IResult::Done(slice, (0x01, 0x0a)));
@@ -348,8 +348,6 @@ mod tests {
   fn test_channel_bits() {
     let inputs  = [b"\x58", b"\x80", b"\xac", b"\xf2", b"\xae", b"\x91"];
     let slice   = &[][..];
-    let error   = |input|
-      IResult::Error(Err::Position(ErrorCode::Digit as u32, input));
     let results = [ IResult::Done(slice, (ChannelAssignment::Independent,
                                           6, 4))
                   , IResult::Done(slice, (ChannelAssignment::LeftSide, 2, 0))

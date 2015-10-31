@@ -2,10 +2,9 @@ use nom::{
   be_u8, be_u16, be_u32, be_u64,
   le_u32,
   IResult,
-  ErrorCode, Err,
+  ErrorKind, Err,
 };
 
-use std::str::from_utf8;
 use std::collections::HashMap;
 
 use metadata::{
@@ -278,7 +277,7 @@ pub fn block_data(input: &[u8], block_type: u8, length: u32)
     5       => cue_sheet(input),
     6       => picture(input),
     7...126 => unknown(input, length),
-    _       => IResult::Error(Err::Position(ErrorCode::Alt as u32, input)),
+    _       => IResult::Error(Err::Position(ErrorKind::Alt, input)),
   }
 }
 
@@ -326,7 +325,7 @@ fn many_blocks(input: &[u8]) -> IResult<&[u8], (StreamInfo, Vec<Block>)> {
   if found_info && is_last {
     IResult::Done(mut_input, (stream_info, blocks))
   } else {
-    IResult::Error(Err::Position(ErrorCode::Many1 as u32, input))
+    IResult::Error(Err::Position(ErrorKind::Many1, input))
   }
 }
 
@@ -340,7 +339,7 @@ mod tests {
   };
   use nom::{
     IResult,
-    ErrorCode, Err,
+    ErrorKind, Err,
   };
 
   use std::collections::HashMap;
@@ -383,7 +382,7 @@ mod tests {
 
     let result_valid   = IResult::Done(&[][..], BlockData::Padding(0));
     let result_invalid = IResult::Error(Err::Position(
-                           ErrorCode::Digit as u32, &inputs[1][..]));
+                           ErrorKind::Digit, &inputs[1][..]));
 
     assert_eq!(padding(inputs[0], 10), result_valid);
     assert_eq!(padding(inputs[1], 10), result_invalid);
