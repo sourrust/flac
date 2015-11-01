@@ -1,11 +1,9 @@
-use metadata;
-
-use metadata::{StreamInfo, metadata_parser};
+use metadata::{Metadata, StreamInfo, metadata_parser};
 use frame::{frame_parser, Frame};
 
 pub struct Stream {
   pub info: StreamInfo,
-  pub metadata: Vec<metadata::Metadata>,
+  pub metadata: Vec<Metadata>,
   pub frames: Vec<Frame>,
 }
 
