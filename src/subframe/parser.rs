@@ -8,7 +8,7 @@ use frame;
 use subframe;
 
 use frame::ChannelAssignment;
-use subframe::{SubFrame, CodingMethod, PartitionedRiceContents};
+use subframe::{Subframe, CodingMethod, PartitionedRiceContents};
 
 // Parser used to parse unary notation. Naming the parser `leading_zeros`
 // was something that felt more clear in the code. It actually tells the
@@ -92,7 +92,7 @@ pub fn adjust_bits_per_sample(frame_header: &frame::Header,
 pub fn subframe_parser<'a>(input: (&'a [u8], usize),
                            channel: &mut usize,
                            frame_header: &frame::Header)
-                           -> IResult<(&'a [u8], usize), SubFrame> {
+                           -> IResult<(&'a [u8], usize), Subframe> {
   let block_size      = frame_header.block_size as usize;
   let bits_per_sample = adjust_bits_per_sample(frame_header, *channel);
 
@@ -110,7 +110,7 @@ pub fn subframe_parser<'a>(input: (&'a [u8], usize),
       // be abstracted away, but for now this is the solution.
       *channel += 1;
 
-      SubFrame {
+      Subframe {
         data: subframe_data,
         wasted_bits: wasted_bits,
       }

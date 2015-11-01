@@ -3,7 +3,7 @@ mod parser;
 
 pub use self::types::{
   MAX_FIXED_ORDER, MAX_LPC_ORDER,
-  SubFrame,
+  Subframe,
   Data,
   Fixed, LPC,
   EntropyCodingMethod, CodingMethod, PartitionedRice, PartitionedRiceContents,

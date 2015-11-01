@@ -12,7 +12,7 @@ use frame::{
   Frame,
   Header, Footer,
 };
-use subframe::{subframe_parser, SubFrame};
+use subframe::{subframe_parser, Subframe};
 
 use metadata::StreamInfo;
 use utility::{crc8, crc16, to_u32};
@@ -21,15 +21,15 @@ use utility::{crc8, crc16, to_u32};
 pub fn frame_parser<'a>(input: &'a [u8], stream_info: &StreamInfo)
                         -> IResult<&'a [u8], Frame> {
   // Unsafe way to initialize subframe data, but I would rather do this
-  // than have `SubFrame` derive `Copy` to do something like:
+  // than have `Subframe` derive `Copy` to do something like:
   //
   // ```
-  // let mut subframe = [SubFrame {
+  // let mut subframe = [Subframe {
   //                       data: subframe::Constant(0),
   //                       wasted_bits: 0,
   //                     }; MAX_CHANNELS];
   // ```
-  let mut subframes: [SubFrame; MAX_CHANNELS] = unsafe { mem::zeroed() };
+  let mut subframes: [Subframe; MAX_CHANNELS] = unsafe { mem::zeroed() };
   let mut channel = 0;
 
   let result = chain!(input,

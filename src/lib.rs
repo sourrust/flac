@@ -13,4 +13,4 @@ pub mod stream;
 
 pub use metadata::Metadata;
 pub use frame::{frame_parser, Frame};
-pub use subframe::{subframe_parser, SubFrame};
+pub use subframe::{subframe_parser, Subframe};
