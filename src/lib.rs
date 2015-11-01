@@ -8,4 +8,5 @@ extern crate nom;
 mod utility;
 pub mod metadata;
 pub mod frame;
+pub mod subframe;
 pub mod stream;
