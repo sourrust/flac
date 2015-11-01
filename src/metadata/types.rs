@@ -348,9 +348,9 @@ impl<'a> Consumer<&'a [u8], (), ErrorKind, Move> for MetaDataConsumer {
       }
       Input::Empty | Input::Eof(None)         => {
         let kind = match self.state {
-          ParserState::Marker      => ErrorKind::Custom(0),
-          ParserState::Header      => ErrorKind::Custom(1),
-          ParserState::Block(data) => ErrorKind::Custom(2),
+          ParserState::Marker   => ErrorKind::Custom(0),
+          ParserState::Header   => ErrorKind::Custom(1),
+          ParserState::Block(_) => ErrorKind::Custom(2),
         };
 
         self.consumer_state = ConsumerState::Error(kind);
