@@ -5,9 +5,10 @@ use nom::{
 };
 
 use frame;
-use frame::{subframe, ChannelAssignment};
-use frame::SubFrame;
-use frame::subframe::{CodingMethod, PartitionedRiceContents};
+use subframe;
+
+use frame::ChannelAssignment;
+use subframe::{SubFrame, CodingMethod, PartitionedRiceContents};
 
 // Parser used to parse unary notation. Naming the parser `leading_zeros`
 // was something that felt more clear in the code. It actually tells the
@@ -426,7 +427,7 @@ mod tests {
 
   use frame;
   use frame::{ChannelAssignment, NumberType};
-  use frame::subframe::{
+  use subframe::{
     Data,
     Fixed, LPC,
     EntropyCodingMethod, CodingMethod, PartitionedRice,

@@ -11,9 +11,8 @@ use frame::{
   ChannelAssignment, NumberType,
   Frame,
   Header, Footer,
-  SubFrame,
-  subframe_parser,
 };
+use subframe::{subframe_parser, SubFrame};
 
 use metadata::StreamInfo;
 use utility::{crc8, crc16, to_u32};

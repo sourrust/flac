@@ -8,4 +8,8 @@ extern crate nom;
 mod utility;
 pub mod metadata;
 pub mod frame;
+pub mod subframe;
 pub mod stream;
+
+pub use frame::{frame_parser, Frame};
+pub use subframe::{subframe_parser, SubFrame};

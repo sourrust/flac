@@ -1,4 +1,4 @@
-use frame::SubFrame;
+use subframe::SubFrame;
 
 /// Maximum number of channels supported in the FLAC format.
 pub const MAX_CHANNELS: usize = 8;
