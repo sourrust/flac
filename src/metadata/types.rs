@@ -11,19 +11,19 @@ use std::collections::HashMap;
 
 /// Data associated with a single metadata block.
 #[derive(Debug)]
-pub struct Block {
+pub struct Metadata {
   /// Marks whether the current metadata block is the last.
   pub is_last: bool,
   /// The length, in bytes, of the block being parsed. This does not include
   /// the metadata block header.
   pub length: u32,
   /// Block data containing one of the eight different types of metadata.
-  pub data: BlockData,
+  pub data: Data,
 }
 
 /// General enum that hold all the different metadata block data.
 #[derive(Debug, PartialEq, Eq)]
-pub enum BlockData {
+pub enum Data {
   /// Information regarding the entire audio stream.
   StreamInfo(StreamInfo),
   /// Block that represents a number of padded bytes.
@@ -238,7 +238,7 @@ enum ParserState {
 pub struct MetaDataConsumer {
   state: ParserState,
   consumer_state: ConsumerState<(), ErrorKind, Move>,
-  pub data: Vec<Block>,
+  pub data: Vec<Metadata>,
 }
 
 impl MetaDataConsumer {
@@ -304,7 +304,7 @@ impl MetaDataConsumer {
         let offset   = input.offset(i);
         let consumed = Move::Consume(offset);
 
-        self.data.push(Block {
+        self.data.push(Metadata {
           is_last: is_last,
           length: length,
           data: data,

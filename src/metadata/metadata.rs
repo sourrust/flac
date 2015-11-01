@@ -3,7 +3,7 @@ use std::io::{Error, ErrorKind, Result};
 use std::u32;
 
 use metadata::{
-  Block, BlockData,
+  Metadata, Data,
   StreamInfo, CueSheet, VorbisComment, Picture,
   PictureType,
 };
@@ -26,7 +26,7 @@ pub fn optional_eq<T: Eq>(option: Option<T>, other: T) -> bool {
 // * `ErrorKind::NotFound` is returned when the given filename isn't found.
 // * `ErrorKind::InvalidData` is returned when the data within the file
 //   isn't valid FLAC data.
-pub fn get_metadata(filename: &str) -> Result<Vec<Block>> {
+pub fn get_metadata(filename: &str) -> Result<Vec<Metadata>> {
   // TODO: There is a bug where the produced hangs when the buffer is to
   // small for the awaited ampunt of data. Will change back to 1024 as soon
   // as it is fixed.
@@ -83,7 +83,7 @@ pub fn get_stream_info(filename: &str) -> Result<StreamInfo> {
     let mut result = Err(Error::new(ErrorKind::NotFound, error_str));
 
     for block in blocks {
-      if let BlockData::StreamInfo(stream_info) = block.data {
+      if let Data::StreamInfo(stream_info) = block.data {
         result = Ok(stream_info);
         break;
       }
@@ -132,7 +132,7 @@ pub fn get_vorbis_comment(filename: &str) -> Result<VorbisComment> {
     let mut result = Err(Error::new(ErrorKind::NotFound, error_str));
 
     for block in blocks {
-      if let BlockData::VorbisComment(vorbis_comment) = block.data {
+      if let Data::VorbisComment(vorbis_comment) = block.data {
         result = Ok(vorbis_comment);
         break;
       }
@@ -179,7 +179,7 @@ pub fn get_cue_sheet(filename: &str) -> Result<CueSheet> {
     let mut result = Err(Error::new(ErrorKind::NotFound, error_str));
 
     for block in blocks {
-      if let BlockData::CueSheet(cue_sheet) = block.data {
+      if let Data::CueSheet(cue_sheet) = block.data {
         result = Ok(cue_sheet);
         break;
       }
@@ -265,7 +265,7 @@ pub fn get_picture(filename: &str,
     let max_colors_num = max_colors.unwrap_or(max_value);
 
     for block in blocks {
-      if let BlockData::Picture(picture) = block.data {
+      if let Data::Picture(picture) = block.data {
         let area = (picture.width as u64) * (picture.height as u64);
 
         if optional_eq(picture_type, picture.picture_type) &&

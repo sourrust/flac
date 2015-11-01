@@ -5,7 +5,7 @@ use frame::{frame_parser, Frame};
 
 pub struct Stream {
   pub info: StreamInfo,
-  pub metadata: Vec<metadata::Block>,
+  pub metadata: Vec<metadata::Metadata>,
   pub frames: Vec<Frame>,
 }
 

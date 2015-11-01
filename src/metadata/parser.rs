@@ -7,8 +7,9 @@ use nom::{
 
 use std::collections::HashMap;
 
+use metadata;
 use metadata::{
-  Block, BlockData,
+  Metadata,
   StreamInfo, Application, VorbisComment, CueSheet, Picture,
   SeekPoint, CueSheetTrack, CueSheetTrackIndex, PictureType,
 };
@@ -18,14 +19,14 @@ use utility::to_u32;
 /// Parses all metadata within a file stream.
 ///
 /// The first metadata block should always be `StreamInfo` since that is the
-/// only required `Block`. At the moment `metadata_parser` parser doesn't
+/// only required `Metadata`. At the moment `metadata_parser` parser doesn't
 /// check that requirement.
 pub fn metadata_parser(input: &[u8])
-                       -> IResult<&[u8], (StreamInfo, Vec<Block>)> {
+                       -> IResult<&[u8], (StreamInfo, Vec<Metadata>)> {
   preceded!(input, tag!("fLaC"), many_blocks)
 }
 
-named!(pub stream_info <&[u8], BlockData>,
+named!(pub stream_info <&[u8], metadata::Data>,
   chain!(
     min_block_size: be_u16 ~
     max_block_size: be_u16 ~
@@ -46,7 +47,7 @@ named!(pub stream_info <&[u8], BlockData>,
                             ((bytes[6] as u64) << 8) +
                             (bytes[7] as u64);
 
-      BlockData::StreamInfo(StreamInfo {
+      metadata::Data::StreamInfo(StreamInfo {
         min_block_size: min_block_size,
         max_block_size: max_block_size,
         min_frame_size: min_frame_size,
@@ -61,16 +62,17 @@ named!(pub stream_info <&[u8], BlockData>,
   )
 );
 
-pub fn padding(input: &[u8], length: u32) -> IResult<&[u8], BlockData> {
-  map!(input, skip_bytes!(length, 0), |_| BlockData::Padding(0))
+pub fn padding(input: &[u8], length: u32) -> IResult<&[u8], metadata::Data> {
+  map!(input, skip_bytes!(length, 0), |_| metadata::Data::Padding(0))
 }
 
-pub fn application(input: &[u8], length: u32) -> IResult<&[u8], BlockData> {
+pub fn application(input: &[u8], length: u32)
+                   -> IResult<&[u8], metadata::Data> {
   chain!(input,
     id: take_str!(4) ~
     data: take!(length - 4),
     || {
-      BlockData::Application(Application {
+      metadata::Data::Application(Application {
         id: id.to_owned(),
         data: data.to_owned(),
       })
@@ -93,13 +95,14 @@ named!(seek_point <&[u8], SeekPoint>,
   )
 );
 
-pub fn seek_table(input: &[u8], length: u32) -> IResult<&[u8], BlockData> {
+pub fn seek_table(input: &[u8], length: u32)
+                  -> IResult<&[u8], metadata::Data> {
   let seek_count = (length / 18) as usize;
 
-  map!(input, count!(seek_point, seek_count), BlockData::SeekTable)
+  map!(input, count!(seek_point, seek_count), metadata::Data::SeekTable)
 }
 
-named!(pub vorbis_comment <&[u8], BlockData>,
+named!(pub vorbis_comment <&[u8], metadata::Data>,
   chain!(
     vendor_string_length: le_u32 ~
     vendor_string: take_str!(vendor_string_length)  ~
@@ -114,7 +117,7 @@ named!(pub vorbis_comment <&[u8], BlockData>,
         comments.insert(comment[0].to_owned(), comment[1].to_owned());
       }
 
-      BlockData::VorbisComment(VorbisComment {
+      metadata::Data::VorbisComment(VorbisComment {
         vendor_string: vendor_string.to_owned(),
         comments: comments,
       })
@@ -130,7 +133,7 @@ named!(comment_field <&[u8], String>,
   )
 );
 
-named!(pub cue_sheet <&[u8], BlockData>,
+named!(pub cue_sheet <&[u8], metadata::Data>,
   chain!(
     media_catalog_number: take_str!(128) ~
     lead_in: be_u64 ~
@@ -142,7 +145,7 @@ named!(pub cue_sheet <&[u8], BlockData>,
     || {
       let is_cd = (bytes[0] >> 7) == 1;
 
-      BlockData::CueSheet(CueSheet {
+      metadata::Data::CueSheet(CueSheet {
         media_catalog_number: media_catalog_number.to_owned(),
         lead_in: lead_in,
         is_cd: is_cd,
@@ -193,7 +196,7 @@ named!(cue_sheet_track_index <&[u8], CueSheetTrackIndex>,
   )
 );
 
-named!(pub picture <&[u8], BlockData>,
+named!(pub picture <&[u8], metadata::Data>,
   chain!(
     picture_type_num: be_u32 ~
     mime_type_length:  be_u32 ~
@@ -231,7 +234,7 @@ named!(pub picture <&[u8], BlockData>,
         _  => PictureType::Other,
       };
 
-      BlockData::Picture(Picture {
+      metadata::Data::Picture(Picture {
         picture_type: picture_type,
         mime_type: mime_type.to_owned(),
         description: description.to_owned(),
@@ -246,11 +249,11 @@ named!(pub picture <&[u8], BlockData>,
 );
 
 // As of FLAC v1.3.1, there is support for up to 127 different metadata
-// `Block`s but actually 7 that are implemented. When the `Block` type isn't
-// recognised, this block gets skipped over with this parser.
-pub fn unknown(input: &[u8], length: u32) -> IResult<&[u8], BlockData> {
+// `Metadata`s but actually 7 that are implemented. When the `Metadata` type
+// isn't recognised, this block gets skipped over with this parser.
+pub fn unknown(input: &[u8], length: u32) -> IResult<&[u8], metadata::Data> {
   map!(input, take!(length), |data: &[u8]|
-    BlockData::Unknown(data.to_owned()))
+    metadata::Data::Unknown(data.to_owned()))
 }
 
 named!(pub header <&[u8], (bool, u8, u32)>,
@@ -267,7 +270,7 @@ named!(pub header <&[u8], (bool, u8, u32)>,
 );
 
 pub fn block_data(input: &[u8], block_type: u8, length: u32)
-                  -> IResult<&[u8], BlockData> {
+                  -> IResult<&[u8], metadata::Data> {
   match block_type {
     0       => stream_info(input),
     1       => padding(input, length),
@@ -281,12 +284,12 @@ pub fn block_data(input: &[u8], block_type: u8, length: u32)
   }
 }
 
-named!(block <&[u8], Block>,
+named!(block <&[u8], Metadata>,
   chain!(
     block_header: header ~
     data: apply!(block_data, block_header.1, block_header.2),
     || {
-      Block {
+      Metadata {
         is_last: block_header.0,
         length: block_header.2,
         data: data
@@ -295,7 +298,7 @@ named!(block <&[u8], Block>,
   )
 );
 
-fn many_blocks(input: &[u8]) -> IResult<&[u8], (StreamInfo, Vec<Block>)> {
+fn many_blocks(input: &[u8]) -> IResult<&[u8], (StreamInfo, Vec<Metadata>)> {
   let mut is_last     = false;
   let mut found_info  = false;
   let mut blocks      = Vec::new();
@@ -311,7 +314,7 @@ fn many_blocks(input: &[u8]) -> IResult<&[u8], (StreamInfo, Vec<Block>)> {
       mut_input = i;
       is_last   = block.is_last;
 
-      if let BlockData::StreamInfo(info) = block.data {
+      if let metadata::Data::StreamInfo(info) = block.data {
         found_info  = true;
         stream_info = info;
       } else {
@@ -332,8 +335,8 @@ fn many_blocks(input: &[u8]) -> IResult<&[u8], (StreamInfo, Vec<Block>)> {
 #[cfg(test)]
 mod tests {
   use super::*;
+  use metadata;
   use metadata::{
-    BlockData,
     StreamInfo, Application, VorbisComment, CueSheet, Picture,
     SeekPoint, CueSheetTrack, CueSheetTrackIndex, PictureType,
   };
@@ -359,7 +362,7 @@ mod tests {
     let input  = b"\x12\0\x12\0\0\0\x0e\0\0\x10\x01\xf4\x02\x70\0\x01\x38\x80\
                    \xa0\x42\x23\x7c\x54\x93\xfd\xb9\x65\x6b\x94\xa8\x36\x08\
                    \xd1\x1a";
-    let result = BlockData::StreamInfo(StreamInfo {
+    let result = metadata::Data::StreamInfo(StreamInfo {
       min_block_size: 4608,
       max_block_size: 4608,
       min_frame_size: 14,
@@ -380,7 +383,7 @@ mod tests {
   fn test_padding() {
     let inputs = [b"\0\0\0\0\0\0\0\0\0\0", b"\0\0\0\0\x01\0\0\0\0\0"];
 
-    let result_valid   = IResult::Done(&[][..], BlockData::Padding(0));
+    let result_valid   = IResult::Done(&[][..], metadata::Data::Padding(0));
     let result_invalid = IResult::Error(Err::Position(
                            ErrorKind::Digit, &inputs[1][..]));
 
@@ -392,11 +395,11 @@ mod tests {
   fn test_application() {
     let inputs  = [&b"fake"[..], &b"rifffake data"[..]];
     let results = [
-      IResult::Done(&[][..], BlockData::Application(Application {
+      IResult::Done(&[][..], metadata::Data::Application(Application {
         id: "fake".to_owned(),
         data: vec![],
       })),
-      IResult::Done(&[][..], BlockData::Application(Application {
+      IResult::Done(&[][..], metadata::Data::Application(Application {
         id: "riff".to_owned(),
         data: inputs[1][4..].to_owned(),
       }))
@@ -413,7 +416,7 @@ mod tests {
                    \0\0\0\0\0\0\0\0\0\xff\xff\xff\xff\xff\xff\xff\xff\0\0\0\0\
                    \0\0\0\0\0\0\xff\xff\xff\xff\xff\xff\xff\xff\0\0\0\0\0\0\0\
                    \0\0\0";
-    let result = IResult::Done(&[][..], BlockData::SeekTable(vec![
+    let result = IResult::Done(&[][..], metadata::Data::SeekTable(vec![
       SeekPoint {
         sample_number: 0,
         stream_offset: 0,
@@ -467,7 +470,7 @@ mod tests {
     comments.insert("title".to_owned(), "2".to_owned());
 
     let result = IResult::Done(&[][..],
-      BlockData::VorbisComment(VorbisComment{
+      metadata::Data::VorbisComment(VorbisComment{
         vendor_string: "reference libFLAC 1.1.3 20060805".to_owned(),
         comments: comments,
       }));
@@ -498,7 +501,7 @@ mod tests {
                    \xf8\xaa\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
                    \0\0";
     let result = IResult::Done(&[][..],
-      BlockData::CueSheet(CueSheet {
+      metadata::Data::CueSheet(CueSheet {
         media_catalog_number: "1234567890123\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
                                \0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
                                \0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
@@ -557,7 +560,7 @@ mod tests {
     let input  = b"\0\0\0\0\0\0\0\x09image/png\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
                    \0\0\0\0\0\0\0\0\0";
     let result = IResult::Done(&[][..],
-      BlockData::Picture(Picture {
+      metadata::Data::Picture(Picture {
         picture_type: PictureType::Other,
         mime_type: "image/png".to_owned(),
         description: String::new(),
@@ -575,7 +578,7 @@ mod tests {
   fn test_unknown() {
     let input  = b"random data that won't really be parsed anyway.";
     let result = IResult::Done(&[][..],
-                   BlockData::Unknown(input[..].to_owned()));
+                   metadata::Data::Unknown(input[..].to_owned()));
 
     assert_eq!(unknown(input, 47), result);
   }
