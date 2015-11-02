@@ -7,7 +7,7 @@ pub struct Stream {
   pub frames: Vec<Frame>,
 }
 
-named!(pub stream <&[u8], Stream>,
+named!(pub stream_parser <&[u8], Stream>,
   chain!(
     blocks: metadata_parser ~
     frames: many1!(apply!(frame_parser, &blocks.0)),
