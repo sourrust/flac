@@ -32,15 +32,26 @@ pub fn get_metadata(filename: &str) -> Result<Vec<Metadata>> {
   // as it is fixed.
   FileProducer::new(filename, 10240).and_then(|mut producer| {
     let mut consumer = MetaDataConsumer::new();
+    let mut is_error = false;
 
-    while let &ConsumerState::Continue(_) = producer.apply(&mut consumer) {}
+    loop {
+      match *producer.apply(&mut consumer) {
+        ConsumerState::Done(_, _)  => break,
+        ConsumerState::Continue(_) => continue,
+        ConsumerState::Error(_)    => {
+          is_error = true;
 
-    if !consumer.data.is_empty() {
-      Ok(consumer.data)
-    } else {
+          break;
+        }
+      }
+    }
+
+    if is_error {
       let error_str = "parser: couldn't find any metadata";
 
       Err(Error::new(ErrorKind::InvalidData, error_str))
+    } else {
+      Ok(consumer.data)
     }
   })
 }
