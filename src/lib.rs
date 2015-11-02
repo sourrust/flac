@@ -9,8 +9,9 @@ mod utility;
 pub mod metadata;
 pub mod frame;
 pub mod subframe;
-pub mod stream;
+mod stream;
 
-pub use metadata::Metadata;
+pub use metadata::{metadata_parser, Metadata};
 pub use frame::{frame_parser, Frame};
 pub use subframe::{subframe_parser, Subframe};
+pub use stream::{stream_parser, Stream};
