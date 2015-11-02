@@ -1,11 +1,13 @@
 [package]
 
-name        = "flac"
-version     = "0.1.0"
-description = "An implementation of FLAC (free lossless audio codec)"
-license     = "BSD-3-Clause"
-authors     = ["Jeremy Hull <sourdrums@gmail.com>"]
-readme      = "README.md"
+name          = "flac"
+version       = "0.1.0"
+description   = "An implementation of FLAC (free lossless audio codec)"
+license       = "BSD-3-Clause"
+authors       = ["Jeremy Hull <sourdrums@gmail.com>"]
+readme        = "README.md"
+documentation = "https://sourrust.github.io/flac"
+repository    = "https://github.com/sourrust/flac"
 
 [dependencies]
 
