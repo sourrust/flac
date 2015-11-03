@@ -29,10 +29,18 @@ pub fn fixed_restore_signal(order: usize,
 
 pub fn decode(subframe: &Subframe, output: &mut [i32]) {
   match subframe.data {
-    subframe::Data::Constant(_) => unimplemented!(),
-    subframe::Data::Verbatim(_) => unimplemented!(),
-    subframe::Data::Fixed(_)    => unimplemented!(),
-    subframe::Data::LPC(_)      => unimplemented!(),
+    subframe::Data::Constant(_)      => unimplemented!(),
+    subframe::Data::Verbatim(_)      => unimplemented!(),
+    subframe::Data::Fixed(ref fixed) => {
+      let order = fixed.order as usize;
+
+      for i in 0..order {
+        output[i] = fixed.warmup[i];
+      }
+
+      fixed_restore_signal(order, &fixed.residual, output);
+    }
+    subframe::Data::LPC(_)           => unimplemented!(),
   }
 
   if subframe.wasted_bits > 0 {
