@@ -39,7 +39,7 @@ The status of this FLAC implementation:
     - [ ] middle side
   - [ ] sub-frame
     - [x] fixed restoration
-    - [ ] LPC restoration
+    - [x] LPC restoration
 - [ ] encoder
 
 [flac]: https://xiph.org/flac
