@@ -1,5 +1,5 @@
 use subframe;
-use subframe::{Subframe, MAX_FIXED_ORDER};
+use subframe::{Subframe, MAX_FIXED_ORDER, MAX_LPC_ORDER};
 
 pub fn fixed_restore_signal(order: usize,
                             residual: &[i32],
@@ -27,6 +27,25 @@ pub fn fixed_restore_signal(order: usize,
   }
 }
 
+pub fn lpc_restore_signal(quantization_level: i8,
+                          coefficients: &[i32],
+                          residual: &[i32],
+                          output: &mut [i32]) {
+  let order = coefficients.len();
+
+  debug_assert!(order <= MAX_LPC_ORDER);
+
+  for i in 0..residual.len() {
+    let offset     = i + order;
+    let prediction = coefficients.iter().rev()
+                       .zip(&output[i..offset])
+                       .fold(0, |result, (coefficient, signal)|
+                             result + coefficient * signal);
+
+    output[offset] = residual[i] + (prediction >> quantization_level);
+  }
+}
+
 pub fn decode(subframe: &Subframe, output: &mut [i32]) {
   match subframe.data {
     subframe::Data::Constant(_)      => unimplemented!(),
@@ -40,7 +59,17 @@ pub fn decode(subframe: &Subframe, output: &mut [i32]) {
 
       fixed_restore_signal(order, &fixed.residual, output);
     }
-    subframe::Data::LPC(_)           => unimplemented!(),
+    subframe::Data::LPC(ref lpc)     => {
+      let order        = lpc.order as usize;
+      let coefficients = &lpc.qlp_coefficients[0..order];
+
+      for i in 0..order {
+        output[i] = lpc.warmup[i];
+      }
+
+      lpc_restore_signal(lpc.quantization_level, coefficients, &lpc.residual,
+                         output);
+    }
   }
 
   if subframe.wasted_bits > 0 {
