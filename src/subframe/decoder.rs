@@ -59,7 +59,17 @@ pub fn decode(subframe: &Subframe, output: &mut [i32]) {
 
       fixed_restore_signal(order, &fixed.residual, output);
     }
-    subframe::Data::LPC(_)           => unimplemented!(),
+    subframe::Data::LPC(ref lpc)     => {
+      let order        = lpc.order as usize;
+      let coefficients = &lpc.qlp_coefficients[0..order];
+
+      for i in 0..order {
+        output[i] = lpc.warmup[i];
+      }
+
+      lpc_restore_signal(lpc.quantization_level, coefficients, &lpc.residual,
+                         output);
+    }
   }
 
   if subframe.wasted_bits > 0 {
