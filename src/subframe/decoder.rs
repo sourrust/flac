@@ -1,5 +1,5 @@
 use subframe;
-use subframe::{Subframe, MAX_FIXED_ORDER};
+use subframe::{Subframe, MAX_FIXED_ORDER, MAX_LPC_ORDER};
 
 pub fn fixed_restore_signal(order: usize,
                             residual: &[i32],
@@ -24,6 +24,25 @@ pub fn fixed_restore_signal(order: usize,
 
 
     output[offset] = residual[i] + prediction;
+  }
+}
+
+pub fn lpc_restore_signal(quantization_level: i8,
+                          coefficients: &[i32],
+                          residual: &[i32],
+                          output: &mut [i32]) {
+  let order = coefficients.len();
+
+  debug_assert!(order <= MAX_LPC_ORDER);
+
+  for i in 0..residual.len() {
+    let offset     = i + order;
+    let prediction = coefficients.iter().rev()
+                       .zip(&output[i..offset])
+                       .fold(0, |result, (coefficient, signal)|
+                             result + coefficient * signal);
+
+    output[offset] = residual[i] + (prediction >> quantization_level);
   }
 }
 
