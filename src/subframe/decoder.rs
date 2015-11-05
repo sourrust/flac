@@ -48,9 +48,13 @@ pub fn lpc_restore_signal(quantization_level: i8,
 
 pub fn decode(subframe: &Subframe, output: &mut [i32]) {
   match subframe.data {
-    subframe::Data::Constant(_)      => unimplemented!(),
-    subframe::Data::Verbatim(_)      => unimplemented!(),
-    subframe::Data::Fixed(ref fixed) => {
+    subframe::Data::Constant(constant) => {
+      for i in 0..output.len() {
+        output[i] = constant
+      }
+    }
+    subframe::Data::Verbatim(_)        => unimplemented!(),
+    subframe::Data::Fixed(ref fixed)   => {
       let order = fixed.order as usize;
 
       for i in 0..order {
@@ -59,7 +63,7 @@ pub fn decode(subframe: &Subframe, output: &mut [i32]) {
 
       fixed_restore_signal(order, &fixed.residual, output);
     }
-    subframe::Data::LPC(ref lpc)     => {
+    subframe::Data::LPC(ref lpc)       => {
       let order        = lpc.order as usize;
       let coefficients = &lpc.qlp_coefficients[0..order];
 
