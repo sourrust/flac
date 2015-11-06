@@ -37,7 +37,7 @@ The status of this FLAC implementation:
     - [ ] left side
     - [ ] right side
     - [ ] middle side
-  - [ ] sub-frame
+  - [x] sub-frame
     - [x] fixed restoration
     - [x] LPC restoration
 - [ ] encoder

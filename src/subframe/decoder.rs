@@ -1,6 +1,8 @@
 use subframe;
 use subframe::{Subframe, MAX_FIXED_ORDER, MAX_LPC_ORDER};
 
+use std::ptr;
+
 pub fn fixed_restore_signal(order: usize,
                             residual: &[i32],
                             output: &mut [i32]) {
@@ -48,9 +50,19 @@ pub fn lpc_restore_signal(quantization_level: i8,
 
 pub fn decode(subframe: &Subframe, output: &mut [i32]) {
   match subframe.data {
-    subframe::Data::Constant(_)      => unimplemented!(),
-    subframe::Data::Verbatim(_)      => unimplemented!(),
-    subframe::Data::Fixed(ref fixed) => {
+    subframe::Data::Constant(constant)     => {
+      for i in 0..output.len() {
+        output[i] = constant
+      }
+    }
+    subframe::Data::Verbatim(ref verbatim) => {
+      let length = verbatim.len();
+
+      unsafe {
+        ptr::copy(verbatim.as_ptr(), output.as_mut_ptr(), length)
+      }
+    }
+    subframe::Data::Fixed(ref fixed)       => {
       let order = fixed.order as usize;
 
       for i in 0..order {
@@ -59,7 +71,7 @@ pub fn decode(subframe: &Subframe, output: &mut [i32]) {
 
       fixed_restore_signal(order, &fixed.residual, output);
     }
-    subframe::Data::LPC(ref lpc)     => {
+    subframe::Data::LPC(ref lpc)           => {
       let order        = lpc.order as usize;
       let coefficients = &lpc.qlp_coefficients[0..order];
 
