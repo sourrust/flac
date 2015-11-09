@@ -150,7 +150,17 @@ mod tests {
       wasted_bits: 0,
     };
 
+    let verbatim = Subframe {
+      data: subframe::Data::Verbatim(vec![16, -3, 55, 49, -32, 6, 40, -90, 1
+                                         ,0, 77, -12, 84, 10, -112, 136]),
+      wasted_bits: 0,
+    };
+
     decode(&constant, &mut output);
     assert_eq!(&output, &[4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]);
+
+    decode(&verbatim, &mut output);
+    assert_eq!(&output, &[16, -3, 55, 49, -32, 6, 40 , -90, 1, 0, 77, -12, 84
+                         ,10 , -112, 136]);
   }
 }
