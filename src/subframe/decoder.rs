@@ -95,6 +95,13 @@ pub fn decode(subframe: &Subframe, output: &mut [i32]) {
 mod tests {
   use super::*;
 
+  use subframe;
+  use subframe::{
+    Subframe, Fixed, LPC,
+    EntropyCodingMethod, CodingMethod, PartitionedRice,
+    PartitionedRiceContents,
+  };
+
   #[test]
   fn test_fixed_restore_signal() {
     let residuals   = [ &[-19, -16, 17, -23, -7, 16, -16, -5, 3
@@ -136,5 +143,81 @@ mod tests {
                              , 1701]);
     assert_eq!(&outputs[1], &[-21363, -21951, -22649, -24364, -27297, -26870
                              , -30017, -29718]);
+  }
+
+  #[test]
+  fn test_decode() {
+    let mut output = [0; 16];
+
+    let constant = Subframe {
+      data: subframe::Data::Constant(4),
+      wasted_bits: 0,
+    };
+
+    let verbatim = Subframe {
+      data: subframe::Data::Verbatim(vec![16, -3, 55, 49, -32, 6, 40, -90, 1
+                                         ,0, 77, -12, 84, 10, -112, 136]),
+      wasted_bits: 0,
+    };
+
+    let fixed = Subframe {
+      data: subframe::Data::Fixed(Fixed {
+        entropy_coding_method: EntropyCodingMethod {
+          method_type: CodingMethod::PartitionedRice,
+          data: PartitionedRice {
+            order: 0,
+            contents: PartitionedRiceContents {
+              parameters: vec![],
+              raw_bits: vec![],
+            },
+          },
+        },
+        order: 3,
+        warmup: [-729, -722, -667, 0],
+        residual: vec![-19, -16, 17, -23, -7, 16, -16, -5, 3 , -8, -13, -15
+                      ,-1],
+      }),
+      wasted_bits: 0,
+    };
+
+    let lpc = Subframe {
+      data: subframe::Data::LPC(LPC {
+        entropy_coding_method: EntropyCodingMethod {
+          method_type: CodingMethod::PartitionedRice,
+          data: PartitionedRice {
+            order: 0,
+            contents: PartitionedRiceContents {
+              parameters: vec![],
+              raw_bits: vec![],
+            },
+          },
+        },
+        order: 7,
+        qlp_coeff_precision: 0,
+        quantization_level: 9,
+        qlp_coefficients: [1042, -399, -75, -269, 121, 166, -75, 0, 0, 0, 0
+                          ,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                          ,0, 0, 0, 0],
+        warmup: [-796, -547, -285, -32, 199, 443, 670, 0, 0, 0, 0, 0, 0, 0, 0
+                ,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        residual: vec![-2, -23, 14, 6, 3, -4, 12, -2, 10],
+      }),
+      wasted_bits: 0,
+    };
+
+    decode(&constant, &mut output);
+    assert_eq!(&output, &[4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]);
+
+    decode(&verbatim, &mut output);
+    assert_eq!(&output, &[16, -3, 55, 49, -32, 6, 40 , -90, 1, 0, 77, -12, 84
+                         ,10 , -112, 136]);
+
+    decode(&fixed, &mut output);
+    assert_eq!(&output, &[-729, -722, -667, -583, -486, -359, -225, -91, 59
+                         ,209, 354, 497, 630, 740, 812, 845]);
+
+    decode(&lpc, &mut output);
+    assert_eq!(&output, &[-796, -547, -285, -32, 199, 443, 670, 875, 1046
+                         ,1208, 1343, 1454, 1541, 1616, 1663, 1701]);
   }
 }
