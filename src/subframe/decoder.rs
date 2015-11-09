@@ -48,6 +48,16 @@ pub fn lpc_restore_signal(quantization_level: i8,
   }
 }
 
+/// Decodes the current subframe.
+///
+/// * `Constant` - fills the length of `output` with the constant value
+///   within the subframe.
+/// * `Verbatim` - copies the data within the verbatim subframe over to
+///   `output`.
+/// * `Fixed` - restore the signal of the fixed linear prediction and put
+///   the result into `output`.
+/// * `LPC` - restore the signal of the finite impulse response linear
+///   prediction and put the result into `output`.
 pub fn decode(subframe: &Subframe, output: &mut [i32]) {
   match subframe.data {
     subframe::Data::Constant(constant)     => {
@@ -219,5 +229,18 @@ mod tests {
     decode(&lpc, &mut output);
     assert_eq!(&output, &[-796, -547, -285, -32, 199, 443, 670, 875, 1046
                          ,1208, 1343, 1454, 1541, 1616, 1663, 1701]);
+  }
+
+  #[test]
+  fn test_wasted_bit_decode() {
+    let mut output = [0; 4];
+
+    let constant = Subframe {
+      data: subframe::Data::Constant(1),
+      wasted_bits: 10,
+    };
+
+    decode(&constant, &mut output);
+    assert_eq!(&output, &[1024, 1024, 1024, 1024]);
   }
 }
