@@ -97,6 +97,10 @@ mod tests {
 
   use subframe;
   use subframe::{
+    Subframe, Fixed, LPC,
+    EntropyCodingMethod, CodingMethod, PartitionedRice,
+    PartitionedRiceContents,
+  };
 
   #[test]
   fn test_fixed_restore_signal() {
@@ -156,11 +160,35 @@ mod tests {
       wasted_bits: 0,
     };
 
+    let fixed = Subframe {
+      data: subframe::Data::Fixed(Fixed {
+        entropy_coding_method: EntropyCodingMethod {
+          method_type: CodingMethod::PartitionedRice,
+          data: PartitionedRice {
+            order: 0,
+            contents: PartitionedRiceContents {
+              parameters: vec![],
+              raw_bits: vec![],
+            },
+          },
+        },
+        order: 3,
+        warmup: [-729, -722, -667, 0],
+        residual: vec![-19, -16, 17, -23, -7, 16, -16, -5, 3 , -8, -13, -15
+                      ,-1],
+      }),
+      wasted_bits: 0,
+    };
+
     decode(&constant, &mut output);
     assert_eq!(&output, &[4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]);
 
     decode(&verbatim, &mut output);
     assert_eq!(&output, &[16, -3, 55, 49, -32, 6, 40 , -90, 1, 0, 77, -12, 84
                          ,10 , -112, 136]);
+
+    decode(&fixed, &mut output);
+    assert_eq!(&output, &[-729, -722, -667, -583, -486, -359, -225, -91, 59
+                         ,209, 354, 497, 630, 740, 812, 845]);
   }
 }
