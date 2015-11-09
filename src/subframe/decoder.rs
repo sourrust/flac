@@ -220,4 +220,17 @@ mod tests {
     assert_eq!(&output, &[-796, -547, -285, -32, 199, 443, 670, 875, 1046
                          ,1208, 1343, 1454, 1541, 1616, 1663, 1701]);
   }
+
+  #[test]
+  fn test_wasted_bit_decode() {
+    let mut output = [0; 4];
+
+    let constant = Subframe {
+      data: subframe::Data::Constant(1),
+      wasted_bits: 10,
+    };
+
+    decode(&constant, &mut output);
+    assert_eq!(&output, &[1024, 1024, 1024, 1024]);
+  }
 }
