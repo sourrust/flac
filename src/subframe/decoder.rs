@@ -180,6 +180,31 @@ mod tests {
       wasted_bits: 0,
     };
 
+    let lpc = Subframe {
+      data: subframe::Data::LPC(LPC {
+        entropy_coding_method: EntropyCodingMethod {
+          method_type: CodingMethod::PartitionedRice,
+          data: PartitionedRice {
+            order: 0,
+            contents: PartitionedRiceContents {
+              parameters: vec![],
+              raw_bits: vec![],
+            },
+          },
+        },
+        order: 7,
+        qlp_coeff_precision: 0,
+        quantization_level: 9,
+        qlp_coefficients: [1042, -399, -75, -269, 121, 166, -75, 0, 0, 0, 0
+                          ,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                          ,0, 0, 0, 0],
+        warmup: [-796, -547, -285, -32, 199, 443, 670, 0, 0, 0, 0, 0, 0, 0, 0
+                ,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        residual: vec![-2, -23, 14, 6, 3, -4, 12, -2, 10],
+      }),
+      wasted_bits: 0,
+    };
+
     decode(&constant, &mut output);
     assert_eq!(&output, &[4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]);
 
@@ -190,5 +215,9 @@ mod tests {
     decode(&fixed, &mut output);
     assert_eq!(&output, &[-729, -722, -667, -583, -486, -359, -225, -91, 59
                          ,209, 354, 497, 630, 740, 812, 845]);
+
+    decode(&lpc, &mut output);
+    assert_eq!(&output, &[-796, -547, -285, -32, 199, 443, 670, 875, 1046
+                         ,1208, 1343, 1454, 1541, 1616, 1663, 1701]);
   }
 }
