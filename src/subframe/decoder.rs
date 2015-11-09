@@ -95,6 +95,9 @@ pub fn decode(subframe: &Subframe, output: &mut [i32]) {
 mod tests {
   use super::*;
 
+  use subframe;
+  use subframe::{
+
   #[test]
   fn test_fixed_restore_signal() {
     let residuals   = [ &[-19, -16, 17, -23, -7, 16, -16, -5, 3
@@ -136,5 +139,18 @@ mod tests {
                              , 1701]);
     assert_eq!(&outputs[1], &[-21363, -21951, -22649, -24364, -27297, -26870
                              , -30017, -29718]);
+  }
+
+  #[test]
+  fn test_decode() {
+    let mut output = [0; 16];
+
+    let constant = Subframe {
+      data: subframe::Data::Constant(4),
+      wasted_bits: 0,
+    };
+
+    decode(&constant, &mut output);
+    assert_eq!(&output, &[4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]);
   }
 }
