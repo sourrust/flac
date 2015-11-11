@@ -38,6 +38,21 @@ pub fn fixed_restore_signal(order: usize,
   }
 }
 
+// Restore the original signal from a FIR linear prediction.
+//
+// Signal restoration is accomplished by summing up the residual and the
+// predictor. Figuring out the linear prediction for finite impulse response
+// is a bit more involved because you have more to deal with, but the
+// concept is very similar to the fixed version. Coefficients are passed in
+// and reversed within function and the result of these reverse order
+// coefficients and warm up values are summed and the quantization level
+// will determine how much the bits gets shifted in order to figure the
+// current predictor for it's corresponding residual value.
+//
+// The order doesn't get passed in explicitly because the coefficients
+// length is assumed to be the value of order. And the max order is
+// `MAX_LPC_ORDER`, which is 32. This function also assumes that `output`
+// already has the warm up values from the `LPC` subframe in it.
 pub fn lpc_restore_signal(quantization_level: i8,
                           coefficients: &[i32],
                           residual: &[i32],
