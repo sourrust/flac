@@ -3,6 +3,15 @@ use subframe::{Subframe, MAX_FIXED_ORDER, MAX_LPC_ORDER};
 
 use std::ptr;
 
+// Restore the original signal from a fixed linear prediction.
+//
+// Signal restoration is accomplished by summing up the residual and the
+// predictor. With the linear prediction being "fixed", the polynomials will
+// remain the same depending on the order value. And the max order is
+// `MAX_FIXED_ORDER`, which is 4.
+//
+// This function also assumes that `output` already has the warm up values
+// from the `Fixed` subframe in it.
 pub fn fixed_restore_signal(order: usize,
                             residual: &[i32],
                             output: &mut [i32]) {
