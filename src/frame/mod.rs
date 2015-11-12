@@ -1,5 +1,6 @@
 mod types;
 mod parser;
+mod decoder;
 
 pub use self::types::{
   MAX_CHANNELS,
@@ -9,3 +10,4 @@ pub use self::types::{
 };
 
 pub use self::parser::frame_parser;
+pub use self::decoder::decode;
