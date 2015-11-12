@@ -12,6 +12,18 @@ fn decode_left_side(buffer: &mut [i32]) {
   }
 }
 
+fn decode_right_side(buffer: &mut [i32]) {
+  let block_size = buffer.len() / 2;
+
+  for i in 0..block_size {
+    let side  = buffer[i];
+    let right = buffer[i + block_size];
+
+    // left channel
+    buffer[i] = side + right;
+  }
+}
+
 pub fn decode(channel_assignment: ChannelAssignment, buffer: &mut [i32]) {
   match channel_assignment {
     ChannelAssignment::Independent => return,
