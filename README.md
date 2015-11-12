@@ -34,7 +34,7 @@ The status of this FLAC implementation:
       - [x] verbatim
 - [ ] decoder
   - [ ] frame
-    - [ ] left side
+    - [x] left side
     - [ ] right side
     - [ ] middle side
   - [x] sub-frame
