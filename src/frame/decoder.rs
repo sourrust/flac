@@ -44,6 +44,6 @@ pub fn decode(channel_assignment: ChannelAssignment, buffer: &mut [i32]) {
     ChannelAssignment::Independent => return,
     ChannelAssignment::LeftSide    => decode_left_side(buffer),
     ChannelAssignment::RightSide   => decode_right_side(buffer),
-    ChannelAssignment::MiddleSide  => unimplemented!(),
+    ChannelAssignment::MiddleSide  => decode_middle_side(buffer),
   }
 }
