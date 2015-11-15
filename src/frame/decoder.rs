@@ -1,6 +1,6 @@
 use frame::ChannelAssignment;
 
-fn decode_left_side(buffer: &mut [i32]) {
+pub fn decode_left_side(buffer: &mut [i32]) {
   let block_size = buffer.len() / 2;
 
   for i in 0..block_size {
@@ -45,5 +45,22 @@ pub fn decode(channel_assignment: ChannelAssignment, buffer: &mut [i32]) {
     ChannelAssignment::LeftSide    => decode_left_side(buffer),
     ChannelAssignment::RightSide   => decode_right_side(buffer),
     ChannelAssignment::MiddleSide  => decode_middle_side(buffer),
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn test_decode_left_side() {
+    let mut channels = [ 2, 5, 83, 113, 127, -63, -45, -15
+                       , 7, 38, 142, 238, 0, -152, -52, -18
+                       ];
+    let result       = [-5, -33, -59, -125, 127, 89, 7, 3];
+
+    decode_left_side(&mut channels);
+
+    assert_eq!(&channels[8..16], &result);
   }
 }
