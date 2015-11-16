@@ -1,4 +1,4 @@
-use nom::{ConsumerState, FileProducer, Producer};
+use nom::{ConsumerState, FileProducer, Needed, Move, Producer};
 use std::io::{Error, ErrorKind, Result};
 use std::u32;
 
@@ -30,15 +30,27 @@ pub fn get_metadata(filename: &str) -> Result<Vec<Metadata>> {
   // TODO: There is a bug where the produced hangs when the buffer is to
   // small for the awaited ampunt of data. Will change back to 1024 as soon
   // as it is fixed.
-  FileProducer::new(filename, 10240).and_then(|mut producer| {
-    let mut consumer = MetaDataConsumer::new();
-    let mut is_error = false;
+  FileProducer::new(filename, 1024).and_then(|mut producer| {
+    let mut consumer    = MetaDataConsumer::new();
+    let mut buffer_size = 1024;
+    let mut is_error    = false;
 
     loop {
       match *producer.apply(&mut consumer) {
-        ConsumerState::Done(_, _)  => break,
-        ConsumerState::Continue(_) => continue,
-        ConsumerState::Error(_)    => {
+        ConsumerState::Done(_, _)      => break,
+        ConsumerState::Continue(await) => {
+          if let Move::Await(needed) = await {
+            if let Needed::Size(size) = needed {
+              if size > buffer_size {
+                producer.resize(size);
+                buffer_size = size;
+              }
+            }
+          }
+
+          continue;
+        }
+        ConsumerState::Error(_)        => {
           is_error = true;
 
           break;
