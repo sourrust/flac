@@ -27,9 +27,6 @@ pub fn optional_eq<T: Eq>(option: Option<T>, other: T) -> bool {
 // * `ErrorKind::InvalidData` is returned when the data within the file
 //   isn't valid FLAC data.
 pub fn get_metadata(filename: &str) -> Result<Vec<Metadata>> {
-  // TODO: There is a bug where the produced hangs when the buffer is to
-  // small for the awaited ampunt of data. Will change back to 1024 as soon
-  // as it is fixed.
   FileProducer::new(filename, 1024).and_then(|mut producer| {
     let mut consumer    = MetaDataConsumer::new();
     let mut buffer_size = 1024;
