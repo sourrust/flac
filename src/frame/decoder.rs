@@ -12,7 +12,7 @@ pub fn decode_left_side(buffer: &mut [i32]) {
   }
 }
 
-fn decode_right_side(buffer: &mut [i32]) {
+pub fn decode_right_side(buffer: &mut [i32]) {
   let block_size = buffer.len() / 2;
 
   for i in 0..block_size {
@@ -62,5 +62,17 @@ mod tests {
     decode_left_side(&mut channels);
 
     assert_eq!(&channels[8..16], &result);
+  }
+
+  #[test]
+  fn test_decode_right_side() {
+    let mut channels = [ 7, 38, 142, 238, 0, -152, -52, -18
+                       , -5, -33, -59, -125, 127, 89, 7, 3
+                       ];
+    let result       = [2, 5, 83, 113, 127, -63, -45, -15];
+
+    decode_right_side(&mut channels);
+
+    assert_eq!(&channels[0..8], &result);
   }
 }
