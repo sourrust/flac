@@ -24,7 +24,7 @@ pub fn decode_right_side(buffer: &mut [i32]) {
   }
 }
 
-fn decode_middle_side(buffer: &mut [i32]) {
+pub fn decode_middle_side(buffer: &mut [i32]) {
   let block_size = buffer.len() / 2;
 
   for i in 0..block_size {
