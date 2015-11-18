@@ -75,4 +75,18 @@ mod tests {
 
     assert_eq!(&channels[0..8], &result);
   }
+
+  #[test]
+  fn test_decode_middle_side() {
+    let mut channels = [ -2, -14, 12, -6, 127, 13, -19, -6
+                       , 7, 38, 142, 238, 0, -152, -52, -18
+                       ];
+    let results      = [ 2, 5, 83, 113, 127, -63, -45, -15
+                       , -5, -33, -59, -125, 127, 89, 7, 3
+                       ];
+
+    decode_middle_side(&mut channels);
+
+    assert_eq!(&channels, &results);
+  }
 }
