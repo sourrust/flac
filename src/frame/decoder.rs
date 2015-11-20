@@ -51,6 +51,7 @@ pub fn decode(channel_assignment: ChannelAssignment, buffer: &mut [i32]) {
 #[cfg(test)]
 mod tests {
   use super::*;
+  use frame::ChannelAssignment;
 
   #[test]
   fn test_decode_left_side() {
@@ -88,5 +89,44 @@ mod tests {
     decode_middle_side(&mut channels);
 
     assert_eq!(&channels, &results);
+  }
+
+  #[test]
+  fn test_decode() {
+    let mut channels = [ 2, 5, 83, 113, 127, -63, -45, -15
+                       , 7, 38, 142, 238, 0, -152, -52, -18
+                       ];
+
+    let results = [ [ 2, 5, 83, 113, 127, -63, -45, -15
+                    , 7, 38, 142, 238, 0, -152, -52, -18
+                    ],
+                    [ 2, 5, 83, 113, 127, -63, -45, -15
+                    ,-5, -33, -59, -125, 127, 89, 7, 3
+                    ]
+                  ];
+
+    decode(ChannelAssignment::Independent, &mut channels);
+    assert_eq!(&channels, &results[0]);
+
+    channels = [ 2, 5, 83, 113, 127, -63, -45, -15
+               , 7, 38, 142, 238, 0, -152, -52, -18
+               ];
+
+    decode(ChannelAssignment::LeftSide, &mut channels);
+    assert_eq!(&channels, &results[1]);
+
+    channels = [ 7, 38, 142, 238, 0, -152, -52, -18
+               , -5, -33, -59, -125, 127, 89, 7, 3
+               ];
+
+    decode(ChannelAssignment::RightSide, &mut channels);
+    assert_eq!(&channels, &results[1]);
+
+    channels = [ -2, -14, 12, -6, 127, 13, -19, -6
+               , 7, 38, 142, 238, 0, -152, -52, -18
+               ];
+
+    decode(ChannelAssignment::MiddleSide, &mut channels);
+    assert_eq!(&channels, &results[1]);
   }
 }
