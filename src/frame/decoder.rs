@@ -107,5 +107,12 @@ mod tests {
 
     decode(ChannelAssignment::Independent, &mut channels);
     assert_eq!(&channels, &results[0]);
+
+    channels = [ 2, 5, 83, 113, 127, -63, -45, -15
+               , 7, 38, 142, 238, 0, -152, -52, -18
+               ];
+
+    decode(ChannelAssignment::LeftSide, &mut channels);
+    assert_eq!(&channels, &results[1]);
   }
 }
