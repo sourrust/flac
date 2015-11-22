@@ -39,6 +39,15 @@ pub fn decode_middle_side(buffer: &mut [i32]) {
   }
 }
 
+/// Decode the current frame buffer
+///
+/// * `Independent` - does nothing to buffer because this channel assignment
+///   is already correct.
+/// * `LeftSide` - decode left and side channels to left and right channels.
+/// * `RightSide` - decode side and right channels to left and right
+///   channels.
+/// * `MiddleSide` - decode midpoint and side channels to left and right
+///   channels.
 pub fn decode(channel_assignment: ChannelAssignment, buffer: &mut [i32]) {
   match channel_assignment {
     ChannelAssignment::Independent => return,
