@@ -32,6 +32,10 @@ pub fn decode_right_side(buffer: &mut [i32]) {
   }
 }
 
+// Decode midpoint and side channels to left and right channels.
+//
+// Two channels, midpoint (average) and side (difference) that transforms
+// the average and difference into the left and right channels.
 pub fn decode_middle_side(buffer: &mut [i32]) {
   let block_size = buffer.len() / 2;
 
