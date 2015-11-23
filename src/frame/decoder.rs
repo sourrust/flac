@@ -40,14 +40,14 @@ pub fn decode_midpoint_side(buffer: &mut [i32]) {
   let block_size = buffer.len() / 2;
 
   for i in 0..block_size {
-    let mut middle = buffer[i];
-    let side       = buffer[i + block_size];
+    let mut midpoint = buffer[i];
+    let side         = buffer[i + block_size];
 
-    middle = (middle << 1) | (side & 1);
+    midpoint = (midpoint << 1) | (side & 1);
 
     // left and right channel
-    buffer[i]              = (middle + side) >> 1;
-    buffer[i + block_size] = (middle - side) >> 1;
+    buffer[i]              = (midpoint + side) >> 1;
+    buffer[i + block_size] = (midpoint - side) >> 1;
   }
 }
 
