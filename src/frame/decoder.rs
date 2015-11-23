@@ -1,5 +1,9 @@
 use frame::ChannelAssignment;
 
+// Decode left and side channels to left and right channels.
+//
+// Two channels, left and side (difference) that transforms the difference
+// into the right channel.
 pub fn decode_left_side(buffer: &mut [i32]) {
   let block_size = buffer.len() / 2;
 
@@ -12,6 +16,10 @@ pub fn decode_left_side(buffer: &mut [i32]) {
   }
 }
 
+// Decode side and right channels to left and right channels.
+//
+// Two channels, side (difference) and right that transforms the difference
+// into the left channel.
 pub fn decode_right_side(buffer: &mut [i32]) {
   let block_size = buffer.len() / 2;
 
@@ -24,6 +32,10 @@ pub fn decode_right_side(buffer: &mut [i32]) {
   }
 }
 
+// Decode midpoint and side channels to left and right channels.
+//
+// Two channels, midpoint (average) and side (difference) that transforms
+// the average and difference into the left and right channels.
 pub fn decode_middle_side(buffer: &mut [i32]) {
   let block_size = buffer.len() / 2;
 
