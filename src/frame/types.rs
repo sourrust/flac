@@ -22,8 +22,8 @@ pub enum ChannelAssignment {
   LeftSide,
   /// Right and side stereo.
   RightSide,
-  /// Middle and side stereo.
-  MiddleSide,
+  /// Midpoint and side stereo.
+  MidpointSide,
 }
 
 /// Numbering scheme used from the frame.

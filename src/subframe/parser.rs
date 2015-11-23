@@ -55,30 +55,30 @@ pub fn leading_zeros(input: (&[u8], usize)) -> IResult<(&[u8], usize), u32> {
 }
 
 // The channel's bits per sample that gets adjusted are the side channels
-// for `LeftSide`, `MiddleSide`, and `RightSide`. The `Independent` channel
-// assignment  doesn't get adjust on any of the channels.
+// for `LeftSide`, `MidpointSide`, and `RightSide`. The `Independent`
+// channel assignment  doesn't get adjust on any of the channels.
 pub fn adjust_bits_per_sample(frame_header: &frame::Header,
                               channel: usize)
                               -> usize {
   let bits_per_sample = frame_header.bits_per_sample;
 
   match frame_header.channel_assignment {
-    ChannelAssignment::Independent => bits_per_sample,
-    ChannelAssignment::LeftSide    => {
+    ChannelAssignment::Independent  => bits_per_sample,
+    ChannelAssignment::LeftSide     => {
       if channel == 1 {
         bits_per_sample + 1
       } else {
         bits_per_sample
       }
     }
-    ChannelAssignment::RightSide   => {
+    ChannelAssignment::RightSide    => {
       if channel == 0 {
         bits_per_sample + 1
       } else {
         bits_per_sample
       }
     }
-    ChannelAssignment::MiddleSide  => {
+    ChannelAssignment::MidpointSide => {
       if channel == 1 {
         bits_per_sample + 1
       } else {
@@ -509,7 +509,7 @@ mod tests {
     assert_eq!(adjust_bits_per_sample(&frame_header, 0), 17);
     assert_eq!(adjust_bits_per_sample(&frame_header, 1), 16);
 
-    frame_header.channel_assignment = ChannelAssignment::MiddleSide;
+    frame_header.channel_assignment = ChannelAssignment::MidpointSide;
 
     assert_eq!(adjust_bits_per_sample(&frame_header, 0), 16);
     assert_eq!(adjust_bits_per_sample(&frame_header, 1), 17);
