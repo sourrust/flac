@@ -36,7 +36,7 @@ pub fn decode_right_side(buffer: &mut [i32]) {
 //
 // Two channels, midpoint (average) and side (difference) that transforms
 // the average and difference into the left and right channels.
-pub fn decode_middle_side(buffer: &mut [i32]) {
+pub fn decode_midpoint_side(buffer: &mut [i32]) {
   let block_size = buffer.len() / 2;
 
   for i in 0..block_size {
@@ -65,7 +65,7 @@ pub fn decode(channel_assignment: ChannelAssignment, buffer: &mut [i32]) {
     ChannelAssignment::Independent  => return,
     ChannelAssignment::LeftSide     => decode_left_side(buffer),
     ChannelAssignment::RightSide    => decode_right_side(buffer),
-    ChannelAssignment::MidpointSide => decode_middle_side(buffer),
+    ChannelAssignment::MidpointSide => decode_midpoint_side(buffer),
   }
 }
 
@@ -99,7 +99,7 @@ mod tests {
   }
 
   #[test]
-  fn test_decode_middle_side() {
+  fn test_decode_midpoint_side() {
     let mut channels = [ -2, -14, 12, -6, 127, 13, -19, -6
                        , 7, 38, 142, 238, 0, -152, -52, -18
                        ];
@@ -107,7 +107,7 @@ mod tests {
                        , -5, -33, -59, -125, 127, 89, 7, 3
                        ];
 
-    decode_middle_side(&mut channels);
+    decode_midpoint_side(&mut channels);
 
     assert_eq!(&channels, &results);
   }
