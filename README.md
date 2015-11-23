@@ -32,8 +32,8 @@ The status of this FLAC implementation:
       - [x] fixed
       - [x] LPC
       - [x] verbatim
-- [ ] decoder
-  - [ ] frame
+- [x] decoder
+  - [x] frame
     - [x] left side
     - [x] right side
     - [x] middle side
