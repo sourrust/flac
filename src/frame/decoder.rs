@@ -16,6 +16,10 @@ pub fn decode_left_side(buffer: &mut [i32]) {
   }
 }
 
+// Decode side and right channels to left and right channels.
+//
+// Two channels, side (difference) and right that transforms the difference
+// into the left channel.
 pub fn decode_right_side(buffer: &mut [i32]) {
   let block_size = buffer.len() / 2;
 
