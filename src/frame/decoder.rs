@@ -1,5 +1,9 @@
 use frame::ChannelAssignment;
 
+// Decode left and side channels to left and right channels.
+//
+// Two channels, left and side (difference) that transforms the difference
+// into the right channel.
 pub fn decode_left_side(buffer: &mut [i32]) {
   let block_size = buffer.len() / 2;
 
