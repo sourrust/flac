@@ -58,14 +58,14 @@ pub fn decode_middle_side(buffer: &mut [i32]) {
 /// * `LeftSide` - decode left and side channels to left and right channels.
 /// * `RightSide` - decode side and right channels to left and right
 ///   channels.
-/// * `MiddleSide` - decode midpoint and side channels to left and right
+/// * `MidpointSide` - decode midpoint and side channels to left and right
 ///   channels.
 pub fn decode(channel_assignment: ChannelAssignment, buffer: &mut [i32]) {
   match channel_assignment {
-    ChannelAssignment::Independent => return,
-    ChannelAssignment::LeftSide    => decode_left_side(buffer),
-    ChannelAssignment::RightSide   => decode_right_side(buffer),
-    ChannelAssignment::MiddleSide  => decode_middle_side(buffer),
+    ChannelAssignment::Independent  => return,
+    ChannelAssignment::LeftSide     => decode_left_side(buffer),
+    ChannelAssignment::RightSide    => decode_right_side(buffer),
+    ChannelAssignment::MidpointSide => decode_middle_side(buffer),
   }
 }
 
@@ -147,7 +147,7 @@ mod tests {
                , 7, 38, 142, 238, 0, -152, -52, -18
                ];
 
-    decode(ChannelAssignment::MiddleSide, &mut channels);
+    decode(ChannelAssignment::MidpointSide, &mut channels);
     assert_eq!(&channels, &results[1]);
   }
 }

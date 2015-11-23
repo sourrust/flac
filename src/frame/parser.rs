@@ -133,7 +133,7 @@ pub fn channel_bits(input: &[u8])
         }
         0b1000          => ChannelAssignment::LeftSide,
         0b1001          => ChannelAssignment::RightSide,
-        0b1010          => ChannelAssignment::MiddleSide,
+        0b1010          => ChannelAssignment::MidpointSide,
         _               => ChannelAssignment::Independent,
       };
       let size_byte = (byte >> 1) & 0b0111;
@@ -350,7 +350,7 @@ mod tests {
     let results = [ IResult::Done(slice, (ChannelAssignment::Independent,
                                           6, 4))
                   , IResult::Done(slice, (ChannelAssignment::LeftSide, 2, 0))
-                  , IResult::Done(slice, (ChannelAssignment::MiddleSide,
+                  , IResult::Done(slice, (ChannelAssignment::MidpointSide,
                                           2, 6))
                   ];
 
@@ -450,7 +450,7 @@ mod tests {
                        block_size: 512,
                        sample_rate: 1000,
                        channels: 2,
-                       channel_assignment: ChannelAssignment::MiddleSide,
+                       channel_assignment: ChannelAssignment::MidpointSide,
                        bits_per_sample: 16,
                        number: NumberType::Sample(68719476732),
                        crc: 0x88,
