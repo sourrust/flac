@@ -63,7 +63,7 @@ named!(pub stream_info <&[u8], metadata::Data>,
 );
 
 pub fn padding(input: &[u8], length: u32) -> IResult<&[u8], metadata::Data> {
-  map!(input, skip_bytes!(length, 0), |_| metadata::Data::Padding(0))
+  map!(input, skip_bytes!(length), |_| metadata::Data::Padding(0))
 }
 
 pub fn application(input: &[u8], length: u32)
@@ -186,7 +186,7 @@ named!(cue_sheet_track_index <&[u8], CueSheetTrackIndex>,
   chain!(
     offset: be_u64 ~
     number: be_u8 ~
-    skip_bytes!(3, 0),
+    skip_bytes!(3),
     || {
       CueSheetTrackIndex {
         offset: offset,
