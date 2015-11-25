@@ -24,6 +24,9 @@ macro_rules! skip_bytes (
       }
     }
   );
+  ($input: expr, $length: expr) => (
+    skip_bytes!($input, $length, 0);
+  );
 );
 
 // A parser combiner for previously allocated buffers that can be passed
