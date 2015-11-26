@@ -27,8 +27,9 @@ pub fn leading_zeros(input: (&[u8], usize)) -> IResult<(&[u8], usize), u32> {
     let byte  = bytes[i] << offset;
     let zeros = byte.leading_zeros() as usize;
 
+    index = i;
+
     if byte > 0 {
-      index     = i;
       is_parsed = true;
       count    += zeros;
       offset   += zeros + 1;
@@ -47,8 +48,8 @@ pub fn leading_zeros(input: (&[u8], usize)) -> IResult<(&[u8], usize), u32> {
 
   if is_parsed {
     IResult::Done((&bytes[index..], offset), count as u32)
-  } else if index + 1 > bytes_len {
-    IResult::Incomplete(Needed::Size(index + 1))
+  } else if index + 2 > bytes_len {
+    IResult::Incomplete(Needed::Size(index + 2))
   } else {
     IResult::Error(Err::Position(ErrorKind::TakeUntil, (bytes, offset)))
   }
@@ -422,7 +423,8 @@ mod tests {
   use super::*;
   use nom::{
     IResult,
-    Err, ErrorKind
+    Err, ErrorKind,
+    Needed,
   };
 
   use frame;
@@ -444,6 +446,7 @@ mod tests {
                   , (&[0b10000000, 0b10000000][..], 1)
                   , (&[0b00000000, 0b00000001][..], 0)
                   , (&[0b11111110, 0b00000010][..], 7)
+                  , (&[0b10101010, 0b00000000][..], 7)
                   ];
     let results = [ IResult::Done((&inputs[0].0[..], 1), 0)
                   , IResult::Done((&inputs[1].0[..], 2), 0)
@@ -453,6 +456,7 @@ mod tests {
                   , IResult::Done((&inputs[5].0[1..], 1), 7)
                   , IResult::Done((&[][..], 0), 15)
                   , IResult::Done((&inputs[7].0[1..], 7), 7)
+                  , IResult::Incomplete(Needed::Size(3))
                   ];
 
     assert_eq!(leading_zeros(inputs[0]), results[0]);
@@ -463,6 +467,7 @@ mod tests {
     assert_eq!(leading_zeros(inputs[5]), results[5]);
     assert_eq!(leading_zeros(inputs[6]), results[6]);
     assert_eq!(leading_zeros(inputs[7]), results[7]);
+    assert_eq!(leading_zeros(inputs[8]), results[8]);
   }
 
   #[test]
