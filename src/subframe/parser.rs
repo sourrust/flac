@@ -422,7 +422,8 @@ mod tests {
   use super::*;
   use nom::{
     IResult,
-    Err, ErrorKind
+    Err, ErrorKind,
+    Needed,
   };
 
   use frame;
@@ -444,6 +445,7 @@ mod tests {
                   , (&[0b10000000, 0b10000000][..], 1)
                   , (&[0b00000000, 0b00000001][..], 0)
                   , (&[0b11111110, 0b00000010][..], 7)
+                  , (&[0b10101010, 0b00000000][..], 7)
                   ];
     let results = [ IResult::Done((&inputs[0].0[..], 1), 0)
                   , IResult::Done((&inputs[1].0[..], 2), 0)
@@ -453,6 +455,7 @@ mod tests {
                   , IResult::Done((&inputs[5].0[1..], 1), 7)
                   , IResult::Done((&[][..], 0), 15)
                   , IResult::Done((&inputs[7].0[1..], 7), 7)
+                  , IResult::Incomplete(Needed::Size(3))
                   ];
 
     assert_eq!(leading_zeros(inputs[0]), results[0]);
@@ -463,6 +466,7 @@ mod tests {
     assert_eq!(leading_zeros(inputs[5]), results[5]);
     assert_eq!(leading_zeros(inputs[6]), results[6]);
     assert_eq!(leading_zeros(inputs[7]), results[7]);
+    assert_eq!(leading_zeros(inputs[8]), results[8]);
   }
 
   #[test]
