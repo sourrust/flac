@@ -1,5 +1,12 @@
-use nom::{ConsumerState, ErrorKind, HexDisplay, IResult, Move};
+use nom::{
+  Consumer, ConsumerState,
+  ErrorKind,
+  HexDisplay,
+  Input, IResult,
+  Move, Needed,
+};
 
+use metadata;
 
 use metadata::{Metadata, StreamInfo, metadata_parser};
 use frame::{frame_parser, Frame};
