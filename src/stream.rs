@@ -58,4 +58,41 @@ impl Stream {
       }
     }
   }
+
+  fn handle_metadata(&mut self, input: &[u8]) {
+    match metadata::block(input) {
+      IResult::Done(i, block) => {
+        let offset   = input.offset(i);
+        let consumed = Move::Consume(offset);
+        let is_last  = block.is_last;
+
+        if let metadata::Data::StreamInfo(info) = block.data {
+          self.info = info;
+        } else {
+          self.metadata.push(block);
+        }
+
+        if is_last {
+          self.state = ParserState::Frame;
+        }
+
+        self.consumer_state = ConsumerState::Continue(consumed);
+      }
+      IResult::Error(_)       => {
+        let kind = ErrorKind::Custom(1);
+
+        self.consumer_state = ConsumerState::Error(kind);
+      }
+      IResult::Incomplete(s)  => {
+        let size = if let Needed::Size(length) = s {
+          length
+        } else {
+          1024
+        };
+        let needed = Move::Await(Needed::Size(size));
+
+        self.consumer_state = ConsumerState::Continue(needed);
+      }
+    }
+  }
 }
