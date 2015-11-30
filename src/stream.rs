@@ -1,6 +1,12 @@
 use metadata::{Metadata, StreamInfo, metadata_parser};
 use frame::{frame_parser, Frame};
 
+enum ParserState {
+  Marker,
+  Metadata,
+  Frame,
+}
+
 pub struct Stream {
   pub info: StreamInfo,
   pub metadata: Vec<Metadata>,
