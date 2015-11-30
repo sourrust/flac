@@ -124,3 +124,31 @@ impl Stream {
     }
   }
 }
+
+impl<'a> Consumer<&'a [u8], (), ErrorKind, Move> for Stream {
+  fn state(&self) -> &ConsumerState<(), ErrorKind, Move> {
+    &self.consumer_state
+  }
+
+  fn handle(&mut self, input: Input<&'a [u8]>)
+            -> &ConsumerState<(), ErrorKind, Move> {
+    match input {
+      Input::Element(i) | Input::Eof(Some(i)) => {
+        match self.state {
+          ParserState::Marker   => self.handle_marker(i),
+          ParserState::Metadata => self.handle_metadata(i),
+          ParserState::Frame    => self.handle_frame(i),
+        }
+      }
+      Input::Empty | Input::Eof(None)         => {
+        self.consumer_state = match self.state {
+          ParserState::Marker   => ConsumerState::Error(ErrorKind::Custom(0)),
+          ParserState::Metadata => ConsumerState::Error(ErrorKind::Custom(1)),
+          ParserState::Frame    => ConsumerState::Done(Move::Consume(0), ()),
+        };
+      }
+    }
+
+    &self.consumer_state
+  }
+}
