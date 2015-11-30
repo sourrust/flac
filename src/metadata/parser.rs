@@ -284,7 +284,7 @@ pub fn block_data(input: &[u8], block_type: u8, length: u32)
   }
 }
 
-named!(block <&[u8], Metadata>,
+named!(pub block <&[u8], Metadata>,
   chain!(
     block_header: header ~
     data: apply!(block_data, block_header.1, block_header.2),
