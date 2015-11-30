@@ -95,4 +95,32 @@ impl Stream {
       }
     }
   }
+
+  fn handle_frame(&mut self, input: &[u8]) {
+    match frame_parser(input, &self.info) {
+      IResult::Done(i, frame) => {
+        let offset   = input.offset(i);
+        let consumed = Move::Consume(offset);
+
+        self.frames.push(frame);
+
+        self.consumer_state = ConsumerState::Continue(consumed);
+      }
+      IResult::Error(_)       => {
+        let kind = ErrorKind::Custom(2);
+
+        self.consumer_state = ConsumerState::Error(kind);
+      }
+      IResult::Incomplete(s)  => {
+        let size = if let Needed::Size(length) = s {
+          length
+        } else {
+          self.info.max_frame_size as usize
+        };
+        let needed = Move::Await(Needed::Size(size));
+
+        self.consumer_state = ConsumerState::Continue(needed);
+      }
+    }
+  }
 }
