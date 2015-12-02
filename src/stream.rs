@@ -44,6 +44,18 @@ named!(pub stream_parser <&[u8], Stream>,
 );
 
 impl Stream {
+  pub fn new() -> Stream {
+    let consumed = Move::Consume(0);
+
+    Stream {
+      info: StreamInfo::new(),
+      metadata: Vec::new(),
+      frames: Vec::new(),
+      state: ParserState::Marker,
+      consumer_state: ConsumerState::Continue(consumed),
+    }
+  }
+
   fn handle_marker(&mut self, input: &[u8]) {
     match tag!(input, "fLaC") {
       IResult::Done(i, _)       => {
