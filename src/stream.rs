@@ -56,6 +56,10 @@ impl Stream {
     }
   }
 
+  pub fn info(&self) -> StreamInfo {
+    self.info
+  }
+
   fn handle_marker(&mut self, input: &[u8]) {
     match tag!(input, "fLaC") {
       IResult::Done(i, _)       => {
