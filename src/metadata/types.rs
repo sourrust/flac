@@ -43,7 +43,7 @@ pub enum Data {
 }
 
 /// Information regarding the entire audio stream.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct StreamInfo {
   /// Minimum block size, in samples, used in the stream.
   pub min_block_size: u16,
