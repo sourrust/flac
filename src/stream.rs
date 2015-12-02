@@ -18,7 +18,7 @@ enum ParserState {
 }
 
 pub struct Stream {
-  pub info: StreamInfo,
+  info: StreamInfo,
   pub metadata: Vec<Metadata>,
   pub frames: Vec<Frame>,
   state: ParserState,
