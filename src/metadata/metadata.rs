@@ -1,6 +1,8 @@
-use nom::{ConsumerState, FileProducer, Needed, Move, Producer};
+use nom::{ConsumerState, FileProducer, Producer};
 use std::io::{Error, ErrorKind, Result};
 use std::u32;
+
+use utility::resize_producer;
 
 use metadata::{
   Metadata, Data,
@@ -36,13 +38,10 @@ pub fn get_metadata(filename: &str) -> Result<Vec<Metadata>> {
       match *producer.apply(&mut consumer) {
         ConsumerState::Done(_, _)      => break,
         ConsumerState::Continue(await) => {
-          if let Move::Await(needed) = await {
-            if let Needed::Size(size) = needed {
-              if size > buffer_size {
-                producer.resize(size);
-                buffer_size = size;
-              }
-            }
+          let result = resize_producer(&mut producer, &await, buffer_size);
+
+          if let Some(size) = result {
+            buffer_size = size;
           }
 
           continue;
