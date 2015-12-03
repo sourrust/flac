@@ -4,6 +4,8 @@ mod macros;
 
 pub use self::crc::{crc8, crc16};
 
+use nom::{FileProducer, Move, Needed};
+
 // Convert one to four byte slices into an unsigned 32-bit number.
 //
 // NOTE: This assumes big-endian since most numbers in the FLAC binary are
@@ -25,6 +27,24 @@ pub fn extend_sign(value: u32, bit_count: usize) -> i32 {
   } else {
     (value as i32).wrapping_sub(1 << bit_count)
   }
+}
+
+pub fn resize_producer(producer: &mut FileProducer,
+                       await: &Move,
+                       current_size: usize)
+                       -> Option<usize> {
+  let mut result = None;
+
+  if let Move::Await(needed) = *await {
+    if let Needed::Size(size) = needed {
+      if size > current_size {
+        producer.resize(size);
+        result = Some(size);
+      }
+    }
+  }
+
+  result
 }
 
 #[cfg(test)]
