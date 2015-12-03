@@ -1,4 +1,4 @@
-use nom::{ConsumerState, FileProducer, Needed, Move, Producer};
+use nom::{ConsumerState, FileProducer, Producer};
 use std::io::{Error, ErrorKind, Result};
 use std::u32;
 
