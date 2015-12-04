@@ -2,6 +2,7 @@ use nom::{
   Consumer, ConsumerState,
   ErrorKind,
   HexDisplay,
+  Producer, FileProducer,
   Input, IResult,
   Move, Needed,
 };
@@ -10,6 +11,10 @@ use metadata;
 
 use metadata::{Metadata, StreamInfo, metadata_parser};
 use frame::{frame_parser, Frame};
+use utility::resize_producer;
+
+use std::io;
+use std::io::{Error, Result};
 
 enum ParserState {
   Marker,
@@ -58,6 +63,50 @@ impl Stream {
 
   pub fn info(&self) -> StreamInfo {
     self.info
+  }
+
+  pub fn from_file(filename: &str) -> Result<Stream> {
+    FileProducer::new(filename, 1024).and_then(|mut producer| {
+      let consumed        = Move::Consume(0);
+      let mut buffer_size = 1024;
+      let mut is_error    = false;
+      let mut stream      = Stream {
+        info: StreamInfo::new(),
+        metadata: Vec::new(),
+        frames: Vec::new(),
+        state: ParserState::Marker,
+        consumer_state: ConsumerState::Continue(consumed),
+      };
+
+      loop {
+        match *producer.apply(&mut stream) {
+          ConsumerState::Done(_, _)      => break,
+          ConsumerState::Continue(await) => {
+            let result = resize_producer(&mut producer, &await, buffer_size);
+
+            if let Some(size) = result {
+              buffer_size = size;
+            }
+
+            continue;
+          }
+          ConsumerState::Error(_)        => {
+            is_error = true;
+
+            break;
+          }
+        }
+      }
+
+      if !is_error {
+        Ok(stream)
+      } else {
+        let error_str = format!("parser: couldn't parse the given file {}",
+                                filename);
+
+        Err(Error::new(io::ErrorKind::InvalidData, error_str))
+      }
+    })
   }
 
   fn handle_marker(&mut self, input: &[u8]) {
