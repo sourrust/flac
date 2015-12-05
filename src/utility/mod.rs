@@ -1,8 +1,10 @@
 mod crc;
 #[macro_use]
 mod macros;
+mod types;
 
 pub use self::crc::{crc8, crc16};
+pub use self::types::{ErrorKind, StreamProducer, ByteStream, ReadStream};
 
 use nom::{FileProducer, Move, Needed};
 
