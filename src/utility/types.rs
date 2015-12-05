@@ -1,8 +1,12 @@
 use nom::{IResult, Needed};
 
+use std::io;
+use std::io::Read;
 use std::ptr;
 
 pub enum ErrorKind {
+  IO(io::Error),
+  Incomplete(usize),
   EndOfInput,
   Unknown,
 }
@@ -143,5 +147,118 @@ impl Buffer {
 
   pub fn consume(&mut self, consumed: usize) {
     self.offset += consumed;
+  }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum ParserState {
+  Incomplete,
+  EndOfInput,
+}
+
+fn fill<R: Read>(buffer: &mut Buffer, reader: &mut R, needed: usize)
+                 -> io::Result<usize> {
+  let mut read = 0;
+
+  if buffer.len() < needed {
+    buffer.resize(needed);
+
+    while buffer.len() < needed {
+      let size_read = try!(buffer.fill(reader));
+
+      if size_read > 0 {
+        read += size_read;
+      } else {
+        break;
+      }
+    }
+  }
+
+  Ok(read)
+}
+
+pub struct ReadStream<R: Read> {
+  reader: R,
+  buffer: Buffer,
+  needed: usize,
+  state: ParserState,
+}
+
+impl<R> ReadStream<R> where R: Read {
+  pub fn new(reader: R) -> Self {
+    ReadStream {
+      reader: reader,
+      buffer: Buffer::new(),
+      needed: 0,
+      state: ParserState::Incomplete,
+    }
+  }
+
+  fn fill(&mut self) -> io::Result<usize> {
+    let needed = self.needed;
+
+    fill(&mut self.buffer, &mut self.reader, needed).map(|consumed| {
+      if self.buffer.len() < needed {
+        self.state = ParserState::EndOfInput;
+      }
+
+      consumed
+    })
+  }
+}
+
+fn from_iresult<T>(buffer: &Buffer, result: IResult<&[u8], T>)
+                   -> Result<(usize, T), ErrorKind> {
+  match result {
+    IResult::Done(i, o)    => Ok((buffer.len() - i.len(), o)),
+    IResult::Incomplete(n) => {
+      let mut needed = buffer.capacity();
+
+      if let Needed::Size(size) = n {
+        needed = size;
+      }
+
+      Err(ErrorKind::Incomplete(needed))
+    }
+    IResult::Error(_)      => Err(ErrorKind::Unknown),
+  }
+}
+
+impl<R> StreamProducer for ReadStream<R> where R: Read {
+  fn parse<F, T>(&mut self, f: F) -> Result<T, ErrorKind>
+   where F: FnOnce(&[u8]) -> IResult<&[u8], T> {
+    if self.state != ParserState::EndOfInput {
+      try!(self.fill().map_err(ErrorKind::IO));
+    }
+
+    let mut buffer = &mut self.buffer;
+
+    if buffer.is_empty() {
+      self.state = ParserState::EndOfInput;
+
+      return Err(ErrorKind::EndOfInput);
+    }
+
+    let result = {
+      let iresult = f(buffer.as_slice());
+
+
+      from_iresult(&buffer, iresult)
+    };
+
+    match result {
+      Ok((consumed, o)) => {
+        buffer.consume(consumed);
+
+        Ok(o)
+      }
+      Err(kind)         => {
+        if let ErrorKind::Incomplete(needed) = kind {
+          self.needed = needed;
+        }
+
+        Err(kind)
+      }
+    }
   }
 }
