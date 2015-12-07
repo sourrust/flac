@@ -74,7 +74,7 @@ impl<'a> StreamProducer for ByteStream<'a> {
   }
 }
 
-pub struct Buffer {
+struct Buffer {
   data: Vec<u8>,
   filled: usize,
   offset: usize,
