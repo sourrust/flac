@@ -252,7 +252,7 @@ impl MetaDataConsumer {
     }
   }
 
-  fn handle_marker(&mut self, input: &[u8]) {
+  fn handle_marker<'a>(&mut self, input: &'a [u8]) -> IResult<&'a [u8], ()> {
     match tag!(input, "fLaC") {
       IResult::Done(i, _)    => {
         let offset   = input.offset(i);
@@ -274,7 +274,7 @@ impl MetaDataConsumer {
     }
   }
 
-  fn handle_header(&mut self, input: &[u8]) {
+  fn handle_header<'a>(&mut self, input: &'a [u8]) -> IResult<&'a [u8], ()> {
     match header(input) {
       IResult::Done(i, data) => {
         let offset   = input.offset(i);
@@ -296,7 +296,8 @@ impl MetaDataConsumer {
     }
   }
 
-  fn handle_block(&mut self, input: &[u8], header: (bool, u8, u32)) {
+  fn handle_block<'a>(&mut self, input: &'a [u8], header: (bool, u8, u32))
+                      -> IResult<&'a [u8], ()> {
     let (is_last, block_type, length) = header;
 
     match block_data(input, block_type, length) {
