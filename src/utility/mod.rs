@@ -1,7 +1,12 @@
 mod crc;
 #[macro_use]
 mod macros;
-mod types;
+// Strange bug with traits that wont allow modules to be private. This is
+// the workaround, but I don't want to make this public since the use clause
+// is meant to export only the needed types and traits. See:
+//
+// <https://github.com/rust-lang/rust/issues/28394>
+pub mod types;
 
 pub use self::crc::{crc8, crc16};
 pub use self::types::{ErrorKind, StreamProducer, ByteStream, ReadStream};
