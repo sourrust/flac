@@ -3,6 +3,7 @@ use nom::{Err, IResult, Needed};
 use std::io;
 use std::io::Read;
 use std::ptr;
+use std::cmp;
 
 #[derive(Debug)]
 pub enum ErrorKind {
@@ -203,7 +204,7 @@ impl<R> ReadStream<R> where R: Read {
   }
 
   fn fill(&mut self) -> io::Result<usize> {
-    let needed = self.needed;
+    let needed = cmp::max(1, self.needed);
 
     fill(&mut self.buffer, &mut self.reader, needed).map(|consumed| {
       if self.buffer.len() < needed {
