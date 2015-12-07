@@ -1,15 +1,16 @@
-use nom::{ConsumerState, FileProducer, Producer};
-use std::io::{Error, ErrorKind, Result};
+use std::io;
+use std::io::{Error, Result};
 use std::u32;
+use std::fs::File;
 
-use utility::resize_producer;
+use utility::{ErrorKind, ReadStream};
 
 use metadata::{
   Metadata, Data,
   StreamInfo, CueSheet, VorbisComment, Picture,
   PictureType,
 };
-use metadata::types::MetaDataConsumer;
+use metadata::types::Consumer;
 
 // Will return true when the unwrapped value of `option` and `other` match
 // or `option` is `Option::None`, otherwise false.
@@ -29,24 +30,17 @@ pub fn optional_eq<T: Eq>(option: Option<T>, other: T) -> bool {
 // * `ErrorKind::InvalidData` is returned when the data within the file
 //   isn't valid FLAC data.
 pub fn get_metadata(filename: &str) -> Result<Vec<Metadata>> {
-  FileProducer::new(filename, 1024).and_then(|mut producer| {
-    let mut consumer    = MetaDataConsumer::new();
-    let mut buffer_size = 1024;
-    let mut is_error    = false;
+  File::open(filename).and_then(|file| {
+    let mut stream   = ReadStream::new(file);
+    let mut consumer = Consumer::new();
+    let mut is_error = false;
 
     loop {
-      match *producer.apply(&mut consumer) {
-        ConsumerState::Done(_, _)      => break,
-        ConsumerState::Continue(await) => {
-          let result = resize_producer(&mut producer, &await, buffer_size);
-
-          if let Some(size) = result {
-            buffer_size = size;
-          }
-
-          continue;
-        }
-        ConsumerState::Error(_)        => {
+      match consumer.handle(&mut stream) {
+        Ok(_)                         => break,
+        Err(ErrorKind::Consumed(_))   => continue,
+        Err(ErrorKind::Incomplete(_)) => continue,
+        Err(_)                        => {
           is_error = true;
 
           break;
@@ -57,7 +51,7 @@ pub fn get_metadata(filename: &str) -> Result<Vec<Metadata>> {
     if is_error {
       let error_str = "parser: couldn't find any metadata";
 
-      Err(Error::new(ErrorKind::InvalidData, error_str))
+      Err(Error::new(io::ErrorKind::InvalidData, error_str))
     } else {
       Ok(consumer.data)
     }
@@ -99,7 +93,7 @@ pub fn get_metadata(filename: &str) -> Result<Vec<Metadata>> {
 pub fn get_stream_info(filename: &str) -> Result<StreamInfo> {
   get_metadata(filename).and_then(|blocks| {
     let error_str  = "metadata: couldn't find StreamInfo";
-    let mut result = Err(Error::new(ErrorKind::NotFound, error_str));
+    let mut result = Err(Error::new(io::ErrorKind::NotFound, error_str));
 
     for block in blocks {
       if let Data::StreamInfo(stream_info) = block.data {
@@ -148,7 +142,7 @@ pub fn get_stream_info(filename: &str) -> Result<StreamInfo> {
 pub fn get_vorbis_comment(filename: &str) -> Result<VorbisComment> {
   get_metadata(filename).and_then(|blocks| {
     let error_str  = "metadata: couldn't find VorbisComment";
-    let mut result = Err(Error::new(ErrorKind::NotFound, error_str));
+    let mut result = Err(Error::new(io::ErrorKind::NotFound, error_str));
 
     for block in blocks {
       if let Data::VorbisComment(vorbis_comment) = block.data {
@@ -195,7 +189,7 @@ pub fn get_vorbis_comment(filename: &str) -> Result<VorbisComment> {
 pub fn get_cue_sheet(filename: &str) -> Result<CueSheet> {
   get_metadata(filename).and_then(|blocks| {
     let error_str  = "metadata: couldn't find CueSheet";
-    let mut result = Err(Error::new(ErrorKind::NotFound, error_str));
+    let mut result = Err(Error::new(io::ErrorKind::NotFound, error_str));
 
     for block in blocks {
       if let Data::CueSheet(cue_sheet) = block.data {
@@ -272,7 +266,7 @@ pub fn get_picture(filename: &str,
                    -> Result<Picture> {
   get_metadata(filename).and_then(|blocks| {
     let error_str  = "metadata: couldn't find any Picture";
-    let mut result = Err(Error::new(ErrorKind::NotFound, error_str));
+    let mut result = Err(Error::new(io::ErrorKind::NotFound, error_str));
 
     let mut max_area_seen  = 0;
     let mut max_depth_seen = 0;

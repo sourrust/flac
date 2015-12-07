@@ -1,11 +1,8 @@
-use nom::{
-  Consumer, ConsumerState,
-  ErrorKind,
-  HexDisplay,
-  Input, IResult,
-  Move, Needed,
-};
+use nom::{Err, ErrorKind, IResult};
 use metadata::parser::{header, block_data};
+
+use utility;
+use utility::StreamProducer;
 
 use std::collections::HashMap;
 
@@ -235,75 +232,55 @@ enum ParserState {
   Block((bool, u8, u32)),
 }
 
-pub struct MetaDataConsumer {
+pub struct Consumer {
   state: ParserState,
-  consumer_state: ConsumerState<(), ErrorKind, Move>,
   pub data: Vec<Metadata>,
 }
 
-impl MetaDataConsumer {
-  pub fn new() -> MetaDataConsumer {
-    let consumed = Move::Consume(0);
-
-    MetaDataConsumer {
+impl Consumer {
+  pub fn new() -> Self {
+    Consumer {
       state: ParserState::Marker,
-      consumer_state: ConsumerState::Continue(consumed),
       data: Vec::new(),
     }
   }
 
-  fn handle_marker(&mut self, input: &[u8]) {
+  fn handle_marker<'a>(&mut self, input: &'a [u8]) -> IResult<&'a [u8], ()> {
+    let kind = ErrorKind::Custom(0);
+
     match tag!(input, "fLaC") {
       IResult::Done(i, _)    => {
-        let offset   = input.offset(i);
-        let consumed = Move::Consume(offset);
+        self.state = ParserState::Header;
 
-        self.state          = ParserState::Header;
-        self.consumer_state = ConsumerState::Continue(consumed);
+        IResult::Error(Err::Position(kind, i))
       }
-      IResult::Error(_)      => {
-        let kind = ErrorKind::Custom(0);
-
-        self.consumer_state = ConsumerState::Error(kind);
-      }
-      IResult::Incomplete(_) => {
-        let needed = Move::Await(Needed::Size(4));
-
-        self.consumer_state = ConsumerState::Continue(needed);
-      }
+      IResult::Error(_)      => IResult::Error(Err::Code(kind)),
+      IResult::Incomplete(n) => IResult::Incomplete(n),
     }
   }
 
-  fn handle_header(&mut self, input: &[u8]) {
+  fn handle_header<'a>(&mut self, input: &'a [u8]) -> IResult<&'a [u8], ()> {
+    let kind = ErrorKind::Custom(1);
+
     match header(input) {
       IResult::Done(i, data) => {
-        let offset   = input.offset(i);
-        let consumed = Move::Consume(offset);
+        self.state = ParserState::Block(data);
 
-        self.state          = ParserState::Block(data);
-        self.consumer_state = ConsumerState::Continue(consumed);
+        IResult::Error(Err::Position(kind, i))
       }
-      IResult::Error(_)      => {
-        let kind = ErrorKind::Custom(1);
-
-        self.consumer_state = ConsumerState::Error(kind);
-      }
-      IResult::Incomplete(_) => {
-        let needed = Move::Await(Needed::Size(4));
-
-        self.consumer_state = ConsumerState::Continue(needed);
-      }
+      IResult::Error(_)      => IResult::Error(Err::Code(kind)),
+      IResult::Incomplete(n) => IResult::Incomplete(n),
     }
   }
 
-  fn handle_block(&mut self, input: &[u8], header: (bool, u8, u32)) {
+  fn handle_block<'a>(&mut self, input: &'a [u8], header: (bool, u8, u32))
+                      -> IResult<&'a [u8], ()> {
+    let kind = ErrorKind::Custom(2);
+
     let (is_last, block_type, length) = header;
 
     match block_data(input, block_type, length) {
       IResult::Done(i, data) => {
-        let offset   = input.offset(i);
-        let consumed = Move::Consume(offset);
-
         self.data.push(Metadata {
           is_last: is_last,
           length: length,
@@ -311,52 +288,26 @@ impl MetaDataConsumer {
         });
 
         if is_last {
-          self.consumer_state = ConsumerState::Done(consumed, ());
+          IResult::Done(i, ())
         } else {
-          self.state          = ParserState::Header;
-          self.consumer_state = ConsumerState::Continue(consumed);
+          self.state = ParserState::Header;
+
+          IResult::Error(Err::Position(kind, i))
         }
       }
-      IResult::Error(_)      => {
-        let kind = ErrorKind::Custom(2);
-
-        self.consumer_state = ConsumerState::Error(kind);
-      }
-      IResult::Incomplete(_) => {
-        let needed = Move::Await(Needed::Size(length as usize));
-
-        self.consumer_state = ConsumerState::Continue(needed);
-      }
+      IResult::Error(_)      => IResult::Error(Err::Code(kind)),
+      IResult::Incomplete(n) => IResult::Incomplete(n),
     }
   }
-}
 
-impl<'a> Consumer<&'a [u8], (), ErrorKind, Move> for MetaDataConsumer {
-  fn state(&self) -> &ConsumerState<(), ErrorKind, Move> {
-    &self.consumer_state
-  }
-
-  fn handle(&mut self, input: Input<&'a [u8]>)
-            -> &ConsumerState<(), ErrorKind, Move> {
-    match input {
-      Input::Element(i) | Input::Eof(Some(i)) => {
-        match self.state {
-          ParserState::Marker      => self.handle_marker(i),
-          ParserState::Header      => self.handle_header(i),
-          ParserState::Block(data) => self.handle_block(i, data),
-        }
+  pub fn handle<S: StreamProducer>(&mut self, stream: &mut S)
+                                   -> Result<(), utility::ErrorKind> {
+    stream.parse(|input| {
+      match self.state {
+        ParserState::Marker      => self.handle_marker(input),
+        ParserState::Header      => self.handle_header(input),
+        ParserState::Block(data) => self.handle_block(input, data),
       }
-      Input::Empty | Input::Eof(None)         => {
-        let kind = match self.state {
-          ParserState::Marker   => ErrorKind::Custom(0),
-          ParserState::Header   => ErrorKind::Custom(1),
-          ParserState::Block(_) => ErrorKind::Custom(2),
-        };
-
-        self.consumer_state = ConsumerState::Error(kind);
-      }
-    }
-
-    &self.consumer_state
+    })
   }
 }
