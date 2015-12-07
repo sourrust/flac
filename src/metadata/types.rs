@@ -7,6 +7,9 @@ use nom::{
 };
 use metadata::parser::{header, block_data};
 
+use utility;
+use utility::StreamProducer;
+
 use std::collections::HashMap;
 
 /// Data associated with a single metadata block.
@@ -305,6 +308,17 @@ impl MetaDataConsumer {
       IResult::Error(_)      => IResult::Error(Err::Code(kind)),
       IResult::Incomplete(n) => IResult::Incomplete(n),
     }
+  }
+
+  pub fn handle<S: StreamProducer>(&mut self, stream: &mut S)
+                                   -> Result<(), utility::ErrorKind> {
+    stream.parse(|input| {
+      match self.state {
+        ParserState::Marker      => self.handle_marker(input),
+        ParserState::Header      => self.handle_header(input),
+        ParserState::Block(data) => self.handle_block(input, data),
+      }
+    })
   }
 }
 
