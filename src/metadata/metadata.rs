@@ -1,15 +1,16 @@
 use nom::{ConsumerState, FileProducer, Producer};
 use std::io::{Error, ErrorKind, Result};
 use std::u32;
+use std::fs::File;
 
-use utility::resize_producer;
+use utility::{ErrorKind, ReadStream};
 
 use metadata::{
   Metadata, Data,
   StreamInfo, CueSheet, VorbisComment, Picture,
   PictureType,
 };
-use metadata::types::MetaDataConsumer;
+use metadata::types::Consumer;
 
 // Will return true when the unwrapped value of `option` and `other` match
 // or `option` is `Option::None`, otherwise false.
@@ -29,24 +30,17 @@ pub fn optional_eq<T: Eq>(option: Option<T>, other: T) -> bool {
 // * `ErrorKind::InvalidData` is returned when the data within the file
 //   isn't valid FLAC data.
 pub fn get_metadata(filename: &str) -> Result<Vec<Metadata>> {
-  FileProducer::new(filename, 1024).and_then(|mut producer| {
-    let mut consumer    = MetaDataConsumer::new();
-    let mut buffer_size = 1024;
-    let mut is_error    = false;
+  File::open(filename).and_then(|file| {
+    let mut stream   = ReadStream::new(file);
+    let mut consumer = Consumer::new();
+    let mut is_error = false;
 
     loop {
-      match *producer.apply(&mut consumer) {
-        ConsumerState::Done(_, _)      => break,
-        ConsumerState::Continue(await) => {
-          let result = resize_producer(&mut producer, &await, buffer_size);
-
-          if let Some(size) = result {
-            buffer_size = size;
-          }
-
-          continue;
-        }
-        ConsumerState::Error(_)        => {
+      match consumer.handle(&mut stream) {
+        Ok(_)                         => break,
+        Err(ErrorKind::Consumed(_))   => continue,
+        Err(ErrorKind::Incomplete(_)) => continue,
+        Err(_)                        => {
           is_error = true;
 
           break;
