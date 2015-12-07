@@ -138,8 +138,8 @@ impl Buffer {
     }
 
     if self.data.len() - self.filled < size  {
-      let length      = self.filled - self.offset;
-      let mut mut_ptr = self.data.as_mut_ptr();
+      let length  = self.filled - self.offset;
+      let mut_ptr = self.data.as_mut_ptr();
 
       unsafe {
         let offset_ptr  = self.data.as_ptr().offset(self.offset as isize);
