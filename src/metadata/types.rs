@@ -1,10 +1,4 @@
-use nom::{
-  Consumer, ConsumerState,
-  ErrorKind,
-  HexDisplay,
-  Input, IResult,
-  Move, Needed,
-};
+use nom::{Err, ErrorKind, IResult};
 use metadata::parser::{header, block_data};
 
 use utility;
