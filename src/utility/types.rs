@@ -7,6 +7,7 @@ use std::ptr;
 pub enum ErrorKind {
   IO(io::Error),
   Incomplete(usize),
+  Consumed(usize),
   EndOfInput,
   Unknown,
 }
