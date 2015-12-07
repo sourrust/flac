@@ -267,24 +267,16 @@ impl MetaDataConsumer {
   }
 
   fn handle_header<'a>(&mut self, input: &'a [u8]) -> IResult<&'a [u8], ()> {
+    let kind = ErrorKind::Custom(1);
+
     match header(input) {
       IResult::Done(i, data) => {
-        let offset   = input.offset(i);
-        let consumed = Move::Consume(offset);
+        self.state = ParserState::Block(data);
 
-        self.state          = ParserState::Block(data);
-        self.consumer_state = ConsumerState::Continue(consumed);
+        IResult::Error(Err::Position(kind, i))
       }
-      IResult::Error(_)      => {
-        let kind = ErrorKind::Custom(1);
-
-        self.consumer_state = ConsumerState::Error(kind);
-      }
-      IResult::Incomplete(_) => {
-        let needed = Move::Await(Needed::Size(4));
-
-        self.consumer_state = ConsumerState::Continue(needed);
-      }
+      IResult::Error(_)      => IResult::Error(Err::Code(kind)),
+      IResult::Incomplete(n) => IResult::Incomplete(n),
     }
   }
 
