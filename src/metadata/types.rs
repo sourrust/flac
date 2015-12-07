@@ -232,14 +232,14 @@ enum ParserState {
   Block((bool, u8, u32)),
 }
 
-pub struct MetaDataConsumer {
+pub struct Consumer {
   state: ParserState,
   pub data: Vec<Metadata>,
 }
 
-impl MetaDataConsumer {
-  pub fn new() -> MetaDataConsumer {
-    MetaDataConsumer {
+impl Consumer {
+  pub fn new() -> Self {
+    Consumer {
       state: ParserState::Marker,
       data: Vec::new(),
     }
