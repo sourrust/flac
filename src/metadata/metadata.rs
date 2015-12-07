@@ -1,5 +1,6 @@
 use nom::{ConsumerState, FileProducer, Producer};
-use std::io::{Error, ErrorKind, Result};
+use std::io;
+use std::io::{Error, Result};
 use std::u32;
 use std::fs::File;
 
@@ -51,7 +52,7 @@ pub fn get_metadata(filename: &str) -> Result<Vec<Metadata>> {
     if is_error {
       let error_str = "parser: couldn't find any metadata";
 
-      Err(Error::new(ErrorKind::InvalidData, error_str))
+      Err(Error::new(io::ErrorKind::InvalidData, error_str))
     } else {
       Ok(consumer.data)
     }
@@ -93,7 +94,7 @@ pub fn get_metadata(filename: &str) -> Result<Vec<Metadata>> {
 pub fn get_stream_info(filename: &str) -> Result<StreamInfo> {
   get_metadata(filename).and_then(|blocks| {
     let error_str  = "metadata: couldn't find StreamInfo";
-    let mut result = Err(Error::new(ErrorKind::NotFound, error_str));
+    let mut result = Err(Error::new(io::ErrorKind::NotFound, error_str));
 
     for block in blocks {
       if let Data::StreamInfo(stream_info) = block.data {
@@ -142,7 +143,7 @@ pub fn get_stream_info(filename: &str) -> Result<StreamInfo> {
 pub fn get_vorbis_comment(filename: &str) -> Result<VorbisComment> {
   get_metadata(filename).and_then(|blocks| {
     let error_str  = "metadata: couldn't find VorbisComment";
-    let mut result = Err(Error::new(ErrorKind::NotFound, error_str));
+    let mut result = Err(Error::new(io::ErrorKind::NotFound, error_str));
 
     for block in blocks {
       if let Data::VorbisComment(vorbis_comment) = block.data {
@@ -189,7 +190,7 @@ pub fn get_vorbis_comment(filename: &str) -> Result<VorbisComment> {
 pub fn get_cue_sheet(filename: &str) -> Result<CueSheet> {
   get_metadata(filename).and_then(|blocks| {
     let error_str  = "metadata: couldn't find CueSheet";
-    let mut result = Err(Error::new(ErrorKind::NotFound, error_str));
+    let mut result = Err(Error::new(io::ErrorKind::NotFound, error_str));
 
     for block in blocks {
       if let Data::CueSheet(cue_sheet) = block.data {
@@ -266,7 +267,7 @@ pub fn get_picture(filename: &str,
                    -> Result<Picture> {
   get_metadata(filename).and_then(|blocks| {
     let error_str  = "metadata: couldn't find any Picture";
-    let mut result = Err(Error::new(ErrorKind::NotFound, error_str));
+    let mut result = Err(Error::new(io::ErrorKind::NotFound, error_str));
 
     let mut max_area_seen  = 0;
     let mut max_depth_seen = 0;
