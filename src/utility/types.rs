@@ -4,6 +4,7 @@ use std::io;
 use std::io::Read;
 use std::ptr;
 
+#[derive(Debug)]
 pub enum ErrorKind {
   IO(io::Error),
   Incomplete(usize),
