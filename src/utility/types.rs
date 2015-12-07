@@ -1,12 +1,15 @@
-use nom::{IResult, Needed};
+use nom::{Err, IResult, Needed};
 
 use std::io;
 use std::io::Read;
 use std::ptr;
+use std::cmp;
 
+#[derive(Debug)]
 pub enum ErrorKind {
   IO(io::Error),
   Incomplete(usize),
+  Consumed(usize),
   EndOfInput,
   Unknown,
 }
@@ -62,12 +65,18 @@ impl<'a> StreamProducer for ByteStream<'a> {
 
         Err(ErrorKind::Incomplete(needed))
       }
-      IResult::Error(_)      => Err(ErrorKind::Unknown),
+      IResult::Error(e)      => {
+        if let Err::Position(_, i) = e {
+          self.offset += self.len() - i.len();
+        }
+
+        Err(ErrorKind::Unknown)
+      }
     }
   }
 }
 
-pub struct Buffer {
+struct Buffer {
   data: Vec<u8>,
   filled: usize,
   offset: usize,
@@ -131,8 +140,8 @@ impl Buffer {
     }
 
     if self.data.len() - self.filled < size  {
-      let length      = self.filled - self.offset;
-      let mut mut_ptr = self.data.as_mut_ptr();
+      let length  = self.filled - self.offset;
+      let mut_ptr = self.data.as_mut_ptr();
 
       unsafe {
         let offset_ptr  = self.data.as_ptr().offset(self.offset as isize);
@@ -195,7 +204,7 @@ impl<R> ReadStream<R> where R: Read {
   }
 
   fn fill(&mut self) -> io::Result<usize> {
-    let needed = self.needed;
+    let needed = cmp::max(1, self.needed);
 
     fill(&mut self.buffer, &mut self.reader, needed).map(|consumed| {
       if self.buffer.len() < needed {
@@ -220,7 +229,13 @@ fn from_iresult<T>(buffer: &Buffer, result: IResult<&[u8], T>)
 
       Err(ErrorKind::Incomplete(needed))
     }
-    IResult::Error(_)      => Err(ErrorKind::Unknown),
+    IResult::Error(e)      => {
+      if let Err::Position(_, i) = e {
+        Err(ErrorKind::Consumed(buffer.len() - i.len()))
+      } else {
+        Err(ErrorKind::Unknown)
+      }
+    }
   }
 }
 
@@ -242,7 +257,6 @@ impl<R> StreamProducer for ReadStream<R> where R: Read {
     let result = {
       let iresult = f(buffer.as_slice());
 
-
       from_iresult(&buffer, iresult)
     };
 
@@ -253,8 +267,10 @@ impl<R> StreamProducer for ReadStream<R> where R: Read {
         Ok(o)
       }
       Err(kind)         => {
-        if let ErrorKind::Incomplete(needed) = kind {
-          self.needed = needed;
+        match kind {
+          ErrorKind::Incomplete(needed) => self.needed = needed,
+          ErrorKind::Consumed(consumed) => buffer.consume(consumed),
+          _                             => (),
         }
 
         Err(kind)
