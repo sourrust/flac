@@ -1,4 +1,3 @@
-use nom::{ConsumerState, FileProducer, Producer};
 use std::io;
 use std::io::{Error, Result};
 use std::u32;
