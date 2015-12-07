@@ -282,13 +282,12 @@ impl MetaDataConsumer {
 
   fn handle_block<'a>(&mut self, input: &'a [u8], header: (bool, u8, u32))
                       -> IResult<&'a [u8], ()> {
+    let kind = ErrorKind::Custom(2);
+
     let (is_last, block_type, length) = header;
 
     match block_data(input, block_type, length) {
       IResult::Done(i, data) => {
-        let offset   = input.offset(i);
-        let consumed = Move::Consume(offset);
-
         self.data.push(Metadata {
           is_last: is_last,
           length: length,
@@ -296,22 +295,15 @@ impl MetaDataConsumer {
         });
 
         if is_last {
-          self.consumer_state = ConsumerState::Done(consumed, ());
+          IResult::Done(i, ())
         } else {
-          self.state          = ParserState::Header;
-          self.consumer_state = ConsumerState::Continue(consumed);
+          self.state = ParserState::Header;
+
+          IResult::Error(Err::Position(kind, i))
         }
       }
-      IResult::Error(_)      => {
-        let kind = ErrorKind::Custom(2);
-
-        self.consumer_state = ConsumerState::Error(kind);
-      }
-      IResult::Incomplete(_) => {
-        let needed = Move::Await(Needed::Size(length as usize));
-
-        self.consumer_state = ConsumerState::Continue(needed);
-      }
+      IResult::Error(_)      => IResult::Error(Err::Code(kind)),
+      IResult::Incomplete(n) => IResult::Incomplete(n),
     }
   }
 }
