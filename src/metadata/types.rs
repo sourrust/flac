@@ -321,33 +321,3 @@ impl MetaDataConsumer {
     })
   }
 }
-
-impl<'a> Consumer<&'a [u8], (), ErrorKind, Move> for MetaDataConsumer {
-  fn state(&self) -> &ConsumerState<(), ErrorKind, Move> {
-    &self.consumer_state
-  }
-
-  fn handle(&mut self, input: Input<&'a [u8]>)
-            -> &ConsumerState<(), ErrorKind, Move> {
-    match input {
-      Input::Element(i) | Input::Eof(Some(i)) => {
-        match self.state {
-          ParserState::Marker      => self.handle_marker(i),
-          ParserState::Header      => self.handle_header(i),
-          ParserState::Block(data) => self.handle_block(i, data),
-        }
-      }
-      Input::Empty | Input::Eof(None)         => {
-        let kind = match self.state {
-          ParserState::Marker   => ErrorKind::Custom(0),
-          ParserState::Header   => ErrorKind::Custom(1),
-          ParserState::Block(_) => ErrorKind::Custom(2),
-        };
-
-        self.consumer_state = ConsumerState::Error(kind);
-      }
-    }
-
-    &self.consumer_state
-  }
-}
