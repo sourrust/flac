@@ -240,17 +240,13 @@ enum ParserState {
 
 pub struct MetaDataConsumer {
   state: ParserState,
-  consumer_state: ConsumerState<(), ErrorKind, Move>,
   pub data: Vec<Metadata>,
 }
 
 impl MetaDataConsumer {
   pub fn new() -> MetaDataConsumer {
-    let consumed = Move::Consume(0);
-
     MetaDataConsumer {
       state: ParserState::Marker,
-      consumer_state: ConsumerState::Continue(consumed),
       data: Vec::new(),
     }
   }
