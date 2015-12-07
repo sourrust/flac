@@ -255,7 +255,6 @@ impl<R> StreamProducer for ReadStream<R> where R: Read {
     let result = {
       let iresult = f(buffer.as_slice());
 
-
       from_iresult(&buffer, iresult)
     };
 
