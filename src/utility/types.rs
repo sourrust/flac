@@ -1,4 +1,4 @@
-use nom::{IResult, Needed};
+use nom::{Err, IResult, Needed};
 
 use std::io;
 use std::io::Read;
@@ -63,7 +63,13 @@ impl<'a> StreamProducer for ByteStream<'a> {
 
         Err(ErrorKind::Incomplete(needed))
       }
-      IResult::Error(_)      => Err(ErrorKind::Unknown),
+      IResult::Error(e)      => {
+        if let Err::Position(_, i) = e {
+          self.offset += self.len() - i.len();
+        }
+
+        Err(ErrorKind::Unknown)
+      }
     }
   }
 }
@@ -221,7 +227,13 @@ fn from_iresult<T>(buffer: &Buffer, result: IResult<&[u8], T>)
 
       Err(ErrorKind::Incomplete(needed))
     }
-    IResult::Error(_)      => Err(ErrorKind::Unknown),
+    IResult::Error(e)      => {
+      if let Err::Position(_, i) = e {
+        Err(ErrorKind::Consumed(buffer.len() - i.len()))
+      } else {
+        Err(ErrorKind::Unknown)
+      }
+    }
   }
 }
 
@@ -254,8 +266,10 @@ impl<R> StreamProducer for ReadStream<R> where R: Read {
         Ok(o)
       }
       Err(kind)         => {
-        if let ErrorKind::Incomplete(needed) = kind {
-          self.needed = needed;
+        match kind {
+          ErrorKind::Incomplete(needed) => self.needed = needed,
+          ErrorKind::Consumed(consumed) => buffer.consume(consumed),
+          _                             => (),
         }
 
         Err(kind)
