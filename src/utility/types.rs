@@ -298,5 +298,8 @@ mod tests {
     assert_eq!(bytes_read, bytes_len);
     assert_eq!(buffer.len(), bytes_len);
     assert_eq!(buffer.as_slice(), bytes);
+
+    buffer.resize(512);
+    assert_eq!(buffer.capacity(), 1024);
   }
 }
