@@ -285,9 +285,18 @@ mod tests {
 
   #[test]
   fn test_buffer() {
-    let buffer = Buffer::new();
+    let mut buffer = Buffer::new();
+    let bytes      = b"Hello World";
+    let mut reader = &bytes[..];
 
     assert!(buffer.is_empty());
     assert_eq!(buffer.capacity(), 1024);
+
+    let bytes_read = buffer.fill(&mut reader).unwrap_or(0);
+    let bytes_len  = bytes.len();
+
+    assert_eq!(bytes_read, bytes_len);
+    assert_eq!(buffer.len(), bytes_len);
+    assert_eq!(buffer.as_slice(), bytes);
   }
 }
