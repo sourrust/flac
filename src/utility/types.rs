@@ -5,6 +5,8 @@ use std::io::Read;
 use std::ptr;
 use std::cmp;
 
+use super::StreamProducer;
+
 #[derive(Debug)]
 pub enum ErrorKind {
   IO(io::Error),
@@ -12,11 +14,6 @@ pub enum ErrorKind {
   Consumed(usize),
   EndOfInput,
   Unknown,
-}
-
-pub trait StreamProducer {
-  fn parse<F, T>(&mut self, f: F) -> Result<T, ErrorKind>
-   where F: FnOnce(&[u8]) -> IResult<&[u8], T>;
 }
 
 pub struct ByteStream<'a> {

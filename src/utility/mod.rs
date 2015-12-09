@@ -9,9 +9,14 @@ mod macros;
 pub mod types;
 
 pub use self::crc::{crc8, crc16};
-pub use self::types::{ErrorKind, StreamProducer, ByteStream, ReadStream};
+pub use self::types::{ErrorKind, ByteStream, ReadStream};
 
-use nom::{FileProducer, Move, Needed};
+use nom::{FileProducer, IResult, Move, Needed};
+
+pub trait StreamProducer {
+  fn parse<F, T>(&mut self, f: F) -> Result<T, ErrorKind>
+   where F: FnOnce(&[u8]) -> IResult<&[u8], T>;
+}
 
 // Convert one to four byte slices into an unsigned 32-bit number.
 //
