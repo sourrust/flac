@@ -278,3 +278,16 @@ impl<R> StreamProducer for ReadStream<R> where R: Read {
     }
   }
 }
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn test_buffer() {
+    let buffer = Buffer::new();
+
+    assert!(buffer.is_empty());
+    assert_eq!(buffer.capacity(), 1024);
+  }
+}
