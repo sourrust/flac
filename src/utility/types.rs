@@ -279,6 +279,8 @@ impl<R> StreamProducer for ReadStream<R> where R: Read {
 #[cfg(test)]
 mod tests {
   use super::*;
+  use utility::StreamProducer;
+  use nom::be_u32;
 
   #[test]
   fn test_buffer() {
@@ -298,5 +300,15 @@ mod tests {
 
     buffer.resize(512);
     assert_eq!(buffer.capacity(), 1024);
+  }
+
+  #[test]
+  fn test_read_stream() {
+    let bytes      = b"Hello World";
+    let mut stream = ReadStream::new(&bytes[..]);
+
+    let result = stream.parse(be_u32).unwrap_or(0);
+
+    assert_eq!(result, 1214606444)
   }
 }
