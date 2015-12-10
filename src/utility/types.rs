@@ -303,6 +303,16 @@ mod tests {
   }
 
   #[test]
+  fn test_byte_stream() {
+    let bytes      = b"Hello World";
+    let mut stream = ByteStream::new(bytes);
+
+    let result = stream.parse(be_u32).unwrap_or(0);
+
+    assert_eq!(result, 1214606444)
+  }
+
+  #[test]
   fn test_read_stream() {
     let bytes      = b"Hello World";
     let mut stream = ReadStream::new(&bytes[..]);
