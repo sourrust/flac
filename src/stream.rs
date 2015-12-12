@@ -123,12 +123,13 @@ impl Stream {
     }
   }
 
-  fn handle_metadata(&mut self, input: &[u8]) {
-    match metadata::block(input) {
+  fn handle_metadata<'a>(&mut self, input: &'a [u8])
+                         -> IResult<&'a [u8], ()> {
+    let kind = nom::ErrorKind::Custom(1);
+
+    match metadata_parser(input) {
       IResult::Done(i, block) => {
-        let offset   = input.offset(i);
-        let consumed = Move::Consume(offset);
-        let is_last  = block.is_last;
+        let is_last = block.is_last;
 
         if let metadata::Data::StreamInfo(info) = block.data {
           self.info = info;
@@ -140,23 +141,10 @@ impl Stream {
           self.state = ParserState::Frame;
         }
 
-        self.consumer_state = ConsumerState::Continue(consumed);
+        IResult::Error(Err::Position(kind, i))
       }
-      IResult::Error(_)       => {
-        let kind = ErrorKind::Custom(1);
-
-        self.consumer_state = ConsumerState::Error(kind);
-      }
-      IResult::Incomplete(s)  => {
-        let size = if let Needed::Size(length) = s {
-          length
-        } else {
-          1024
-        };
-        let needed = Move::Await(Needed::Size(size));
-
-        self.consumer_state = ConsumerState::Continue(needed);
-      }
+      IResult::Error(_)      => IResult::Error(Err::Code(kind)),
+      IResult::Incomplete(n) => IResult::Incomplete(n),
     }
   }
 
