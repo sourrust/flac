@@ -27,7 +27,6 @@ pub struct Stream {
   pub metadata: Vec<Metadata>,
   pub frames: Vec<Frame>,
   state: ParserState,
-  consumer_state: ConsumerState<(), ErrorKind, Move>,
 }
 
 named!(pub stream_parser <&[u8], Stream>,
@@ -50,14 +49,11 @@ named!(pub stream_parser <&[u8], Stream>,
 
 impl Stream {
   pub fn new() -> Stream {
-    let consumed = Move::Consume(0);
-
     Stream {
       info: StreamInfo::new(),
       metadata: Vec::new(),
       frames: Vec::new(),
       state: ParserState::Marker,
-      consumer_state: ConsumerState::Continue(consumed),
     }
   }
 
@@ -75,7 +71,6 @@ impl Stream {
         metadata: Vec::new(),
         frames: Vec::new(),
         state: ParserState::Marker,
-        consumer_state: ConsumerState::Continue(consumed),
       };
 
       loop {
