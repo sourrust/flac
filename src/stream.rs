@@ -161,4 +161,15 @@ impl Stream {
       IResult::Incomplete(n) => IResult::Incomplete(n),
     }
   }
+
+  pub fn handle<S: StreamProducer>(&mut self, stream: &mut S)
+                                   -> Result<(), ErrorKind> {
+    stream.parse(|input| {
+      match self.state {
+        ParserState::Marker   => self.handle_marker(input),
+        ParserState::Metadata => self.handle_metadata(input),
+        ParserState::Frame    => self.handle_frame(input),
+      }
+    })
+  }
 }
