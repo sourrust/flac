@@ -307,6 +307,8 @@ mod tests {
     let bytes      = b"Hello World";
     let mut stream = ByteStream::new(bytes);
 
+    assert_eq!(stream.len(), bytes.len());
+
     let result = stream.parse(be_u32).unwrap_or(0);
 
     assert_eq!(result, 1214606444)
