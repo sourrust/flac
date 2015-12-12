@@ -28,14 +28,11 @@ named!(pub stream_parser <&[u8], Stream>,
     blocks: metadata_parser ~
     frames: many1!(apply!(frame_parser, &blocks.0)),
     move|| {
-      let consumed = Move::Consume(0);
-
       Stream {
         info: blocks.0,
         metadata: blocks.1,
         frames: frames,
         state: ParserState::Marker,
-        consumer_state: ConsumerState::Continue(consumed),
       }
     }
   )
