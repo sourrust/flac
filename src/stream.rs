@@ -11,10 +11,10 @@ use metadata;
 
 use metadata::{Metadata, StreamInfo, metadata_parser};
 use frame::{frame_parser, Frame};
-use utility::resize_producer;
+use utility::{ErrorKind, ByteStream, ReadStream, StreamProducer};
 
 use std::io;
-use std::io::{Error, Result};
+use std::fs::File;
 
 enum ParserState {
   Marker,
@@ -61,12 +61,11 @@ impl Stream {
     self.info
   }
 
-  pub fn from_file(filename: &str) -> Result<Stream> {
-    FileProducer::new(filename, 1024).and_then(|mut producer| {
-      let consumed        = Move::Consume(0);
-      let mut buffer_size = 1024;
-      let mut is_error    = false;
-      let mut stream      = Stream {
+  pub fn from_file(filename: &str) -> io::Result<Stream> {
+    File::open(filename).and_then(|file| {
+      let mut reader   = ReadStream::new(file);
+      let mut is_error = false;
+      let mut stream   = Stream {
         info: StreamInfo::new(),
         metadata: Vec::new(),
         frames: Vec::new(),
@@ -74,18 +73,12 @@ impl Stream {
       };
 
       loop {
-        match *producer.apply(&mut stream) {
-          ConsumerState::Done(_, _)      => break,
-          ConsumerState::Continue(await) => {
-            let result = resize_producer(&mut producer, &await, buffer_size);
-
-            if let Some(size) = result {
-              buffer_size = size;
-            }
-
-            continue;
-          }
-          ConsumerState::Error(_)        => {
+        match stream.handle(&mut reader) {
+          Ok(_)                         => break,
+          Err(ErrorKind::EndOfInput)    => break,
+          Err(ErrorKind::Consumed(_))   => continue,
+          Err(ErrorKind::Incomplete(_)) => continue,
+          Err(_)                        => {
             is_error = true;
 
             break;
@@ -99,7 +92,7 @@ impl Stream {
         let error_str = format!("parser: couldn't parse the given file {}",
                                 filename);
 
-        Err(Error::new(io::ErrorKind::InvalidData, error_str))
+        Err(io::Error::new(io::ErrorKind::InvalidData, error_str))
       }
     })
   }
