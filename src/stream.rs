@@ -109,25 +109,17 @@ impl Stream {
     })
   }
 
-  fn handle_marker(&mut self, input: &[u8]) {
+  fn handle_marker<'a>(&mut self, input: &'a [u8]) -> IResult<&'a [u8], ()> {
+    let kind = nom::ErrorKind::Custom(0);
+
     match tag!(input, "fLaC") {
-      IResult::Done(i, _)       => {
-        let offset   = input.offset(i);
-        let consumed = Move::Consume(offset);
+      IResult::Done(i, _)    => {
+        self.state = ParserState::Metadata;
 
-        self.state          = ParserState::Metadata;
-        self.consumer_state = ConsumerState::Continue(consumed);
+        IResult::Error(Err::Position(kind, i))
       }
-      IResult::Error(_)         => {
-        let kind = ErrorKind::Custom(0);
-
-        self.consumer_state = ConsumerState::Error(kind);
-      }
-      IResult::Incomplete(size) => {
-        let needed = Move::Await(size);
-
-        self.consumer_state = ConsumerState::Continue(needed);
-      }
+      IResult::Error(_)      => IResult::Error(Err::Code(kind)),
+      IResult::Incomplete(n) => IResult::Incomplete(n),
     }
   }
 
