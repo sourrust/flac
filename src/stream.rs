@@ -1,11 +1,5 @@
-use nom::{
-  Consumer, ConsumerState,
-  ErrorKind,
-  HexDisplay,
-  Producer, FileProducer,
-  Input, IResult,
-  Move, Needed,
-};
+use nom;
+use nom::{Err, IResult};
 
 use metadata;
 
