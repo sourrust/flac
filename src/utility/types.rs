@@ -311,7 +311,8 @@ mod tests {
 
     let result = stream.parse(be_u32).unwrap_or(0);
 
-    assert_eq!(result, 1214606444)
+    assert_eq!(result, 1214606444);
+    assert_eq!(stream.len(), 7);
   }
 
   #[test]
