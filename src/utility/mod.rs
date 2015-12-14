@@ -6,7 +6,7 @@ mod types;
 pub use self::crc::{crc8, crc16};
 pub use self::types::{ErrorKind, ByteStream, ReadStream};
 
-use nom::{FileProducer, IResult, Move, Needed};
+use nom::IResult;
 
 pub trait StreamProducer {
   fn parse<F, T>(&mut self, f: F) -> Result<T, ErrorKind>
