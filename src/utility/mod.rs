@@ -36,24 +36,6 @@ pub fn extend_sign(value: u32, bit_count: usize) -> i32 {
   }
 }
 
-pub fn resize_producer(producer: &mut FileProducer,
-                       await: &Move,
-                       current_size: usize)
-                       -> Option<usize> {
-  let mut result = None;
-
-  if let Move::Await(needed) = *await {
-    if let Needed::Size(size) = needed {
-      if size > current_size {
-        producer.resize(size);
-        result = Some(size);
-      }
-    }
-  }
-
-  result
-}
-
 #[cfg(test)]
 mod tests {
   use super::*;
