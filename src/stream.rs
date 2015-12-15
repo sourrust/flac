@@ -54,38 +54,51 @@ impl Stream {
 
   pub fn from_file(filename: &str) -> io::Result<Stream> {
     File::open(filename).and_then(|file| {
-      let mut reader   = ReadStream::new(file);
-      let mut is_error = false;
-      let mut stream   = Stream {
-        info: StreamInfo::new(),
-        metadata: Vec::new(),
-        frames: Vec::new(),
-        state: ParserState::Marker,
-      };
+      let mut producer = ReadStream::new(file);
+      let error_str    = format!("parser: couldn't parse the given file {}",
+                                 filename);
 
-      loop {
-        match stream.handle(&mut reader) {
-          Ok(_)                         => break,
-          Err(ErrorKind::EndOfInput)    => break,
-          Err(ErrorKind::Consumed(_))   => continue,
-          Err(ErrorKind::Incomplete(_)) => continue,
-          Err(_)                        => {
-            is_error = true;
+      Stream::from_stream_producer(&mut producer, &error_str)
+    })
+  }
 
-            break;
-          }
+  pub fn from_buffer(buffer: &[u8]) -> io::Result<Stream> {
+    let mut producer = ByteStream::new(buffer);
+    let error_str    = "parser: couldn't parse the buffer";
+
+    Stream::from_stream_producer(&mut producer, error_str)
+  }
+
+  fn from_stream_producer<P>(producer: &mut P, error_str: &str)
+                             -> io::Result<Stream>
+   where P: StreamProducer {
+    let mut is_error = false;
+    let mut stream   = Stream {
+      info: StreamInfo::new(),
+      metadata: Vec::new(),
+      frames: Vec::new(),
+      state: ParserState::Marker,
+    };
+
+    loop {
+      match stream.handle(producer) {
+        Ok(_)                         => break,
+        Err(ErrorKind::EndOfInput)    => break,
+        Err(ErrorKind::Consumed(_))   => continue,
+        Err(ErrorKind::Incomplete(_)) => continue,
+        Err(_)                        => {
+          is_error = true;
+
+          break;
         }
       }
+    }
 
-      if !is_error {
-        Ok(stream)
-      } else {
-        let error_str = format!("parser: couldn't parse the given file {}",
-                                filename);
-
-        Err(io::Error::new(io::ErrorKind::InvalidData, error_str))
-      }
-    })
+    if !is_error {
+      Ok(stream)
+    } else {
+      Err(io::Error::new(io::ErrorKind::InvalidData, error_str))
+    }
   }
 
   fn handle_marker<'a>(&mut self, input: &'a [u8]) -> IResult<&'a [u8], ()> {

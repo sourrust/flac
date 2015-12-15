@@ -64,10 +64,14 @@ impl<'a> StreamProducer for ByteStream<'a> {
       }
       IResult::Error(e)      => {
         if let Err::Position(_, i) = e {
-          self.offset += self.len() - i.len();
-        }
+          let consumed = self.len() - i.len();
 
-        Err(ErrorKind::Unknown)
+          self.offset += consumed;
+
+          Err(ErrorKind::Consumed(consumed))
+        } else {
+          Err(ErrorKind::Unknown)
+        }
       }
     }
   }
