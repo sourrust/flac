@@ -62,6 +62,13 @@ impl Stream {
     })
   }
 
+  pub fn from_buffer(buffer: &[u8]) -> io::Result<Stream> {
+    let mut producer = ByteStream::new(buffer);
+    let error_str    = "parser: couldn't parse the buffer";
+
+    Stream::from_stream_producer(&mut producer, error_str)
+  }
+
   fn from_stream_producer<P>(producer: &mut P, error_str: &str)
                              -> io::Result<Stream>
    where P: StreamProducer {
