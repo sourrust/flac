@@ -88,6 +88,38 @@ impl Stream {
     })
   }
 
+  fn from_stream_producer<P>(producer: &mut P, error_str: &str)
+                             -> io::Result<Stream>
+   where P: StreamProducer {
+    let mut is_error = false;
+    let mut stream   = Stream {
+      info: StreamInfo::new(),
+      metadata: Vec::new(),
+      frames: Vec::new(),
+      state: ParserState::Marker,
+    };
+
+    loop {
+      match stream.handle(producer) {
+        Ok(_)                         => break,
+        Err(ErrorKind::EndOfInput)    => break,
+        Err(ErrorKind::Consumed(_))   => continue,
+        Err(ErrorKind::Incomplete(_)) => continue,
+        Err(_)                        => {
+          is_error = true;
+
+          break;
+        }
+      }
+    }
+
+    if !is_error {
+      Ok(stream)
+    } else {
+      Err(io::Error::new(io::ErrorKind::InvalidData, error_str))
+    }
+  }
+
   fn handle_marker<'a>(&mut self, input: &'a [u8]) -> IResult<&'a [u8], ()> {
     let kind = nom::ErrorKind::Custom(0);
 
