@@ -103,6 +103,14 @@ impl Stream {
     }
 
     if !is_error {
+      let channels    = stream.info.channels as usize;
+      let block_size  = stream.info.max_block_size as usize;
+      let output_size = block_size * channels;
+
+      stream.output.reserve_exact(output_size);
+
+      unsafe { stream.output.set_len(output_size) }
+
       Ok(stream)
     } else {
       Err(io::Error::new(io::ErrorKind::InvalidData, error_str))
