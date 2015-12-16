@@ -2,6 +2,8 @@ use nom;
 use nom::{Err, IResult};
 
 use metadata;
+use frame;
+use subframe;
 
 use metadata::{Metadata, StreamInfo, metadata_parser};
 use frame::{frame_parser, Frame};
@@ -114,6 +116,33 @@ impl Stream {
       Ok(stream)
     } else {
       Err(io::Error::new(io::ErrorKind::InvalidData, error_str))
+    }
+  }
+
+  pub fn next_frame<'a>(&'a mut self) -> Option<&'a [i32]> {
+    if self.frames.is_empty() || self.frame_index >= self.frames.len() {
+      None
+    } else {
+      let frame       = &self.frames[self.frame_index];
+      let channels    = frame.header.channels as usize;
+      let block_size  = frame.header.block_size as usize;
+      let mut channel = 0;
+
+      for subframe in &frame.subframes[0..channels] {
+        let start  = channel * block_size;
+        let end    = (channel + 1) * block_size;
+        let output = &mut self.output[start..end];
+
+        subframe::decode(&subframe, output);
+
+        channel += 1;
+      }
+
+      frame::decode(frame.header.channel_assignment, &mut self.output);
+
+      self.frame_index += 1;
+
+      Some(&self.output[0..(block_size * channels)])
     }
   }
 
