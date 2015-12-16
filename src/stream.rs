@@ -21,6 +21,8 @@ pub struct Stream {
   pub metadata: Vec<Metadata>,
   pub frames: Vec<Frame>,
   state: ParserState,
+  output: Vec<i32>,
+  frame_index: usize,
 }
 
 named!(pub stream_parser <&[u8], Stream>,
@@ -33,6 +35,8 @@ named!(pub stream_parser <&[u8], Stream>,
         metadata: blocks.1,
         frames: frames,
         state: ParserState::Marker,
+        output: Vec::new(),
+        frame_index: 0,
       }
     }
   )
@@ -45,6 +49,8 @@ impl Stream {
       metadata: Vec::new(),
       frames: Vec::new(),
       state: ParserState::Marker,
+      output: Vec::new(),
+      frame_index: 0,
     }
   }
 
@@ -78,6 +84,8 @@ impl Stream {
       metadata: Vec::new(),
       frames: Vec::new(),
       state: ParserState::Marker,
+      output: Vec::new(),
+      frame_index: 0,
     };
 
     loop {
