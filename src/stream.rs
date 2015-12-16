@@ -2,6 +2,8 @@ use nom;
 use nom::{Err, IResult};
 
 use metadata;
+use frame;
+use subframe;
 
 use metadata::{Metadata, StreamInfo, metadata_parser};
 use frame::{frame_parser, Frame};
@@ -21,6 +23,8 @@ pub struct Stream {
   pub metadata: Vec<Metadata>,
   pub frames: Vec<Frame>,
   state: ParserState,
+  output: Vec<i32>,
+  frame_index: usize,
 }
 
 named!(pub stream_parser <&[u8], Stream>,
@@ -33,6 +37,8 @@ named!(pub stream_parser <&[u8], Stream>,
         metadata: blocks.1,
         frames: frames,
         state: ParserState::Marker,
+        output: Vec::new(),
+        frame_index: 0,
       }
     }
   )
@@ -45,6 +51,8 @@ impl Stream {
       metadata: Vec::new(),
       frames: Vec::new(),
       state: ParserState::Marker,
+      output: Vec::new(),
+      frame_index: 0,
     }
   }
 
@@ -78,6 +86,8 @@ impl Stream {
       metadata: Vec::new(),
       frames: Vec::new(),
       state: ParserState::Marker,
+      output: Vec::new(),
+      frame_index: 0,
     };
 
     loop {
@@ -95,9 +105,44 @@ impl Stream {
     }
 
     if !is_error {
+      let channels    = stream.info.channels as usize;
+      let block_size  = stream.info.max_block_size as usize;
+      let output_size = block_size * channels;
+
+      stream.output.reserve_exact(output_size);
+
+      unsafe { stream.output.set_len(output_size) }
+
       Ok(stream)
     } else {
       Err(io::Error::new(io::ErrorKind::InvalidData, error_str))
+    }
+  }
+
+  pub fn next_frame<'a>(&'a mut self) -> Option<&'a [i32]> {
+    if self.frames.is_empty() || self.frame_index >= self.frames.len() {
+      None
+    } else {
+      let frame       = &self.frames[self.frame_index];
+      let channels    = frame.header.channels as usize;
+      let block_size  = frame.header.block_size as usize;
+      let mut channel = 0;
+
+      for subframe in &frame.subframes[0..channels] {
+        let start  = channel * block_size;
+        let end    = (channel + 1) * block_size;
+        let output = &mut self.output[start..end];
+
+        subframe::decode(&subframe, output);
+
+        channel += 1;
+      }
+
+      frame::decode(frame.header.channel_assignment, &mut self.output);
+
+      self.frame_index += 1;
+
+      Some(&self.output[0..(block_size * channels)])
     }
   }
 
