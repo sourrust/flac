@@ -129,5 +129,9 @@ fn main() {
     } else {
       println!("decoded: {} -> {}", input_file, output_file);
     }
+  } else if let Some(ref directory) = args.arg_dir {
+    if let Err(e) = decode_all_files(&args.arg_input, directory) {
+      println!("{:?}", e);
+    }
   }
 }
