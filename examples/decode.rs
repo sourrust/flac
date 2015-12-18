@@ -6,8 +6,11 @@ extern crate rustc_serialize;
 
 use docopt::Docopt;
 use flac::Stream;
+
 use std::env;
 use std::error::Error;
+use std::io;
+use std::path::{Path, PathBuf};
 
 const USAGE: &'static str = "
 Usage: decode <input> <output>
@@ -58,6 +61,22 @@ fn decode_file(input_file: &str, output_file: &str)
   }
 
   output.finalize()
+}
+
+fn to_output_file(buffer: &mut PathBuf, path: &Path, directory: &str)
+                  -> Result<(), hound::Error> {
+  buffer.push(directory);
+
+  path.file_name().map(|name| {
+    buffer.push(name);
+    buffer.set_extension("wav");
+  }).ok_or_else(|| {
+    let kind    = io::ErrorKind::NotFound;
+    let message = "no file name found";
+    let error   = io::Error::new(kind, message);
+
+    hound::Error::IoError(error)
+  })
 }
 
 fn main() {
