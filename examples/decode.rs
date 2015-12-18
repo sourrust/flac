@@ -9,6 +9,7 @@ use flac::Stream;
 
 use std::env;
 use std::error::Error;
+use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
 
@@ -77,6 +78,42 @@ fn to_output_file(buffer: &mut PathBuf, path: &Path, directory: &str)
 
     hound::Error::IoError(error)
   })
+}
+
+fn decode_all_files(input_files: &Vec<String>, directory: &str)
+                    -> Result<(), hound::Error> {
+  let dir_path = Path::new(directory);
+
+  if !dir_path.exists() {
+    try!(fs::create_dir(dir_path).map_err(hound::Error::IoError))
+  }
+
+  for ref input_file in input_files {
+    let mut buffer = PathBuf::new();
+    let path       = Path::new(input_file);
+
+    try!(to_output_file(&mut buffer, path, directory));
+
+    let output_file = try! {
+      buffer.to_str().ok_or_else(|| {
+        let kind    = io::ErrorKind::InvalidInput;
+        let message = "invalid unicode with file path";
+        let error   = io::Error::new(kind, message);
+
+        hound::Error::IoError(error)
+      })
+    };
+
+    let result = decode_file(input_file, output_file);
+
+    if result.is_ok() {
+      println!("decoded: {} -> {}", input_file, output_file);
+    } else {
+      return result;
+    }
+  }
+
+  Ok(())
 }
 
 fn main() {
