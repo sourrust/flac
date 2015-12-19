@@ -34,9 +34,8 @@ fn decode_file(input_file: &str, output_file: &str)
   let mut stream = try! {
     Stream::from_file(input_file).map_err(hound::Error::IoError)
   };
-  let info       = stream.info();
-  let frames_len = stream.frames.len();
 
+  let info = stream.info();
   let spec = hound::WavSpec {
     channels: info.channels as u16,
     sample_rate: info.sample_rate,
