@@ -10,6 +10,7 @@ use frame::{frame_parser, Frame};
 use utility::{ErrorKind, ByteStream, ReadStream, StreamProducer};
 
 use std::io;
+use std::usize;
 use std::fs::File;
 
 enum ParserState {
@@ -21,7 +22,7 @@ enum ParserState {
 pub struct Stream {
   info: StreamInfo,
   pub metadata: Vec<Metadata>,
-  pub frames: Vec<Frame>,
+  frames: Vec<Frame>,
   state: ParserState,
   output: Vec<i32>,
   frame_index: usize,
@@ -119,7 +120,11 @@ impl Stream {
     }
   }
 
-  pub fn next_frame<'a>(&'a mut self) -> Option<&'a [i32]> {
+  pub fn iter(&mut self) -> Iter {
+    Iter::new(self)
+  }
+
+  fn next_frame<'a>(&'a mut self) -> Option<&'a [i32]> {
     if self.frames.is_empty() || self.frame_index >= self.frames.len() {
       None
     } else {
@@ -199,8 +204,8 @@ impl Stream {
     }
   }
 
-  pub fn handle<S: StreamProducer>(&mut self, stream: &mut S)
-                                   -> Result<(), ErrorKind> {
+  fn handle<S: StreamProducer>(&mut self, stream: &mut S)
+                               -> Result<(), ErrorKind> {
     stream.parse(|input| {
       match self.state {
         ParserState::Marker   => self.handle_marker(input),
@@ -208,5 +213,74 @@ impl Stream {
         ParserState::Frame    => self.handle_frame(input),
       }
     })
+  }
+}
+
+pub struct Iter<'a> {
+  stream: &'a mut Stream,
+  channel: usize,
+  frame_index: usize,
+  block_size: usize,
+  sample_index: usize,
+  samples_left: u64,
+}
+
+impl<'a> Iter<'a> {
+  pub fn new(stream: &'a mut Stream) -> Iter<'a> {
+    let samples_left = stream.info.total_samples;
+
+    Iter {
+      stream: stream,
+      channel: 0,
+      frame_index: 0,
+      block_size: 0,
+      sample_index: 0,
+      samples_left: samples_left,
+    }
+  }
+}
+
+impl<'a> Iterator for Iter<'a> {
+  type Item = i32;
+
+  fn next(&mut self) -> Option<Self::Item> {
+    if self.block_size == 0 || self.sample_index == self.block_size {
+      if self.stream.next_frame().is_none() {
+        return None;
+      } else {
+        let frame = &self.stream.frames[self.frame_index];
+
+        self.sample_index = 0;
+        self.block_size   = frame.header.block_size as usize;
+      }
+    }
+
+    let channels = self.stream.info.channels as usize;
+    let index    = self.sample_index + (self.channel * self.block_size);
+    let sample   = self.stream.output[index];
+
+    self.channel      += 1;
+    self.samples_left -= 1;
+
+    // Reset current channel
+    if self.channel == channels {
+      self.channel       = 0;
+      self.sample_index += 1;
+    }
+
+    Some(sample)
+  }
+
+  fn size_hint(&self) -> (usize, Option<usize>) {
+    let samples_left = self.samples_left as usize;
+    let max_value    = usize::max_value() as u64;
+
+    // There is a change that samples_left will be larger than a usize since
+    // it is a u64. Make the upper bound None when it is.
+    if self.samples_left > max_value {
+      (samples_left, None)
+    } else {
+      (samples_left, Some(samples_left))
+    }
   }
 }
