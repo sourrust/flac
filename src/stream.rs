@@ -275,7 +275,7 @@ impl<'a> Iterator for Iter<'a> {
     let samples_left = self.samples_left as usize;
     let max_value    = usize::max_value() as u64;
 
-    // There is a change that samples_left will be larger than a usize since
+    // There is a chance that samples_left will be larger than a usize since
     // it is a u64. Make the upper bound None when it is.
     if self.samples_left > max_value {
       (samples_left, None)
