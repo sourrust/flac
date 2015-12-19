@@ -45,20 +45,8 @@ fn decode_file(input_file: &str, output_file: &str)
 
   let mut output = try!(hound::WavWriter::create(output_file, spec));
 
-  for _ in 0..frames_len {
-    if let Some(buffer) = stream.next_frame() {
-      let buffer_size = buffer.len();
-      let block_size  = buffer_size / 2;
-      let left        = &buffer[0..block_size];
-      let right       = &buffer[block_size..buffer_size];
-
-      for i in 0..block_size {
-        try!(output.write_sample(left[i]));
-        try!(output.write_sample(right[i]));
-      }
-    } else {
-      break;
-    }
+  for sample in stream.iter() {
+    try!(output.write_sample(sample));
   }
 
   output.finalize()
