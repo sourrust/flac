@@ -10,6 +10,7 @@ use frame::{frame_parser, Frame};
 use utility::{ErrorKind, ByteStream, ReadStream, StreamProducer};
 
 use std::io;
+use std::usize;
 use std::fs::File;
 
 enum ParserState {
@@ -231,6 +232,51 @@ impl<'a> Iter<'a> {
       block_size: 0,
       sample_index: 0,
       samples_left: samples_left,
+    }
+  }
+}
+
+impl<'a> Iterator for Iter<'a> {
+  type Item = i32;
+
+  fn next(&mut self) -> Option<Self::Item> {
+    if self.block_size == 0 || self.sample_index == self.block_size {
+      if self.stream.next_frame().is_none() {
+        return None;
+      } else {
+        let frame = &self.stream.frames[self.frame_index];
+
+        self.sample_index = 0;
+        self.block_size   = frame.header.block_size as usize;
+      }
+    }
+
+    let channels = self.stream.info.channels as usize;
+    let index    = self.sample_index + (self.channel * self.block_size);
+    let sample   = self.stream.output[index];
+
+    self.channel      += 1;
+    self.samples_left -= 1;
+
+    // Reset current channel
+    if self.channel == channels {
+      self.channel       = 0;
+      self.sample_index += 1;
+    }
+
+    Some(sample)
+  }
+
+  fn size_hint(&self) -> (usize, Option<usize>) {
+    let samples_left = self.samples_left as usize;
+    let max_value    = usize::max_value() as u64;
+
+    // There is a change that samples_left will be larger than a usize since
+    // it is a u64. Make the upper bound None when it is.
+    if self.samples_left > max_value {
+      (samples_left, None)
+    } else {
+      (samples_left, Some(samples_left))
     }
   }
 }
