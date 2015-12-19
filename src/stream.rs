@@ -22,7 +22,7 @@ enum ParserState {
 pub struct Stream {
   info: StreamInfo,
   pub metadata: Vec<Metadata>,
-  pub frames: Vec<Frame>,
+  frames: Vec<Frame>,
   state: ParserState,
   output: Vec<i32>,
   frame_index: usize,
@@ -124,7 +124,7 @@ impl Stream {
     Iter::new(self)
   }
 
-  pub fn next_frame<'a>(&'a mut self) -> Option<&'a [i32]> {
+  fn next_frame<'a>(&'a mut self) -> Option<&'a [i32]> {
     if self.frames.is_empty() || self.frame_index >= self.frames.len() {
       None
     } else {
@@ -204,8 +204,8 @@ impl Stream {
     }
   }
 
-  pub fn handle<S: StreamProducer>(&mut self, stream: &mut S)
-                                   -> Result<(), ErrorKind> {
+  fn handle<S: StreamProducer>(&mut self, stream: &mut S)
+                               -> Result<(), ErrorKind> {
     stream.parse(|input| {
       match self.state {
         ParserState::Marker   => self.handle_marker(input),
