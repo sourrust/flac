@@ -210,3 +210,27 @@ impl Stream {
     })
   }
 }
+
+pub struct Iter<'a> {
+  stream: &'a mut Stream,
+  channel: usize,
+  frame_index: usize,
+  block_size: usize,
+  sample_index: usize,
+  samples_left: u64,
+}
+
+impl<'a> Iter<'a> {
+  pub fn new(stream: &'a mut Stream) -> Iter<'a> {
+    let samples_left = stream.info.total_samples;
+
+    Iter {
+      stream: stream,
+      channel: 0,
+      frame_index: 0,
+      block_size: 0,
+      sample_index: 0,
+      samples_left: samples_left,
+    }
+  }
+}
