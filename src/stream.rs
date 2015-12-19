@@ -120,6 +120,10 @@ impl Stream {
     }
   }
 
+  pub fn iter(&mut self) -> Iter {
+    Iter::new(self)
+  }
+
   pub fn next_frame<'a>(&'a mut self) -> Option<&'a [i32]> {
     if self.frames.is_empty() || self.frame_index >= self.frames.len() {
       None
