@@ -284,3 +284,12 @@ impl<'a> Iterator for Iter<'a> {
     }
   }
 }
+
+impl<'a> IntoIterator for &'a mut Stream {
+  type Item     = i32;
+  type IntoIter = Iter<'a>;
+
+  fn into_iter(self) -> Self::IntoIter {
+    self.iter()
+  }
+}
