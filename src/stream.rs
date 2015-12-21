@@ -61,6 +61,10 @@ impl Stream {
     self.info
   }
 
+  pub fn metadata(&self) -> &[Metadata] {
+    &self.metadata
+  }
+
   pub fn from_file(filename: &str) -> io::Result<Stream> {
     File::open(filename).and_then(|file| {
       let mut producer = ReadStream::new(file);
