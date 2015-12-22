@@ -19,6 +19,7 @@ enum ParserState {
   Frame,
 }
 
+/// FLAC stream that decodes and hold file information.
 pub struct Stream {
   info: StreamInfo,
   metadata: Vec<Metadata>,
