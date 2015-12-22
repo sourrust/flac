@@ -62,10 +62,16 @@ impl Stream {
     }
   }
 
+  /// Returns information for the current stream.
   pub fn info(&self) -> StreamInfo {
     self.info
   }
 
+  /// Returns a slice of `Metadata`
+  ///
+  /// This slice excludes `StreamInfo`, which is located in `Stream::info`.
+  /// Everything else is related to metadata for the FLAC stream is in the
+  /// slice.
   pub fn metadata(&self) -> &[Metadata] {
     &self.metadata
   }
