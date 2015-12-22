@@ -19,6 +19,7 @@ enum ParserState {
   Frame,
 }
 
+/// FLAC stream that decodes and hold file information.
 pub struct Stream {
   info: StreamInfo,
   metadata: Vec<Metadata>,
@@ -46,6 +47,10 @@ named!(pub stream_parser <&[u8], Stream>,
 );
 
 impl Stream {
+  /// Constructor for the default state of a FLAC stream.
+  ///
+  /// This doesn't actually decode anything, it just hold the default values
+  /// of each field.
   pub fn new() -> Stream {
     Stream {
       info: StreamInfo::new(),
@@ -57,14 +62,27 @@ impl Stream {
     }
   }
 
+  /// Returns information for the current stream.
   pub fn info(&self) -> StreamInfo {
     self.info
   }
 
+  /// Returns a slice of `Metadata`
+  ///
+  /// This slice excludes `StreamInfo`, which is located in `Stream::info`.
+  /// Everything else is related to metadata for the FLAC stream is in the
+  /// slice.
   pub fn metadata(&self) -> &[Metadata] {
     &self.metadata
   }
 
+  /// Constructs a decoder with the given file name.
+  ///
+  /// # Failures
+  ///
+  /// * `ErrorKind::NotFound` is returned when the given filename isn't found.
+  /// * `ErrorKind::InvalidData` is returned when the data within the file
+  ///   isn't valid FLAC data.
   pub fn from_file(filename: &str) -> io::Result<Stream> {
     File::open(filename).and_then(|file| {
       let mut producer = ReadStream::new(file);
@@ -75,6 +93,14 @@ impl Stream {
     })
   }
 
+  /// Constructs a decoder with the given buffer.
+  ///
+  /// This constructor assumes that an entire FLAC file is in the buffer.
+  ///
+  /// # Failures
+  ///
+  /// * `ErrorKind::InvalidData` is returned when the data within the buffer
+  ///   isn't valid FLAC data.
   pub fn from_buffer(buffer: &[u8]) -> io::Result<Stream> {
     let mut producer = ByteStream::new(buffer);
     let error_str    = "parser: couldn't parse the buffer";
@@ -124,6 +150,7 @@ impl Stream {
     }
   }
 
+  /// Returns an iterator over the decoded samples.
   pub fn iter(&mut self) -> Iter {
     Iter::new(self)
   }
