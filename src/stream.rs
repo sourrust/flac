@@ -150,6 +150,7 @@ impl Stream {
     }
   }
 
+  /// Returns an iterator over the decoded samples.
   pub fn iter(&mut self) -> Iter {
     Iter::new(self)
   }
