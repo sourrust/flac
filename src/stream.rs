@@ -47,6 +47,10 @@ named!(pub stream_parser <&[u8], Stream>,
 );
 
 impl Stream {
+  /// Constructor for the default state of a FLAC stream.
+  ///
+  /// This doesn't actually decode anything, it just hold the default values
+  /// of each field.
   pub fn new() -> Stream {
     Stream {
       info: StreamInfo::new(),
@@ -66,6 +70,13 @@ impl Stream {
     &self.metadata
   }
 
+  /// Constructs a decoder with the given file name.
+  ///
+  /// # Failures
+  ///
+  /// * `ErrorKind::NotFound` is returned when the given filename isn't found.
+  /// * `ErrorKind::InvalidData` is returned when the data within the file
+  ///   isn't valid FLAC data.
   pub fn from_file(filename: &str) -> io::Result<Stream> {
     File::open(filename).and_then(|file| {
       let mut producer = ReadStream::new(file);
@@ -76,6 +87,14 @@ impl Stream {
     })
   }
 
+  /// Constructs a decoder with the given buffer.
+  ///
+  /// This constructor assumes that an entire FLAC file is in the buffer.
+  ///
+  /// # Failures
+  ///
+  /// * `ErrorKind::InvalidData` is returned when the data within the buffer
+  ///   isn't valid FLAC data.
   pub fn from_buffer(buffer: &[u8]) -> io::Result<Stream> {
     let mut producer = ByteStream::new(buffer);
     let error_str    = "parser: couldn't parse the buffer";
