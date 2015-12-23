@@ -152,7 +152,16 @@ impl Stream {
 
   /// Returns an iterator over the decoded samples.
   pub fn iter(&mut self) -> Iter {
-    Iter::new(self)
+    let samples_left = self.info.total_samples;
+
+    Iter {
+      stream: self,
+      channel: 0,
+      frame_index: 0,
+      block_size: 0,
+      sample_index: 0,
+      samples_left: samples_left,
+    }
   }
 
   fn next_frame<'a>(&'a mut self) -> Option<&'a [i32]> {
@@ -255,21 +264,6 @@ pub struct Iter<'a> {
   block_size: usize,
   sample_index: usize,
   samples_left: u64,
-}
-
-impl<'a> Iter<'a> {
-  pub fn new(stream: &'a mut Stream) -> Iter<'a> {
-    let samples_left = stream.info.total_samples;
-
-    Iter {
-      stream: stream,
-      channel: 0,
-      frame_index: 0,
-      block_size: 0,
-      sample_index: 0,
-      samples_left: samples_left,
-    }
-  }
 }
 
 impl<'a> Iterator for Iter<'a> {
