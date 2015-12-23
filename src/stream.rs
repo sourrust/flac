@@ -247,6 +247,7 @@ impl Stream {
   }
 }
 
+/// An iterator over a reference of the decoded FLAC stream.
 pub struct Iter<'a> {
   stream: &'a mut Stream,
   channel: usize,
