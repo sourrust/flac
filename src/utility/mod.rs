@@ -28,6 +28,10 @@ pub fn to_u32(bytes: &[u8]) -> u32 {
   )
 }
 
+// Extends a signed value of a specific bit size to a larger bit size.
+//
+// NOTE: This assumes that the larger bit size will be 32 bit since that is
+// the largest sample size supported in FLAC.
 pub fn extend_sign(value: u32, bit_count: usize) -> i32 {
   if bit_count >= 32 || value < (1 << (bit_count - 1)) {
     value as i32
