@@ -27,21 +27,24 @@ fn test_decoded_md5_sum() {
     "tests/assets/input-SVAUP.flac",
   ];
 
-  let mut stream  = Stream::from_file(filename).unwrap();
   let mut buffer  = [0; 4];
   let mut md5     = Md5::new();
   let mut md5_sum = [0; 16];
 
-  let info   = stream.info();
-  let offset = get_offset(info.bits_per_sample as usize);
+  {
+    let mut stream = Stream::from_file(filenames[0]).unwrap();
 
-  for sample in stream.iter() {
-    to_bytes(sample, &mut buffer);
+    let info   = stream.info();
+    let offset = get_offset(info.bits_per_sample as usize);
 
-    md5.input(&buffer[0..offset]);
+    for sample in stream.iter() {
+      to_bytes(sample, &mut buffer);
+
+      md5.input(&buffer[0..offset]);
+    }
+
+    md5.result(&mut md5_sum);
+
+    assert_eq!(md5_sum, info.md5_sum);
   }
-
-  md5.result(&mut md5_sum);
-
-  assert_eq!(md5_sum, info.md5_sum);
 }
