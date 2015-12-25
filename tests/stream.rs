@@ -21,7 +21,11 @@ fn get_offset(sample_size: usize) -> usize {
 
 #[test]
 fn test_decoded_md5_sum() {
-  let filename = "tests/assets/input-pictures.flac";
+  let filenames = [
+    "tests/assets/input-pictures.flac",
+    "tests/assets/input-SCPAP.flac",
+    "tests/assets/input-SVAUP.flac",
+  ];
 
   let mut stream  = Stream::from_file(filename).unwrap();
   let mut buffer  = [0; 4];
