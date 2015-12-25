@@ -285,13 +285,13 @@ impl<'a> Iterator for Iter<'a> {
     let index    = self.sample_index + (self.channel * self.block_size);
     let sample   = self.stream.output[index];
 
-    self.channel      += 1;
-    self.samples_left -= 1;
+    self.channel += 1;
 
     // Reset current channel
     if self.channel == channels {
       self.channel       = 0;
       self.sample_index += 1;
+      self.samples_left -= 1;
     }
 
     Some(sample)
