@@ -47,4 +47,23 @@ fn test_decoded_md5_sum() {
 
     assert_eq!(md5_sum, info.md5_sum);
   }
+
+  md5.reset();
+
+  {
+    let mut stream = Stream::from_file(filenames[1]).unwrap();
+
+    let info   = stream.info();
+    let offset = get_offset(info.bits_per_sample as usize);
+
+    for sample in stream.iter() {
+      to_bytes(sample, &mut buffer);
+
+      md5.input(&buffer[0..offset]);
+    }
+
+    md5.result(&mut md5_sum);
+
+    assert_eq!(md5_sum, info.md5_sum);
+  }
 }
