@@ -78,6 +78,10 @@ impl<'a> StreamProducer for ByteStream<'a> {
   }
 }
 
+// Growable buffer of bytes.
+//
+// Mainly used to the `ReadStream` structure but can be used seperately for
+// manually filling with some `Read` source.
 pub struct Buffer {
   data: Vec<u8>,
   filled: usize,
