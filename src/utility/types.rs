@@ -16,6 +16,7 @@ pub enum ErrorKind {
   Unknown,
 }
 
+// Structure that hold a slice of bytes.
 pub struct ByteStream<'a> {
   offset: usize,
   bytes: &'a [u8],
@@ -77,6 +78,10 @@ impl<'a> StreamProducer for ByteStream<'a> {
   }
 }
 
+// Growable buffer of bytes.
+//
+// Mainly used to the `ReadStream` structure but can be used seperately for
+// manually filling with some `Read` source.
 pub struct Buffer {
   data: Vec<u8>,
   filled: usize,
@@ -187,6 +192,7 @@ fn fill<R: Read>(buffer: &mut Buffer, reader: &mut R, needed: usize)
   Ok(read)
 }
 
+// Structure that hold a reader for a source of bytes.
 pub struct ReadStream<R: Read> {
   reader: R,
   buffer: Buffer,
