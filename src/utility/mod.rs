@@ -8,6 +8,10 @@ pub use self::types::{ErrorKind, ByteStream, ReadStream};
 
 use nom::IResult;
 
+// An interface for parsing through some type of producer to a byte stream.o
+//
+// External parsers get passed in and consumes the bytes held internally and
+// outputs the `Result` of that parser.
 pub trait StreamProducer {
   fn parse<F, T>(&mut self, f: F) -> Result<T, ErrorKind>
    where F: FnOnce(&[u8]) -> IResult<&[u8], T>;
