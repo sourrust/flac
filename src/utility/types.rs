@@ -16,6 +16,7 @@ pub enum ErrorKind {
   Unknown,
 }
 
+// Structure that hold a slice of bytes.
 pub struct ByteStream<'a> {
   offset: usize,
   bytes: &'a [u8],
