@@ -188,6 +188,7 @@ fn fill<R: Read>(buffer: &mut Buffer, reader: &mut R, needed: usize)
   Ok(read)
 }
 
+// Structure that hold a reader for a source of bytes.
 pub struct ReadStream<R: Read> {
   reader: R,
   buffer: Buffer,
