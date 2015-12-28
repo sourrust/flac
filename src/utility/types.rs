@@ -31,6 +31,7 @@ impl<'a> ByteStream<'a> {
     }
   }
 
+  // Return the number of bytes that haven't been consumed yet.
   #[inline]
   pub fn len(&self) -> usize {
     self.bytes.len() - self.offset
