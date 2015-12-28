@@ -23,6 +23,7 @@ pub struct ByteStream<'a> {
 }
 
 impl<'a> ByteStream<'a> {
+  // Construct a `ByteStream` based on the passed in byte slice.
   pub fn new(bytes: &'a [u8]) -> Self {
     ByteStream {
       offset: 0,
