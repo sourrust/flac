@@ -37,6 +37,7 @@ impl<'a> ByteStream<'a> {
     self.bytes.len() - self.offset
   }
 
+  // Return true if the stream contains no more bytes.
   #[inline]
   pub fn is_empty(&self) -> bool {
     self.len() == 0
