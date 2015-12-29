@@ -144,6 +144,11 @@ impl Buffer {
     })
   }
 
+  // Resize the current buffer
+  //
+  // This will only allocate data when the size requests is larger than the
+  // current capacity of the buffer, otherwise it moves the currently filled
+  // data to the beginning of the buffer.
   pub fn resize(&mut self, size: usize) {
     if size > self.data.capacity() {
       self.data.reserve(size);
