@@ -130,6 +130,7 @@ impl Buffer {
     self.data.len()
   }
 
+  // Return a reference to the slice of unread bytes.
   pub fn as_slice(&self) -> &[u8] {
     &self.data[self.offset..self.filled]
   }
