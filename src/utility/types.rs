@@ -92,10 +92,12 @@ pub struct Buffer {
 }
 
 impl Buffer {
+  // Default constructor for `Buffer`
   pub fn new() -> Self {
     Self::with_capacity(1024)
   }
 
+  // Explicitly set the buffer capacity.
   pub fn with_capacity(capacity: usize) -> Self {
     let mut buffer = Vec::with_capacity(capacity);
 
