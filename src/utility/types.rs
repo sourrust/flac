@@ -124,6 +124,7 @@ impl Buffer {
     self.len() == 0
   }
 
+  // The set length of the unlining buffer.
   #[inline]
   pub fn capacity(&self) -> usize {
     self.data.len()
