@@ -175,6 +175,7 @@ impl Buffer {
     }
   }
 
+  // Move the offset by the amount of consumed bytes.
   pub fn consume(&mut self, consumed: usize) {
     self.offset += consumed;
   }
