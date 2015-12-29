@@ -135,6 +135,7 @@ impl Buffer {
     &self.data[self.offset..self.filled]
   }
 
+  // Fill the buffer with bytes from a `Read` source.
   pub fn fill<R: Read>(&mut self, reader: &mut R) -> io::Result<usize> {
     reader.read(&mut self.data[self.filled..]).map(|consumed| {
       self.filled += consumed;
