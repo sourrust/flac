@@ -92,10 +92,12 @@ pub struct Buffer {
 }
 
 impl Buffer {
+  // Default constructor for `Buffer`
   pub fn new() -> Self {
     Self::with_capacity(1024)
   }
 
+  // Explicitly set the buffer capacity.
   pub fn with_capacity(capacity: usize) -> Self {
     let mut buffer = Vec::with_capacity(capacity);
 
@@ -110,25 +112,30 @@ impl Buffer {
     }
   }
 
+  // Return the number of read bytes that haven't been consumed yet.
   #[inline]
   pub fn len(&self) -> usize {
     self.filled - self.offset
   }
 
+  // Return true if buffer contains no more bytes.
   #[inline]
   pub fn is_empty(&self) -> bool {
     self.len() == 0
   }
 
+  // The set length of the unlining buffer.
   #[inline]
   pub fn capacity(&self) -> usize {
     self.data.len()
   }
 
+  // Return a reference to the slice of unread bytes.
   pub fn as_slice(&self) -> &[u8] {
     &self.data[self.offset..self.filled]
   }
 
+  // Fill the buffer with bytes from a `Read` source.
   pub fn fill<R: Read>(&mut self, reader: &mut R) -> io::Result<usize> {
     reader.read(&mut self.data[self.filled..]).map(|consumed| {
       self.filled += consumed;
@@ -137,6 +144,11 @@ impl Buffer {
     })
   }
 
+  // Resize the current buffer
+  //
+  // This will only allocate data when the size requests is larger than the
+  // current capacity of the buffer, otherwise it moves the currently filled
+  // data to the beginning of the buffer.
   pub fn resize(&mut self, size: usize) {
     if size > self.data.capacity() {
       self.data.reserve(size);
@@ -163,6 +175,7 @@ impl Buffer {
     }
   }
 
+  // Move the offset by the amount of consumed bytes.
   pub fn consume(&mut self, consumed: usize) {
     self.offset += consumed;
   }
