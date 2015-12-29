@@ -112,11 +112,13 @@ impl Buffer {
     }
   }
 
+  // Return the number of read bytes that haven't been consumed yet.
   #[inline]
   pub fn len(&self) -> usize {
     self.filled - self.offset
   }
 
+  // Return true if buffer contains no more bytes.
   #[inline]
   pub fn is_empty(&self) -> bool {
     self.len() == 0
