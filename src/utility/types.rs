@@ -217,6 +217,7 @@ pub struct ReadStream<R: Read> {
 }
 
 impl<R> ReadStream<R> where R: Read {
+  // Constructor for `ReadStream` based on a `Read` source.
   pub fn new(reader: R) -> Self {
     ReadStream {
       reader: reader,
