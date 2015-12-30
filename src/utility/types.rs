@@ -217,6 +217,7 @@ pub struct ReadStream<R: Read> {
 }
 
 impl<R> ReadStream<R> where R: Read {
+  // Constructor for `ReadStream` based on a `Read` source.
   pub fn new(reader: R) -> Self {
     ReadStream {
       reader: reader,
@@ -226,6 +227,7 @@ impl<R> ReadStream<R> where R: Read {
     }
   }
 
+  // Fill the stream with bytes from a `Read` source.
   fn fill(&mut self) -> io::Result<usize> {
     let needed = cmp::max(1, self.needed);
 
