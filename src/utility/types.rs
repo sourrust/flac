@@ -227,6 +227,7 @@ impl<R> ReadStream<R> where R: Read {
     }
   }
 
+  // Fill the stream with bytes from a `Read` source.
   fn fill(&mut self) -> io::Result<usize> {
     let needed = cmp::max(1, self.needed);
 
