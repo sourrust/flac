@@ -26,7 +26,7 @@ extern crate nom;
 mod utility;
 pub mod metadata;
 mod frame;
-pub mod subframe;
+mod subframe;
 pub mod stream;
 
 pub use metadata::{metadata_parser, Metadata};
