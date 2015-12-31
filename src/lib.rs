@@ -24,12 +24,10 @@ extern crate nom;
 
 #[macro_use]
 mod utility;
+mod frame;
+mod subframe;
 pub mod metadata;
-pub mod frame;
-pub mod subframe;
 pub mod stream;
 
-pub use metadata::{metadata_parser, Metadata};
-pub use frame::{frame_parser, Frame};
-pub use subframe::{subframe_parser, Subframe};
-pub use stream::{stream_parser, Stream};
+pub use metadata::Metadata;
+pub use stream::Stream;
