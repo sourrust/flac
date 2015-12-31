@@ -30,5 +30,4 @@ mod subframe;
 pub mod stream;
 
 pub use metadata::{metadata_parser, Metadata};
-pub use subframe::{subframe_parser, Subframe};
 pub use stream::{stream_parser, Stream};
