@@ -24,9 +24,9 @@ extern crate nom;
 
 #[macro_use]
 mod utility;
-pub mod metadata;
 mod frame;
 mod subframe;
+pub mod metadata;
 pub mod stream;
 
 pub use metadata::Metadata;
