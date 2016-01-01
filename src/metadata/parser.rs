@@ -298,40 +298,6 @@ named!(pub block <&[u8], Metadata>,
   )
 );
 
-fn many_blocks(input: &[u8]) -> IResult<&[u8], (StreamInfo, Vec<Metadata>)> {
-  let mut is_last     = false;
-  let mut found_info  = false;
-  let mut blocks      = Vec::new();
-  let mut mut_input   = input;
-  let mut stream_info = StreamInfo::new();
-
-  while !is_last {
-    if let IResult::Done(i, block) = block(mut_input) {
-      if i.len() == input.len() {
-        break;
-      }
-
-      mut_input = i;
-      is_last   = block.is_last;
-
-      if let metadata::Data::StreamInfo(info) = block.data {
-        found_info  = true;
-        stream_info = info;
-      } else {
-        blocks.push(block);
-      }
-    } else {
-      break;
-    }
-  }
-
-  if found_info && is_last {
-    IResult::Done(mut_input, (stream_info, blocks))
-  } else {
-    IResult::Error(Err::Position(ErrorKind::Many1, input))
-  }
-}
-
 #[cfg(test)]
 mod tests {
   use super::*;
