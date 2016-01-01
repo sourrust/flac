@@ -191,7 +191,7 @@ impl Stream {
                          -> IResult<&'a [u8], ()> {
     let kind = nom::ErrorKind::Custom(1);
 
-    match metadata::block(input) {
+    match metadata_parser(input) {
       IResult::Done(i, block) => {
         let is_last = block.is_last;
 
