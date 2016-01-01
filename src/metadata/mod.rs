@@ -10,7 +10,7 @@ pub use self::types::{
   SeekPoint, CueSheetTrack, CueSheetTrackIndex, PictureType,
 };
 
-pub use self::parser::{metadata_parser, block};
+pub use self::parser::metadata_parser;
 
 pub use self::metadata::{
   get_stream_info, get_vorbis_comment, get_cue_sheet, get_picture,

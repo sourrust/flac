@@ -16,14 +16,19 @@ use metadata::{
 
 use utility::to_u32;
 
-/// Parses all metadata within a file stream.
-///
-/// The first metadata block should always be `StreamInfo` since that is the
-/// only required `Metadata`. At the moment `metadata_parser` parser doesn't
-/// check that requirement.
-pub fn metadata_parser(input: &[u8])
-                       -> IResult<&[u8], (StreamInfo, Vec<Metadata>)> {
-  preceded!(input, tag!("fLaC"), many_blocks)
+/// Parse a metadata block.
+pub fn metadata_parser(input: &[u8]) -> IResult<&[u8], Metadata> {
+  chain!(input,
+    block_header: header ~
+    data: apply!(block_data, block_header.1, block_header.2),
+    || {
+      Metadata {
+        is_last: block_header.0,
+        length: block_header.2,
+        data: data
+      }
+    }
+  )
 }
 
 named!(pub stream_info <&[u8], metadata::Data>,
@@ -281,54 +286,6 @@ pub fn block_data(input: &[u8], block_type: u8, length: u32)
     6       => picture(input),
     7...126 => unknown(input, length),
     _       => IResult::Error(Err::Position(ErrorKind::Alt, input)),
-  }
-}
-
-named!(pub block <&[u8], Metadata>,
-  chain!(
-    block_header: header ~
-    data: apply!(block_data, block_header.1, block_header.2),
-    || {
-      Metadata {
-        is_last: block_header.0,
-        length: block_header.2,
-        data: data
-      }
-    }
-  )
-);
-
-fn many_blocks(input: &[u8]) -> IResult<&[u8], (StreamInfo, Vec<Metadata>)> {
-  let mut is_last     = false;
-  let mut found_info  = false;
-  let mut blocks      = Vec::new();
-  let mut mut_input   = input;
-  let mut stream_info = StreamInfo::new();
-
-  while !is_last {
-    if let IResult::Done(i, block) = block(mut_input) {
-      if i.len() == input.len() {
-        break;
-      }
-
-      mut_input = i;
-      is_last   = block.is_last;
-
-      if let metadata::Data::StreamInfo(info) = block.data {
-        found_info  = true;
-        stream_info = info;
-      } else {
-        blocks.push(block);
-      }
-    } else {
-      break;
-    }
-  }
-
-  if found_info && is_last {
-    IResult::Done(mut_input, (stream_info, blocks))
-  } else {
-    IResult::Error(Err::Position(ErrorKind::Many1, input))
   }
 }
 

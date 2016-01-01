@@ -29,23 +29,6 @@ pub struct Stream {
   frame_index: usize,
 }
 
-named!(pub stream_parser <&[u8], Stream>,
-  chain!(
-    blocks: metadata_parser ~
-    frames: many1!(apply!(frame_parser, &blocks.0)),
-    move|| {
-      Stream {
-        info: blocks.0,
-        metadata: blocks.1,
-        frames: frames,
-        state: ParserState::Marker,
-        output: Vec::new(),
-        frame_index: 0,
-      }
-    }
-  )
-);
-
 impl Stream {
   /// Constructor for the default state of a FLAC stream.
   ///
@@ -208,7 +191,7 @@ impl Stream {
                          -> IResult<&'a [u8], ()> {
     let kind = nom::ErrorKind::Custom(1);
 
-    match metadata::block(input) {
+    match metadata_parser(input) {
       IResult::Done(i, block) => {
         let is_last = block.is_last;
 
