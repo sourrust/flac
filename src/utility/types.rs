@@ -12,6 +12,7 @@ pub enum ErrorKind {
   IO(io::Error),
   Incomplete(usize),
   Consumed(usize),
+  Continue,
   EndOfInput,
   Unknown,
 }
@@ -293,12 +294,18 @@ impl<R> StreamProducer for ReadStream<R> where R: Read {
       }
       Err(kind)         => {
         match kind {
-          ErrorKind::Incomplete(needed) => self.needed = needed,
-          ErrorKind::Consumed(consumed) => buffer.consume(consumed),
-          _                             => (),
-        }
+          ErrorKind::Incomplete(needed) => {
+            self.needed = needed;
 
-        Err(kind)
+            Err(ErrorKind::Continue)
+          }
+          ErrorKind::Consumed(consumed) => {
+            buffer.consume(consumed);
+
+            Err(ErrorKind::Continue)
+          }
+          _                             => Err(kind),
+        }
       }
     }
   }

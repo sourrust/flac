@@ -37,10 +37,9 @@ pub fn get_metadata(filename: &str) -> Result<Vec<Metadata>> {
 
     loop {
       match consumer.handle(&mut stream) {
-        Ok(_)                         => break,
-        Err(ErrorKind::Consumed(_))   => continue,
-        Err(ErrorKind::Incomplete(_)) => continue,
-        Err(_)                        => {
+        Ok(_)                    => break,
+        Err(ErrorKind::Continue) => continue,
+        Err(_)                   => {
           is_error = true;
 
           break;

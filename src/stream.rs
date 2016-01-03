@@ -106,11 +106,10 @@ impl Stream {
 
     loop {
       match stream.handle(producer) {
-        Ok(_)                         => break,
-        Err(ErrorKind::EndOfInput)    => break,
-        Err(ErrorKind::Consumed(_))   => continue,
-        Err(ErrorKind::Incomplete(_)) => continue,
-        Err(_)                        => {
+        Ok(_)                      => break,
+        Err(ErrorKind::EndOfInput) => break,
+        Err(ErrorKind::Continue)   => continue,
+        Err(_)                     => {
           is_error = true;
 
           break;
