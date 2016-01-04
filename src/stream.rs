@@ -13,21 +13,12 @@ use std::io;
 use std::usize;
 use std::fs::File;
 
-enum ParserState {
-  Marker,
-  Metadata,
-  Frame,
-}
-
 /// FLAC stream that decodes and hold file information.
 pub struct Stream<P: StreamProducer> {
   info: StreamInfo,
   metadata: Vec<Metadata>,
-  frames: Vec<Frame>,
-  state: ParserState,
-  output: Vec<i32>,
-  frame_index: usize,
   producer: P,
+  output: Vec<i32>,
 }
 
 fn parser<'a>(input: &'a [u8], is_start: &mut bool)
@@ -145,11 +136,8 @@ impl<P> Stream<P> where P: StreamProducer {
       Ok(Stream {
         info: stream_info,
         metadata: metadata,
-        frames: Vec::new(),
-        state: ParserState::Marker,
-        output: output,
-        frame_index: 0,
         producer: producer,
+        output: output,
       })
     } else {
       Err(io::Error::new(io::ErrorKind::InvalidData, error_str))
@@ -190,8 +178,6 @@ impl<P> Stream<P> where P: StreamProducer {
           }
 
           frame::decode(frame.header.channel_assignment, &mut self.output);
-
-          self.frame_index += 1;
 
           return Some(block_size);
         }
