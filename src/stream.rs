@@ -285,15 +285,11 @@ impl<'a, P> Iterator for Iter<'a, P> where P: StreamProducer {
 
   fn next(&mut self) -> Option<Self::Item> {
     if self.sample_index == self.block_size {
-      let frame_index = self.stream.frame_index;
-
-      if self.stream.next_frame().is_none() {
-        return None;
-      } else {
-        let frame = &self.stream.frames[frame_index];
-
+      if let Some(block_size) = self.stream.next_frame() {
         self.sample_index = 0;
-        self.block_size   = frame.header.block_size as usize;
+        self.block_size   = block_size;
+      } else {
+        return None;
       }
     }
 
