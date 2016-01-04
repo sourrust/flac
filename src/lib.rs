@@ -31,3 +31,4 @@ pub mod stream;
 
 pub use metadata::Metadata;
 pub use stream::Stream;
+pub use utility::{StreamProducer, ReadStream, ByteStream};
