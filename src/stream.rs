@@ -49,15 +49,11 @@ impl<P> Stream<P> where P: StreamProducer {
   ///
   /// This doesn't actually decode anything, it just hold the default values
   /// of each field.
-  pub fn new() -> Stream {
-    Stream {
-      info: StreamInfo::new(),
-      metadata: Vec::new(),
-      frames: Vec::new(),
-      state: ParserState::Marker,
-      output: Vec::new(),
-      frame_index: 0,
-    }
+  pub fn new<R: io::Read>(reader: R) -> io::Result<Stream<ReadStream<R>>> {
+    let producer  = ReadStream::new(reader);
+    let error_str = "parser: couldn't parse the reader";
+
+    Stream::from_stream_producer(producer, error_str)
   }
 
   /// Returns information for the current stream.
