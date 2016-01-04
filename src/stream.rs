@@ -108,19 +108,26 @@ impl<P> Stream<P> where P: StreamProducer {
 
   fn from_stream_producer(mut producer: P, error_str: &str)
                           -> io::Result<Self> {
-    let mut is_error = false;
-    let mut stream   = Stream {
-      info: StreamInfo::new(),
-      metadata: Vec::new(),
-      frames: Vec::new(),
-      state: ParserState::Marker,
-      output: Vec::new(),
-      frame_index: 0,
-    };
+    let mut is_start    = true;
+    let mut is_error    = false;
+    let mut stream_info = StreamInfo::new();
+    let mut metadata    = Vec::new();
 
     loop {
-      match stream.handle(producer) {
-        Ok(_)                      => break,
+      match producer.parse(|i| parser(i, &mut is_start)) {
+        Ok(block)                  => {
+          let is_last = block.is_last;
+
+          if let metadata::Data::StreamInfo(info) = block.data {
+            stream_info = info;
+          } else {
+            metadata.push(block);
+          }
+
+          if is_last {
+            break;
+          }
+        }
         Err(ErrorKind::EndOfInput) => break,
         Err(ErrorKind::Continue)   => continue,
         Err(_)                     => {
@@ -132,15 +139,22 @@ impl<P> Stream<P> where P: StreamProducer {
     }
 
     if !is_error {
-      let channels    = stream.info.channels as usize;
-      let block_size  = stream.info.max_block_size as usize;
+      let channels    = stream_info.channels as usize;
+      let block_size  = stream_info.max_block_size as usize;
       let output_size = block_size * channels;
+      let mut output  = Vec::with_capacity(output_size);
 
-      stream.output.reserve_exact(output_size);
+      unsafe { output.set_len(output_size) }
 
-      unsafe { stream.output.set_len(output_size) }
-
-      Ok(stream)
+      Ok(Stream {
+        info: stream_info,
+        metadata: metadata,
+        frames: Vec::new(),
+        state: ParserState::Marker,
+        output: output,
+        frame_index: 0,
+        producer: producer,
+      })
     } else {
       Err(io::Error::new(io::ErrorKind::InvalidData, error_str))
     }
