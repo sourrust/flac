@@ -99,11 +99,11 @@ impl<P> Stream<P> where P: StreamProducer {
   ///
   /// * `ErrorKind::InvalidData` is returned when the data within the buffer
   ///   isn't valid FLAC data.
-  pub fn from_buffer(buffer: &[u8]) -> io::Result<Stream> {
-    let mut producer = ByteStream::new(buffer);
-    let error_str    = "parser: couldn't parse the buffer";
+  pub fn from_buffer(buffer: &[u8]) -> io::Result<Stream<ByteStream>> {
+    let producer  = ByteStream::new(buffer);
+    let error_str = "parser: couldn't parse the buffer";
 
-    Stream::from_stream_producer(&mut producer, error_str)
+    Stream::from_stream_producer(producer, error_str)
   }
 
   fn from_stream_producer(mut producer: P, error_str: &str)
