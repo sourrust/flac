@@ -44,7 +44,7 @@ fn parser<'a>(input: &'a [u8], is_start: &mut bool)
   metadata_parser(slice)
 }
 
-impl Stream {
+impl<P> Stream<P> where P: StreamProducer {
   /// Constructor for the default state of a FLAC stream.
   ///
   /// This doesn't actually decode anything, it just hold the default values
