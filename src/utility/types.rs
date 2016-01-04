@@ -17,14 +17,14 @@ pub enum ErrorKind {
   Unknown,
 }
 
-// Structure that hold a slice of bytes.
+/// Structure that hold a slice of bytes.
 pub struct ByteStream<'a> {
   offset: usize,
   bytes: &'a [u8],
 }
 
 impl<'a> ByteStream<'a> {
-  // Construct a `ByteStream` based on the passed in byte slice.
+  /// Construct a `ByteStream` based on the passed in byte slice.
   pub fn new(bytes: &'a [u8]) -> Self {
     ByteStream {
       offset: 0,
@@ -32,13 +32,13 @@ impl<'a> ByteStream<'a> {
     }
   }
 
-  // Return the number of bytes that haven't been consumed yet.
+  /// Return the number of bytes that haven't been consumed yet.
   #[inline]
   pub fn len(&self) -> usize {
     self.bytes.len() - self.offset
   }
 
-  // Return true if the stream contains no more bytes.
+  /// Return true if the stream contains no more bytes.
   #[inline]
   pub fn is_empty(&self) -> bool {
     self.len() == 0
