@@ -209,7 +209,7 @@ fn fill<R: Read>(buffer: &mut Buffer, reader: &mut R, needed: usize)
   Ok(read)
 }
 
-// Structure that hold a reader for a source of bytes.
+/// Structure that hold a reader for a source of bytes.
 pub struct ReadStream<R: Read> {
   reader: R,
   buffer: Buffer,
@@ -218,7 +218,7 @@ pub struct ReadStream<R: Read> {
 }
 
 impl<R> ReadStream<R> where R: Read {
-  // Constructor for `ReadStream` based on a `Read` source.
+  /// Constructor for `ReadStream` based on a `Read` source.
   pub fn new(reader: R) -> Self {
     ReadStream {
       reader: reader,
