@@ -173,30 +173,36 @@ impl<P> Stream<P> where P: StreamProducer {
     }
   }
 
-  fn next_frame<'a>(&'a mut self) -> Option<&'a [i32]> {
-    if self.frames.is_empty() || self.frame_index >= self.frames.len() {
-      None
-    } else {
-      let frame       = &self.frames[self.frame_index];
-      let channels    = frame.header.channels as usize;
-      let block_size  = frame.header.block_size as usize;
-      let mut channel = 0;
+  fn next_frame<'a>(&'a mut self) -> Option<usize> {
+    let stream_info = self.info();
 
-      for subframe in &frame.subframes[0..channels] {
-        let start  = channel * block_size;
-        let end    = (channel + 1) * block_size;
-        let output = &mut self.output[start..end];
+    loop {
+      match self.producer.parse(|i| frame_parser(i, &stream_info)) {
+        Ok(frame)                  => {
+          let channels    = frame.header.channels as usize;
+          let block_size  = frame.header.block_size as usize;
+          let mut channel = 0;
 
-        subframe::decode(&subframe, output);
+          for subframe in &frame.subframes[0..channels] {
+            let start  = channel * block_size;
+            let end    = (channel + 1) * block_size;
+            let output = &mut self.output[start..end];
 
-        channel += 1;
+            subframe::decode(&subframe, output);
+
+            channel += 1;
+          }
+
+          frame::decode(frame.header.channel_assignment, &mut self.output);
+
+          self.frame_index += 1;
+
+          return Some(block_size);
+        }
+        Err(ErrorKind::EndOfInput) => return None,
+        Err(ErrorKind::Continue)   => continue,
+        Err(_)                     => return None,
       }
-
-      frame::decode(frame.header.channel_assignment, &mut self.output);
-
-      self.frame_index += 1;
-
-      Some(&self.output[0..(block_size * channels)])
     }
   }
 
