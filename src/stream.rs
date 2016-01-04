@@ -36,9 +36,6 @@ fn parser<'a>(input: &'a [u8], is_start: &mut bool)
 
 impl<P> Stream<P> where P: StreamProducer {
   /// Constructor for the default state of a FLAC stream.
-  ///
-  /// This doesn't actually decode anything, it just hold the default values
-  /// of each field.
   pub fn new<R: io::Read>(reader: R) -> io::Result<Stream<ReadStream<R>>> {
     let producer  = ReadStream::new(reader);
     let error_str = "parser: couldn't parse the reader";
