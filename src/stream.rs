@@ -1,4 +1,3 @@
-use nom;
 use nom::{Err, IResult};
 
 use metadata;
@@ -6,43 +5,42 @@ use frame;
 use subframe;
 
 use metadata::{Metadata, StreamInfo, metadata_parser};
-use frame::{frame_parser, Frame};
+use frame::frame_parser;
 use utility::{ErrorKind, ByteStream, ReadStream, StreamProducer};
 
 use std::io;
 use std::usize;
 use std::fs::File;
 
-enum ParserState {
-  Marker,
-  Metadata,
-  Frame,
-}
-
 /// FLAC stream that decodes and hold file information.
-pub struct Stream {
+pub struct Stream<P: StreamProducer> {
   info: StreamInfo,
   metadata: Vec<Metadata>,
-  frames: Vec<Frame>,
-  state: ParserState,
+  producer: P,
   output: Vec<i32>,
-  frame_index: usize,
 }
 
-impl Stream {
+fn parser<'a>(input: &'a [u8], is_start: &mut bool)
+              -> IResult<&'a [u8], Metadata> {
+  let mut slice = input;
+
+  if *is_start {
+    let (i, _) = try_parse!(slice, tag!("fLaC"));
+
+    slice     = i;
+    *is_start = false;
+  }
+
+  metadata_parser(slice)
+}
+
+impl<P> Stream<P> where P: StreamProducer {
   /// Constructor for the default state of a FLAC stream.
-  ///
-  /// This doesn't actually decode anything, it just hold the default values
-  /// of each field.
-  pub fn new() -> Stream {
-    Stream {
-      info: StreamInfo::new(),
-      metadata: Vec::new(),
-      frames: Vec::new(),
-      state: ParserState::Marker,
-      output: Vec::new(),
-      frame_index: 0,
-    }
+  pub fn new<R: io::Read>(reader: R) -> io::Result<Stream<ReadStream<R>>> {
+    let producer  = ReadStream::new(reader);
+    let error_str = "parser: couldn't parse the reader";
+
+    Stream::from_stream_producer(producer, error_str)
   }
 
   /// Returns information for the current stream.
@@ -66,13 +64,13 @@ impl Stream {
   /// * `ErrorKind::NotFound` is returned when the given filename isn't found.
   /// * `ErrorKind::InvalidData` is returned when the data within the file
   ///   isn't valid FLAC data.
-  pub fn from_file(filename: &str) -> io::Result<Stream> {
+  pub fn from_file(filename: &str) -> io::Result<Stream<ReadStream<File>>> {
     File::open(filename).and_then(|file| {
-      let mut producer = ReadStream::new(file);
-      let error_str    = format!("parser: couldn't parse the given file {}",
-                                 filename);
+      let producer  = ReadStream::new(file);
+      let error_str = format!("parser: couldn't parse the given file {}",
+                              filename);
 
-      Stream::from_stream_producer(&mut producer, &error_str)
+      Stream::from_stream_producer(producer, &error_str)
     })
   }
 
@@ -84,29 +82,35 @@ impl Stream {
   ///
   /// * `ErrorKind::InvalidData` is returned when the data within the buffer
   ///   isn't valid FLAC data.
-  pub fn from_buffer(buffer: &[u8]) -> io::Result<Stream> {
-    let mut producer = ByteStream::new(buffer);
-    let error_str    = "parser: couldn't parse the buffer";
+  pub fn from_buffer(buffer: &[u8]) -> io::Result<Stream<ByteStream>> {
+    let producer  = ByteStream::new(buffer);
+    let error_str = "parser: couldn't parse the buffer";
 
-    Stream::from_stream_producer(&mut producer, error_str)
+    Stream::from_stream_producer(producer, error_str)
   }
 
-  fn from_stream_producer<P>(producer: &mut P, error_str: &str)
-                             -> io::Result<Stream>
-   where P: StreamProducer {
-    let mut is_error = false;
-    let mut stream   = Stream {
-      info: StreamInfo::new(),
-      metadata: Vec::new(),
-      frames: Vec::new(),
-      state: ParserState::Marker,
-      output: Vec::new(),
-      frame_index: 0,
-    };
+  fn from_stream_producer(mut producer: P, error_str: &str)
+                          -> io::Result<Self> {
+    let mut is_start    = true;
+    let mut is_error    = false;
+    let mut stream_info = StreamInfo::new();
+    let mut metadata    = Vec::new();
 
     loop {
-      match stream.handle(producer) {
-        Ok(_)                      => break,
+      match producer.parse(|i| parser(i, &mut is_start)) {
+        Ok(block)                  => {
+          let is_last = block.is_last;
+
+          if let metadata::Data::StreamInfo(info) = block.data {
+            stream_info = info;
+          } else {
+            metadata.push(block);
+          }
+
+          if is_last {
+            break;
+          }
+        }
         Err(ErrorKind::EndOfInput) => break,
         Err(ErrorKind::Continue)   => continue,
         Err(_)                     => {
@@ -118,22 +122,26 @@ impl Stream {
     }
 
     if !is_error {
-      let channels    = stream.info.channels as usize;
-      let block_size  = stream.info.max_block_size as usize;
+      let channels    = stream_info.channels as usize;
+      let block_size  = stream_info.max_block_size as usize;
       let output_size = block_size * channels;
+      let mut output  = Vec::with_capacity(output_size);
 
-      stream.output.reserve_exact(output_size);
+      unsafe { output.set_len(output_size) }
 
-      unsafe { stream.output.set_len(output_size) }
-
-      Ok(stream)
+      Ok(Stream {
+        info: stream_info,
+        metadata: metadata,
+        producer: producer,
+        output: output,
+      })
     } else {
       Err(io::Error::new(io::ErrorKind::InvalidData, error_str))
     }
   }
 
   /// Returns an iterator over the decoded samples.
-  pub fn iter(&mut self) -> Iter {
+  pub fn iter(&mut self) -> Iter<P> {
     let samples_left = self.info.total_samples;
 
     Iter {
@@ -145,121 +153,57 @@ impl Stream {
     }
   }
 
-  fn next_frame<'a>(&'a mut self) -> Option<&'a [i32]> {
-    if self.frames.is_empty() || self.frame_index >= self.frames.len() {
-      None
-    } else {
-      let frame       = &self.frames[self.frame_index];
-      let channels    = frame.header.channels as usize;
-      let block_size  = frame.header.block_size as usize;
-      let mut channel = 0;
+  fn next_frame<'a>(&'a mut self) -> Option<usize> {
+    let stream_info = self.info();
 
-      for subframe in &frame.subframes[0..channels] {
-        let start  = channel * block_size;
-        let end    = (channel + 1) * block_size;
-        let output = &mut self.output[start..end];
+    loop {
+      match self.producer.parse(|i| frame_parser(i, &stream_info)) {
+        Ok(frame)                  => {
+          let channels    = frame.header.channels as usize;
+          let block_size  = frame.header.block_size as usize;
+          let mut channel = 0;
 
-        subframe::decode(&subframe, output);
+          for subframe in &frame.subframes[0..channels] {
+            let start  = channel * block_size;
+            let end    = (channel + 1) * block_size;
+            let output = &mut self.output[start..end];
 
-        channel += 1;
-      }
+            subframe::decode(&subframe, output);
 
-      frame::decode(frame.header.channel_assignment, &mut self.output);
+            channel += 1;
+          }
 
-      self.frame_index += 1;
+          frame::decode(frame.header.channel_assignment, &mut self.output);
 
-      Some(&self.output[0..(block_size * channels)])
-    }
-  }
-
-  fn handle_marker<'a>(&mut self, input: &'a [u8]) -> IResult<&'a [u8], ()> {
-    let kind = nom::ErrorKind::Custom(0);
-
-    match tag!(input, "fLaC") {
-      IResult::Done(i, _)    => {
-        self.state = ParserState::Metadata;
-
-        IResult::Error(Err::Position(kind, i))
-      }
-      IResult::Error(_)      => IResult::Error(Err::Code(kind)),
-      IResult::Incomplete(n) => IResult::Incomplete(n),
-    }
-  }
-
-  fn handle_metadata<'a>(&mut self, input: &'a [u8])
-                         -> IResult<&'a [u8], ()> {
-    let kind = nom::ErrorKind::Custom(1);
-
-    match metadata_parser(input) {
-      IResult::Done(i, block) => {
-        let is_last = block.is_last;
-
-        if let metadata::Data::StreamInfo(info) = block.data {
-          self.info = info;
-        } else {
-          self.metadata.push(block);
+          return Some(block_size);
         }
-
-        if is_last {
-          self.state = ParserState::Frame;
-        }
-
-        IResult::Error(Err::Position(kind, i))
+        Err(ErrorKind::EndOfInput) => return None,
+        Err(ErrorKind::Continue)   => continue,
+        Err(_)                     => return None,
       }
-      IResult::Error(_)      => IResult::Error(Err::Code(kind)),
-      IResult::Incomplete(n) => IResult::Incomplete(n),
     }
-  }
-
-  fn handle_frame<'a>(&mut self, input: &'a [u8]) -> IResult<&'a [u8], ()> {
-    let kind = nom::ErrorKind::Custom(2);
-
-    match frame_parser(input, &self.info) {
-      IResult::Done(i, frame) => {
-        self.frames.push(frame);
-
-        IResult::Error(Err::Position(kind, i))
-      }
-      IResult::Error(_)      => IResult::Error(Err::Code(kind)),
-      IResult::Incomplete(n) => IResult::Incomplete(n),
-    }
-  }
-
-  fn handle<S: StreamProducer>(&mut self, stream: &mut S)
-                               -> Result<(), ErrorKind> {
-    stream.parse(|input| {
-      match self.state {
-        ParserState::Marker   => self.handle_marker(input),
-        ParserState::Metadata => self.handle_metadata(input),
-        ParserState::Frame    => self.handle_frame(input),
-      }
-    })
   }
 }
 
 /// An iterator over a reference of the decoded FLAC stream.
-pub struct Iter<'a> {
-  stream: &'a mut Stream,
+pub struct Iter<'a, P> where P: 'a + StreamProducer {
+  stream: &'a mut Stream<P>,
   channel: usize,
   block_size: usize,
   sample_index: usize,
   samples_left: u64,
 }
 
-impl<'a> Iterator for Iter<'a> {
+impl<'a, P> Iterator for Iter<'a, P> where P: StreamProducer {
   type Item = i32;
 
   fn next(&mut self) -> Option<Self::Item> {
     if self.sample_index == self.block_size {
-      let frame_index = self.stream.frame_index;
-
-      if self.stream.next_frame().is_none() {
-        return None;
-      } else {
-        let frame = &self.stream.frames[frame_index];
-
+      if let Some(block_size) = self.stream.next_frame() {
         self.sample_index = 0;
-        self.block_size   = frame.header.block_size as usize;
+        self.block_size   = block_size;
+      } else {
+        return None;
       }
     }
 
@@ -293,9 +237,10 @@ impl<'a> Iterator for Iter<'a> {
   }
 }
 
-impl<'a> IntoIterator for &'a mut Stream {
+impl<'a, P> IntoIterator for &'a mut Stream<P>
+ where P: StreamProducer {
   type Item     = i32;
-  type IntoIter = Iter<'a>;
+  type IntoIter = Iter<'a, P>;
 
   fn into_iter(self) -> Self::IntoIter {
     self.iter()

@@ -6,7 +6,10 @@
 //! Basic decoding from a file.
 //!
 //! ```
-//! match flac::Stream::from_file("path/to/file.flac") {
+//! use flac::{Stream, ReadStream};
+//! use std::fs::File;
+//!
+//! match Stream::<ReadStream<File>>::from_file("path/to/file.flac") {
 //!   Ok(mut stream) => {
 //!     // Copy of `StreamInfo` to help convert to a different audio format.
 //!     let info = stream.info();
@@ -31,3 +34,4 @@ pub mod stream;
 
 pub use metadata::Metadata;
 pub use stream::Stream;
+pub use utility::{StreamProducer, ReadStream, ByteStream};
