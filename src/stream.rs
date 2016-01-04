@@ -20,13 +20,14 @@ enum ParserState {
 }
 
 /// FLAC stream that decodes and hold file information.
-pub struct Stream {
+pub struct Stream<P: StreamProducer> {
   info: StreamInfo,
   metadata: Vec<Metadata>,
   frames: Vec<Frame>,
   state: ParserState,
   output: Vec<i32>,
   frame_index: usize,
+  producer: P,
 }
 
 fn parser<'a>(input: &'a [u8], is_start: &mut bool)
@@ -147,7 +148,7 @@ impl Stream {
   }
 
   /// Returns an iterator over the decoded samples.
-  pub fn iter(&mut self) -> Iter {
+  pub fn iter(&mut self) -> Iter<P> {
     let samples_left = self.info.total_samples;
 
     Iter {
@@ -252,15 +253,15 @@ impl Stream {
 }
 
 /// An iterator over a reference of the decoded FLAC stream.
-pub struct Iter<'a> {
-  stream: &'a mut Stream,
+pub struct Iter<'a, P> where P: 'a + StreamProducer {
+  stream: &'a mut Stream<P>,
   channel: usize,
   block_size: usize,
   sample_index: usize,
   samples_left: u64,
 }
 
-impl<'a> Iterator for Iter<'a> {
+impl<'a, P> Iterator for Iter<'a, P> where P: StreamProducer {
   type Item = i32;
 
   fn next(&mut self) -> Option<Self::Item> {
@@ -307,9 +308,10 @@ impl<'a> Iterator for Iter<'a> {
   }
 }
 
-impl<'a> IntoIterator for &'a mut Stream {
+impl<'a, P> IntoIterator for &'a mut Stream<P>
+ where P: StreamProducer {
   type Item     = i32;
-  type IntoIter = Iter<'a>;
+  type IntoIter = Iter<'a, P>;
 
   fn into_iter(self) -> Self::IntoIter {
     self.iter()
