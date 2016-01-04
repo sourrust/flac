@@ -106,9 +106,8 @@ impl<P> Stream<P> where P: StreamProducer {
     Stream::from_stream_producer(&mut producer, error_str)
   }
 
-  fn from_stream_producer<P>(producer: &mut P, error_str: &str)
-                             -> io::Result<Stream>
-   where P: StreamProducer {
+  fn from_stream_producer(mut producer: P, error_str: &str)
+                          -> io::Result<Self> {
     let mut is_error = false;
     let mut stream   = Stream {
       info: StreamInfo::new(),
