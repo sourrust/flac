@@ -1,4 +1,3 @@
-use nom;
 use nom::{Err, IResult};
 
 use metadata;
@@ -6,7 +5,7 @@ use frame;
 use subframe;
 
 use metadata::{Metadata, StreamInfo, metadata_parser};
-use frame::{frame_parser, Frame};
+use frame::frame_parser;
 use utility::{ErrorKind, ByteStream, ReadStream, StreamProducer};
 
 use std::io;
