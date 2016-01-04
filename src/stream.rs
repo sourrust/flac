@@ -81,13 +81,13 @@ impl<P> Stream<P> where P: StreamProducer {
   /// * `ErrorKind::NotFound` is returned when the given filename isn't found.
   /// * `ErrorKind::InvalidData` is returned when the data within the file
   ///   isn't valid FLAC data.
-  pub fn from_file(filename: &str) -> io::Result<Stream> {
+  pub fn from_file(filename: &str) -> io::Result<Stream<ReadStream<File>>> {
     File::open(filename).and_then(|file| {
-      let mut producer = ReadStream::new(file);
-      let error_str    = format!("parser: couldn't parse the given file {}",
-                                 filename);
+      let producer  = ReadStream::new(file);
+      let error_str = format!("parser: couldn't parse the given file {}",
+                              filename);
 
-      Stream::from_stream_producer(&mut producer, &error_str)
+      Stream::from_stream_producer(producer, &error_str)
     })
   }
 
