@@ -3,8 +3,9 @@ extern crate crypto;
 
 use crypto::digest::Digest;
 use crypto::md5::Md5;
-use flac::Stream;
+use flac::{Stream, ReadStream};
 use std::cmp;
+use std::fs::File;
 
 fn to_bytes(value: i32, buffer: &mut [u8]) {
   buffer[0] = value as u8;
@@ -32,7 +33,8 @@ fn test_decoded_md5_sum() {
   let mut md5_sum = [0; 16];
 
   {
-    let mut stream = Stream::from_file(filenames[0]).unwrap();
+    let mut stream =
+      Stream::<ReadStream<File>>::from_file(filenames[0]).unwrap();
 
     let info   = stream.info();
     let offset = get_offset(info.bits_per_sample as usize);
@@ -51,7 +53,8 @@ fn test_decoded_md5_sum() {
   md5.reset();
 
   {
-    let mut stream = Stream::from_file(filenames[1]).unwrap();
+    let mut stream =
+      Stream::<ReadStream<File>>::from_file(filenames[1]).unwrap();
 
     let info   = stream.info();
     let offset = get_offset(info.bits_per_sample as usize);
@@ -70,7 +73,8 @@ fn test_decoded_md5_sum() {
   md5.reset();
 
   {
-    let mut stream = Stream::from_file(filenames[2]).unwrap();
+    let mut stream =
+      Stream::<ReadStream<File>>::from_file(filenames[2]).unwrap();
 
     let info   = stream.info();
     let offset = get_offset(info.bits_per_sample as usize);
