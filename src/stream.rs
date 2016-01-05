@@ -36,6 +36,7 @@ fn parser<'a>(input: &'a [u8], is_start: &mut bool)
 
 impl<P> Stream<P> where P: StreamProducer {
   /// Constructor for the default state of a FLAC stream.
+  #[inline]
   pub fn new<R: io::Read>(reader: R) -> io::Result<Stream<ReadStream<R>>> {
     let producer  = ReadStream::new(reader);
     let error_str = "parser: couldn't parse the reader";
@@ -44,6 +45,7 @@ impl<P> Stream<P> where P: StreamProducer {
   }
 
   /// Returns information for the current stream.
+  #[inline]
   pub fn info(&self) -> StreamInfo {
     self.info
   }
@@ -53,6 +55,7 @@ impl<P> Stream<P> where P: StreamProducer {
   /// This slice excludes `StreamInfo`, which is located in `Stream::info`.
   /// Everything else is related to metadata for the FLAC stream is in the
   /// slice.
+  #[inline]
   pub fn metadata(&self) -> &[Metadata] {
     &self.metadata
   }
@@ -64,6 +67,7 @@ impl<P> Stream<P> where P: StreamProducer {
   /// * `ErrorKind::NotFound` is returned when the given filename isn't found.
   /// * `ErrorKind::InvalidData` is returned when the data within the file
   ///   isn't valid FLAC data.
+  #[inline]
   pub fn from_file(filename: &str) -> io::Result<Stream<ReadStream<File>>> {
     File::open(filename).and_then(|file| {
       let producer  = ReadStream::new(file);
@@ -82,6 +86,7 @@ impl<P> Stream<P> where P: StreamProducer {
   ///
   /// * `ErrorKind::InvalidData` is returned when the data within the buffer
   ///   isn't valid FLAC data.
+  #[inline]
   pub fn from_buffer(buffer: &[u8]) -> io::Result<Stream<ByteStream>> {
     let producer  = ByteStream::new(buffer);
     let error_str = "parser: couldn't parse the buffer";
@@ -141,6 +146,7 @@ impl<P> Stream<P> where P: StreamProducer {
   }
 
   /// Returns an iterator over the decoded samples.
+  #[inline]
   pub fn iter(&mut self) -> Iter<P> {
     let samples_left = self.info.total_samples;
 
@@ -242,6 +248,7 @@ impl<'a, P> IntoIterator for &'a mut Stream<P>
   type Item     = i32;
   type IntoIter = Iter<'a, P>;
 
+  #[inline]
   fn into_iter(self) -> Self::IntoIter {
     self.iter()
   }
