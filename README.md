@@ -7,6 +7,24 @@ Rust.
 
 [Documentation][documentation]
 
+## Install
+
+flac is not on crates.io at the moment, but you can include it in your
+Cargo file like so:
+
+```toml
+[dependencies.flac]
+
+git = "https://github.com/sourrust/flac.git"
+
+```
+
+Followed by including it in you code:
+
+```rust
+extern crate flac;
+```
+
 ## Implementation Status
 
 The status of this FLAC implementation:
