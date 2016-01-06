@@ -16,7 +16,6 @@ Cargo file like so:
 [dependencies.flac]
 
 git = "https://github.com/sourrust/flac.git"
-
 ```
 
 Followed by including it in you code:
