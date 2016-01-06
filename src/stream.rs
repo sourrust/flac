@@ -127,18 +127,11 @@ impl<P> Stream<P> where P: StreamProducer {
     }
 
     if !is_error {
-      let channels    = stream_info.channels as usize;
-      let block_size  = stream_info.max_block_size as usize;
-      let output_size = block_size * channels;
-      let mut output  = Vec::with_capacity(output_size);
-
-      unsafe { output.set_len(output_size) }
-
       Ok(Stream {
         info: stream_info,
         metadata: metadata,
         producer: producer,
-        output: output,
+        output: Vec::new(),
       })
     } else {
       Err(io::Error::new(io::ErrorKind::InvalidData, error_str))
@@ -149,6 +142,16 @@ impl<P> Stream<P> where P: StreamProducer {
   #[inline]
   pub fn iter(&mut self) -> Iter<P> {
     let samples_left = self.info.total_samples;
+
+    if self.output.is_empty() {
+      let channels    = self.info.channels as usize;
+      let block_size  = self.info.max_block_size as usize;
+      let output_size = block_size * channels;
+
+      self.output.reserve_exact(output_size);
+
+      unsafe { self.output.set_len(output_size) }
+    }
 
     Iter {
       stream: self,
