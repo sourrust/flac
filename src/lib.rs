@@ -1,6 +1,8 @@
 //! An implementation of [FLAC](https://xiph.org/flac), free lossless audio
 //! codec, written in Rust.
 //!
+//! The code is available on [GitHub](https://github.com/sourrust/flac).
+//!
 //! # Examples
 //!
 //! Basic decoding from a file.
