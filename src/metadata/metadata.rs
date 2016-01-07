@@ -3,7 +3,7 @@ use std::io::{Error, Result};
 use std::u32;
 use std::fs::File;
 
-use utility::{ErrorKind, ReadStream};
+use utility::{ReadStream, many_metadata};
 
 use metadata::{
   Metadata, Data,
@@ -32,27 +32,16 @@ pub fn optional_eq<T: Eq>(option: Option<T>, other: T) -> bool {
 pub fn get_metadata(filename: &str) -> Result<Vec<Metadata>> {
   File::open(filename).and_then(|file| {
     let mut stream   = ReadStream::new(file);
-    let mut consumer = Consumer::new();
-    let mut is_error = false;
+    let mut metadata = Vec::new();
 
-    loop {
-      match consumer.handle(&mut stream) {
-        Ok(_)                    => break,
-        Err(ErrorKind::Continue) => continue,
-        Err(_)                   => {
-          is_error = true;
-
-          break;
-        }
-      }
-    }
+    let is_error = many_metadata(&mut stream, |block| metadata.push(block));
 
     if is_error {
       let error_str = "parser: couldn't find any metadata";
 
       Err(Error::new(io::ErrorKind::InvalidData, error_str))
     } else {
-      Ok(consumer.data)
+      Ok(metadata)
     }
   })
 }
