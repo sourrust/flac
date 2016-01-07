@@ -1,10 +1,10 @@
-use nom::{Err, IResult};
+use nom::Err;
 
 use metadata;
 use frame;
 use subframe;
 
-use metadata::{Metadata, StreamInfo, metadata_parser};
+use metadata::{Metadata, StreamInfo};
 use frame::frame_parser;
 use utility::{
   ErrorKind, ByteStream, ReadStream, StreamProducer, many_metadata,
