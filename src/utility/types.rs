@@ -255,13 +255,7 @@ fn from_iresult<T>(buffer: &Buffer, result: IResult<&[u8], T>)
 
       Err(ErrorKind::Incomplete(needed))
     }
-    IResult::Error(e)      => {
-      if let Err::Position(_, i) = e {
-        Err(ErrorKind::Consumed(buffer.len() - i.len()))
-      } else {
-        Err(ErrorKind::Unknown)
-      }
-    }
+    IResult::Error(_)      => Err(ErrorKind::Unknown),
   }
 }
 

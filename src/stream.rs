@@ -1,12 +1,14 @@
-use nom::{Err, IResult};
+use nom::Err;
 
 use metadata;
 use frame;
 use subframe;
 
-use metadata::{Metadata, StreamInfo, metadata_parser};
+use metadata::{Metadata, StreamInfo};
 use frame::frame_parser;
-use utility::{ErrorKind, ByteStream, ReadStream, StreamProducer};
+use utility::{
+  ErrorKind, ByteStream, ReadStream, StreamProducer, many_metadata,
+};
 
 use std::io;
 use std::usize;
@@ -18,20 +20,6 @@ pub struct Stream<P: StreamProducer> {
   metadata: Vec<Metadata>,
   producer: P,
   output: Vec<i32>,
-}
-
-fn parser<'a>(input: &'a [u8], is_start: &mut bool)
-              -> IResult<&'a [u8], Metadata> {
-  let mut slice = input;
-
-  if *is_start {
-    let (i, _) = try_parse!(slice, tag!("fLaC"));
-
-    slice     = i;
-    *is_start = false;
-  }
-
-  metadata_parser(slice)
 }
 
 impl<P> Stream<P> where P: StreamProducer {
@@ -96,35 +84,16 @@ impl<P> Stream<P> where P: StreamProducer {
 
   fn from_stream_producer(mut producer: P, error_str: &str)
                           -> io::Result<Self> {
-    let mut is_start    = true;
-    let mut is_error    = false;
     let mut stream_info = StreamInfo::new();
     let mut metadata    = Vec::new();
 
-    loop {
-      match producer.parse(|i| parser(i, &mut is_start)) {
-        Ok(block)                  => {
-          let is_last = block.is_last;
-
-          if let metadata::Data::StreamInfo(info) = block.data {
-            stream_info = info;
-          } else {
-            metadata.push(block);
-          }
-
-          if is_last {
-            break;
-          }
-        }
-        Err(ErrorKind::EndOfInput) => break,
-        Err(ErrorKind::Continue)   => continue,
-        Err(_)                     => {
-          is_error = true;
-
-          break;
-        }
+    let is_error = many_metadata(&mut producer, |block| {
+      if let metadata::Data::StreamInfo(info) = block.data {
+        stream_info = info;
+      } else {
+        metadata.push(block);
       }
-    }
+    });
 
     if !is_error {
       Ok(Stream {
