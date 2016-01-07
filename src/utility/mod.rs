@@ -7,6 +7,7 @@ pub use self::crc::{crc8, crc16};
 pub use self::types::{ErrorKind, ByteStream, ReadStream};
 
 use nom::IResult;
+use metadata::{Metadata, metadata_parser};
 
 /// An interface for parsing through some type of producer to a byte stream.
 ///
@@ -56,6 +57,35 @@ fn parser<'a>(input: &'a [u8], is_start: &mut bool)
   }
 
   metadata_parser(slice)
+}
+
+pub fn many_metadata<S, F>(stream: &mut S, mut f: F) -> bool
+ where S: StreamProducer,
+       F: FnMut(Metadata) {
+  let mut is_start = true;
+  let mut is_error = false;
+
+  loop {
+    match stream.parse(|i| parser(i, &mut is_start)) {
+      Ok(block)                => {
+        let is_last = block.is_last;
+
+        f(block);
+
+        if is_last {
+          break;
+        }
+      }
+      Err(ErrorKind::Continue) => continue,
+      Err(_)                   => {
+        is_error = true;
+
+        break;
+      }
+    }
+  }
+
+  is_error
 }
 
 #[cfg(test)]
