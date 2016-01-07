@@ -6,7 +6,9 @@ use subframe;
 
 use metadata::{Metadata, StreamInfo, metadata_parser};
 use frame::frame_parser;
-use utility::{ErrorKind, ByteStream, ReadStream, StreamProducer};
+use utility::{
+  ErrorKind, ByteStream, ReadStream, StreamProducer, many_metadata,
+};
 
 use std::io;
 use std::usize;
@@ -82,35 +84,16 @@ impl<P> Stream<P> where P: StreamProducer {
 
   fn from_stream_producer(mut producer: P, error_str: &str)
                           -> io::Result<Self> {
-    let mut is_start    = true;
-    let mut is_error    = false;
     let mut stream_info = StreamInfo::new();
     let mut metadata    = Vec::new();
 
-    loop {
-      match producer.parse(|i| parser(i, &mut is_start)) {
-        Ok(block)                  => {
-          let is_last = block.is_last;
-
-          if let metadata::Data::StreamInfo(info) = block.data {
-            stream_info = info;
-          } else {
-            metadata.push(block);
-          }
-
-          if is_last {
-            break;
-          }
-        }
-        Err(ErrorKind::EndOfInput) => break,
-        Err(ErrorKind::Continue)   => continue,
-        Err(_)                     => {
-          is_error = true;
-
-          break;
-        }
+    let is_error = many_metadata(&mut producer, |block| {
+      if let metadata::Data::StreamInfo(info) = block.data {
+        stream_info = info;
+      } else {
+        metadata.push(block);
       }
-    }
+    });
 
     if !is_error {
       Ok(Stream {
