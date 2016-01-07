@@ -44,6 +44,20 @@ pub fn extend_sign(value: u32, bit_count: usize) -> i32 {
   }
 }
 
+fn parser<'a>(input: &'a [u8], is_start: &mut bool)
+              -> IResult<&'a [u8], Metadata> {
+  let mut slice = input;
+
+  if *is_start {
+    let (i, _) = try_parse!(slice, tag!("fLaC"));
+
+    slice     = i;
+    *is_start = false;
+  }
+
+  metadata_parser(slice)
+}
+
 #[cfg(test)]
 mod tests {
   use super::*;
