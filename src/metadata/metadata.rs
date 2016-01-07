@@ -10,7 +10,6 @@ use metadata::{
   StreamInfo, CueSheet, VorbisComment, Picture,
   PictureType,
 };
-use metadata::types::Consumer;
 
 // Will return true when the unwrapped value of `option` and `other` match
 // or `option` is `Option::None`, otherwise false.
