@@ -11,7 +11,6 @@ use super::StreamProducer;
 pub enum ErrorKind {
   IO(io::Error),
   Incomplete(usize),
-  Consumed(usize),
   Continue,
   EndOfInput,
   Unknown,
@@ -67,17 +66,7 @@ impl<'a> StreamProducer for ByteStream<'a> {
 
         Err(ErrorKind::Incomplete(needed))
       }
-      IResult::Error(e)      => {
-        if let Err::Position(_, i) = e {
-          let consumed = self.len() - i.len();
-
-          self.offset += consumed;
-
-          Err(ErrorKind::Consumed(consumed))
-        } else {
-          Err(ErrorKind::Unknown)
-        }
-      }
+      IResult::Error(_)      => Err(ErrorKind::Unknown),
     }
   }
 }
@@ -287,18 +276,12 @@ impl<R> StreamProducer for ReadStream<R> where R: Read {
         Ok(o)
       }
       Err(kind)         => {
-        match kind {
-          ErrorKind::Incomplete(needed) => {
-            self.needed = needed;
+        if let ErrorKind::Incomplete(needed) = kind {
+          self.needed = needed;
 
-            Err(ErrorKind::Continue)
-          }
-          ErrorKind::Consumed(consumed) => {
-            buffer.consume(consumed);
-
-            Err(ErrorKind::Continue)
-          }
-          _                             => Err(kind),
+          Err(ErrorKind::Continue)
+        } else {
+          Err(kind)
         }
       }
     }
