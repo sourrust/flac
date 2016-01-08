@@ -11,7 +11,6 @@ use super::StreamProducer;
 pub enum ErrorKind {
   IO(io::Error),
   Incomplete(usize),
-  Consumed(usize),
   Continue,
   EndOfInput,
   Unknown,
