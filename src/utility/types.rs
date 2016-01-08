@@ -277,18 +277,12 @@ impl<R> StreamProducer for ReadStream<R> where R: Read {
         Ok(o)
       }
       Err(kind)         => {
-        match kind {
-          ErrorKind::Incomplete(needed) => {
-            self.needed = needed;
+        if let ErrorKind::Incomplete(needed) = kind {
+          self.needed = needed;
 
-            Err(ErrorKind::Continue)
-          }
-          ErrorKind::Consumed(consumed) => {
-            buffer.consume(consumed);
-
-            Err(ErrorKind::Continue)
-          }
-          _                             => Err(kind),
+          Err(ErrorKind::Continue)
+        } else {
+          Err(kind)
         }
       }
     }
