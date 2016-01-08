@@ -67,17 +67,7 @@ impl<'a> StreamProducer for ByteStream<'a> {
 
         Err(ErrorKind::Incomplete(needed))
       }
-      IResult::Error(e)      => {
-        if let Err::Position(_, i) = e {
-          let consumed = self.len() - i.len();
-
-          self.offset += consumed;
-
-          Err(ErrorKind::Consumed(consumed))
-        } else {
-          Err(ErrorKind::Unknown)
-        }
-      }
+      IResult::Error(_)      => Err(ErrorKind::Unknown),
     }
   }
 }
