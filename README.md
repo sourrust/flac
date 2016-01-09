@@ -9,13 +9,13 @@ Rust.
 
 ## Install
 
-flac is not on crates.io at the moment, but you can include it in your
-Cargo file like so:
+flac is on [crates.io][crates] and can be included in your Cargo file
+like so:
 
 ```toml
-[dependencies.flac]
+[dependencies]
 
-git = "https://github.com/sourrust/flac.git"
+flac = "^0.1.0"
 ```
 
 Followed by including it in you code:
@@ -61,3 +61,4 @@ The status of this FLAC implementation:
 
 [flac]: https://xiph.org/flac
 [documentation]: https://sourrust.github.io/flac
+[crates]: https://crates.io/crates/flac/
