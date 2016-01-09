@@ -8,6 +8,7 @@ authors       = ["Jeremy Hull <sourdrums@gmail.com>"]
 readme        = "README.md"
 documentation = "https://sourrust.github.io/flac"
 repository    = "https://github.com/sourrust/flac"
+keywords      = ["audio", "codec", "flac"]
 
 [dependencies]
 
