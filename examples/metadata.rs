@@ -23,7 +23,14 @@ struct Arguments {
 }
 
 fn print_stream_info<P: StreamProducer>(stream: &Stream<P>) {
-  let info = stream.info();
+  let info    = stream.info();
+  let mut md5 = String::with_capacity(32);
+
+  for byte in &info.md5_sum {
+    let hex = format!("{:02x}", byte);
+
+    md5.push_str(&hex);
+  }
 
   println!("StreamInfo
   Minimum block size: {}
@@ -34,11 +41,11 @@ fn print_stream_info<P: StreamProducer>(stream: &Stream<P>) {
   Number of channels: {}
   Bits per sample: {}
   Total samples: {}
-  MD5 sum: {:?}",
+  MD5 sum: {}",
   info.min_block_size, info.max_block_size,
   info.min_frame_size, info.max_frame_size,
-  info.sample_rate, info.channels, info.bits_per_sample, info.total_samples,
-  info.md5_sum);
+  info.sample_rate, info.channels, info.bits_per_sample,
+  info.total_samples, md5);
 }
 
 fn main() {
