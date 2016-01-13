@@ -9,17 +9,31 @@ use std::env;
 use std::fs::File;
 
 const USAGE: &'static str = "
-Usage: metadata streaminfo <input>
+Usage: metadata streaminfo [options] <input>
        metadata --help
 
 Options:
-  -h, --help   Show this message.
+  --block-size       Show both the max and min block size from StreamInfo.
+  --frame-size       Show both the max and min frame size from StreamInfo.
+  --sample-rate      Show the sample rate from StreamInfo.
+  --channels         Show the number of channels from StreamInfo.
+  --bits-per-sample  Show the size in bits for each sample from StreamInfo.
+  --total-samples    Show total number of samples from StreamInfo.
+  --md5              Show the MD5 signature from StreamInfo.
+  -h, --help         Show this message.
 ";
 
 #[derive(Debug, RustcDecodable)]
 struct Arguments {
   arg_input: String,
   cmd_streaminfo: bool,
+  flag_block_size: bool,
+  flag_frame_size: bool,
+  flag_sample_rate: bool,
+  flag_channels: bool,
+  flag_bits_per_sample: bool,
+  flag_total_samples: bool,
+  flag_md5: bool,
 }
 
 fn print_stream_info<P: StreamProducer>(stream: &Stream<P>) {
