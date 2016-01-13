@@ -36,30 +36,51 @@ struct Arguments {
   flag_md5: bool,
 }
 
-fn print_stream_info<P: StreamProducer>(stream: &Stream<P>) {
-  let info    = stream.info();
-  let mut md5 = String::with_capacity(32);
+fn print_stream_info<P>(stream: &Stream<P>, args: &Arguments)
+ where P: StreamProducer {
+  let info     = stream.info();
+  let no_flags = (args.flag_block_size      || args.flag_frame_size    ||
+                  args.flag_sample_rate     || args.flag_channels      ||
+                  args.flag_bits_per_sample || args.flag_total_samples ||
+                  args.flag_md5) == false;
 
-  for byte in &info.md5_sum {
-    let hex = format!("{:02x}", byte);
-
-    md5.push_str(&hex);
+  if no_flags || args.flag_block_size {
+    println!("Minimum block size: {} samples", info.min_block_size);
+    println!("Maximum block size: {} samples", info.max_block_size);
   }
 
-  println!("StreamInfo
-  Minimum block size: {} samples
-  Maximum block size: {} samples
-  Minimum frame size: {} bytes
-  Maximum frame size: {} bytes
-  Sample rate: {} Hz
-  Number of channels: {}
-  Bits per sample: {}
-  Total samples: {}
-  MD5 sum: {}",
-  info.min_block_size, info.max_block_size,
-  info.min_frame_size, info.max_frame_size,
-  info.sample_rate, info.channels, info.bits_per_sample,
-  info.total_samples, md5);
+  if no_flags || args.flag_frame_size {
+    println!("Minimum frame size: {} bytes", info.min_frame_size);
+    println!("Maximum frame size: {} bytes", info.max_frame_size);
+  }
+
+  if no_flags || args.flag_sample_rate {
+    println!("Sample rate: {} Hz", info.sample_rate);
+  }
+
+  if no_flags || args.flag_channels {
+    println!("Number of channels: {}", info.channels);
+  }
+
+  if no_flags || args.flag_bits_per_sample {
+    println!("Bits per sample: {}", info.bits_per_sample);
+  }
+
+  if no_flags || args.flag_total_samples {
+    println!("Total samples: {}", info.total_samples);
+  }
+
+  if no_flags || args.flag_md5 {
+    let mut md5  = String::with_capacity(32);
+
+    for byte in &info.md5_sum {
+      let hex = format!("{:02x}", byte);
+
+      md5.push_str(&hex);
+    }
+
+    println!("MD5 sum: {}", md5);
+  }
 }
 
 fn main() {
@@ -71,6 +92,6 @@ fn main() {
                  .expect("Couldn't parse file");
 
   if args.cmd_streaminfo {
-    print_stream_info(&stream);
+    print_stream_info(&stream, &args);
   }
 }
