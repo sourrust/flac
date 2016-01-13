@@ -35,7 +35,7 @@ fn print_stream_info<P: StreamProducer>(stream: &Stream<P>) {
   println!("StreamInfo
   Minimum block size: {}
   Maximum block size: {}
-  Maximum frame size: {}
+  Minimum frame size: {}
   Maximum frame size: {}
   Sample rate: {} Hz
   Number of channels: {}
