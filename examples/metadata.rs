@@ -4,6 +4,7 @@ extern crate rustc_serialize;
 
 use docopt::Docopt;
 use flac::{ReadStream, Stream, StreamProducer};
+use flac::metadata;
 use flac::metadata::VorbisComment;
 
 use std::env;
@@ -109,5 +110,16 @@ fn main() {
 
   if args.cmd_streaminfo {
     print_stream_info(&stream, &args);
+  }
+
+  for meta in stream.metadata() {
+    match meta.data {
+      metadata::Data::VorbisComment(ref v) => {
+        if args.cmd_comments {
+          print_vorbis_comments(v)
+        }
+      }
+      _                                    => continue,
+    }
   }
 }
