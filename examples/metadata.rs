@@ -4,12 +4,15 @@ extern crate rustc_serialize;
 
 use docopt::Docopt;
 use flac::{ReadStream, Stream, StreamProducer};
+use flac::metadata;
+use flac::metadata::VorbisComment;
 
 use std::env;
 use std::fs::File;
 
 const USAGE: &'static str = "
 Usage: metadata streaminfo [options] <input>
+       metadata comments <input>
        metadata --help
 
 Options:
@@ -27,6 +30,7 @@ Options:
 struct Arguments {
   arg_input: String,
   cmd_streaminfo: bool,
+  cmd_comments: bool,
   flag_block_size: bool,
   flag_frame_size: bool,
   flag_sample_rate: bool,
@@ -83,6 +87,19 @@ fn print_stream_info<P>(stream: &Stream<P>, args: &Arguments)
   }
 }
 
+fn print_vorbis_comments(vorbis_comment: &VorbisComment) {
+  let mut index = 1;
+
+  println!("Vendor String: {}", vorbis_comment.vendor_string);
+  println!("Number of Comments: {}", vorbis_comment.comments.len());
+
+  for comment in &vorbis_comment.comments {
+    println!("  {}: \"{}\" = {}", index, comment.0, comment.1);
+
+    index += 1;
+  }
+}
+
 fn main() {
   let args: Arguments = Docopt::new(USAGE)
     .and_then(|d| d.argv(env::args()).decode())
@@ -93,5 +110,16 @@ fn main() {
 
   if args.cmd_streaminfo {
     print_stream_info(&stream, &args);
+  }
+
+  for meta in stream.metadata() {
+    match meta.data {
+      metadata::Data::VorbisComment(ref v) => {
+        if args.cmd_comments {
+          print_vorbis_comments(v)
+        }
+      }
+      _                                    => continue,
+    }
   }
 }
