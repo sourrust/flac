@@ -10,6 +10,7 @@ use std::fs::File;
 
 const USAGE: &'static str = "
 Usage: metadata streaminfo [options] <input>
+       metadata comments <input>
        metadata --help
 
 Options:
@@ -27,6 +28,7 @@ Options:
 struct Arguments {
   arg_input: String,
   cmd_streaminfo: bool,
+  cmd_comments: bool,
   flag_block_size: bool,
   flag_frame_size: bool,
   flag_sample_rate: bool,
