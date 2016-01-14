@@ -4,6 +4,7 @@ extern crate rustc_serialize;
 
 use docopt::Docopt;
 use flac::{ReadStream, Stream, StreamProducer};
+use flac::metadata::VorbisComment;
 
 use std::env;
 use std::fs::File;
@@ -82,6 +83,19 @@ fn print_stream_info<P>(stream: &Stream<P>, args: &Arguments)
     }
 
     println!("MD5 sum: {}", md5);
+  }
+}
+
+fn print_vorbis_comments(vorbis_comment: &VorbisComment) {
+  let mut index = 1;
+
+  println!("Vendor String: {}", vorbis_comment.vendor_string);
+  println!("Number of Comments: {}", vorbis_comment.comments.len());
+
+  for comment in &vorbis_comment.comments {
+    println!("  {}: \"{}\" = {}", index, comment.0, comment.1);
+
+    index += 1;
   }
 }
 
