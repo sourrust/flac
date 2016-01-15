@@ -12,7 +12,7 @@ use std::fs::File;
 
 const USAGE: &'static str = "
 Usage: metadata streaminfo [options] <input>
-       metadata comments <input>
+       metadata comments [options] <input>
        metadata --help
 
 Options:
@@ -23,6 +23,8 @@ Options:
   --bits-per-sample  Show the size in bits for each sample from StreamInfo.
   --total-samples    Show total number of samples from StreamInfo.
   --md5              Show the MD5 signature from StreamInfo.
+  --vendor           Show the vendor string from VorbisComment.
+  --name=NAME        Show the comments matching the `NAME` from VorbisComment.
   -h, --help         Show this message.
 ";
 
