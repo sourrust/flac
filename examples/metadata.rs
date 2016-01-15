@@ -134,7 +134,7 @@ fn main() {
     match meta.data {
       metadata::Data::VorbisComment(ref v) => {
         if args.cmd_comments {
-          print_vorbis_comments(v)
+          print_vorbis_comments(v, &args)
         }
       }
       _                                    => continue,
