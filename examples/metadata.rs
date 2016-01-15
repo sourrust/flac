@@ -12,7 +12,7 @@ use std::fs::File;
 
 const USAGE: &'static str = "
 Usage: metadata streaminfo [options] <input>
-       metadata comments <input>
+       metadata comments [options] <input>
        metadata --help
 
 Options:
@@ -23,6 +23,8 @@ Options:
   --bits-per-sample  Show the size in bits for each sample from StreamInfo.
   --total-samples    Show total number of samples from StreamInfo.
   --md5              Show the MD5 signature from StreamInfo.
+  --vendor           Show the vendor string from VorbisComment.
+  --name=NAME        Show the comments matching the `NAME` from VorbisComment.
   -h, --help         Show this message.
 ";
 
@@ -38,6 +40,8 @@ struct Arguments {
   flag_bits_per_sample: bool,
   flag_total_samples: bool,
   flag_md5: bool,
+  flag_vendor: bool,
+  flag_name: Option<String>,
 }
 
 fn print_stream_info<P>(stream: &Stream<P>, args: &Arguments)
@@ -87,14 +91,28 @@ fn print_stream_info<P>(stream: &Stream<P>, args: &Arguments)
   }
 }
 
-fn print_vorbis_comments(vorbis_comment: &VorbisComment) {
+fn print_vorbis_comments(vorbis_comment: &VorbisComment, args: &Arguments) {
   let mut index = 1;
+  let no_flags  = (args.flag_vendor || args.flag_name.is_some()) == false;
 
-  println!("Vendor String: {}", vorbis_comment.vendor_string);
-  println!("Number of Comments: {}", vorbis_comment.comments.len());
+  if no_flags || args.flag_vendor {
+    println!("Vendor String: {}", vorbis_comment.vendor_string);
+  }
+
+  if no_flags {
+    println!("Number of Comments: {}", vorbis_comment.comments.len());
+  }
 
   for comment in &vorbis_comment.comments {
-    println!("  {}: \"{}\" = {}", index, comment.0, comment.1);
+    let is_name = if let Some(ref name) = args.flag_name {
+      name == comment.0
+    } else {
+      false
+    };
+
+    if no_flags || is_name {
+      println!("  {}: \"{}\" = {}", index, comment.0, comment.1);
+    }
 
     index += 1;
   }
@@ -116,7 +134,7 @@ fn main() {
     match meta.data {
       metadata::Data::VorbisComment(ref v) => {
         if args.cmd_comments {
-          print_vorbis_comments(v)
+          print_vorbis_comments(v, &args)
         }
       }
       _                                    => continue,
