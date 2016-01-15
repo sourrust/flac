@@ -40,6 +40,8 @@ struct Arguments {
   flag_bits_per_sample: bool,
   flag_total_samples: bool,
   flag_md5: bool,
+  flag_vendor: bool,
+  flag_name: Option<String>,
 }
 
 fn print_stream_info<P>(stream: &Stream<P>, args: &Arguments)
