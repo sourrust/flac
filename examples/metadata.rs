@@ -105,7 +105,6 @@ fn print_stream_info<P>(stream: &Stream<P>, args: &Arguments)
 }
 
 fn print_vorbis_comments(vorbis_comment: &VorbisComment, args: &Arguments) {
-  let mut index = 1;
   let no_flags  = (args.flag_vendor || args.flag_name.is_some()) == false;
 
   if no_flags || args.flag_vendor {
@@ -114,21 +113,20 @@ fn print_vorbis_comments(vorbis_comment: &VorbisComment, args: &Arguments) {
   }
 
   if no_flags {
+    let mut index = 1;
+
     println!("Number of Comments: {}", vorbis_comment.comments.len());
-  }
 
-  for comment in &vorbis_comment.comments {
-    let is_name = if let Some(ref name) = args.flag_name {
-      name == comment.0
-    } else {
-      false
-    };
+    for (name, value) in &vorbis_comment.comments {
+      println!("  {}: \"{}\" = {}", index, name, value);
 
-    if no_flags || is_name {
-      println!("  {}: \"{}\" = {}", index, comment.0, comment.1);
+      index += 1;
     }
-
-    index += 1;
+  } else {
+    if let Some(ref name) = args.flag_name {
+      vorbis_comment.comments.get(name)
+                             .map(|value| println!("{}", value));
+    }
   }
 }
 
