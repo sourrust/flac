@@ -75,19 +75,20 @@ fn print_stream_info<P>(stream: &Stream<P>, args: &Arguments)
   }
 
   if no_flags || args.flag_sample_rate {
-    println!("Sample rate: {} Hz", info.sample_rate);
+    format_print!("{}{} Hz", "Sample rate: ", info.sample_rate, no_flags);
   }
 
   if no_flags || args.flag_channels {
-    println!("Number of channels: {}", info.channels);
+    format_print!("{}{}", "Number of channels: ", info.channels, no_flags);
   }
 
   if no_flags || args.flag_bits_per_sample {
-    println!("Bits per sample: {}", info.bits_per_sample);
+    format_print!("{}{}", "Bits per samples: ", info.bits_per_sample,
+                                                no_flags);
   }
 
   if no_flags || args.flag_total_samples {
-    println!("Total samples: {}", info.total_samples);
+    format_print!("{}{}", "Total samples: ", info.total_samples, no_flags);
   }
 
   if no_flags || args.flag_md5 {
@@ -99,7 +100,7 @@ fn print_stream_info<P>(stream: &Stream<P>, args: &Arguments)
       md5.push_str(&hex);
     }
 
-    println!("MD5 sum: {}", md5);
+    format_print!("{}{}", "MD5 sum: ", md5, no_flags);
   }
 }
 
