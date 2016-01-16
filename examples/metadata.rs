@@ -109,7 +109,8 @@ fn print_vorbis_comments(vorbis_comment: &VorbisComment, args: &Arguments) {
   let no_flags  = (args.flag_vendor || args.flag_name.is_some()) == false;
 
   if no_flags || args.flag_vendor {
-    println!("Vendor String: {}", vorbis_comment.vendor_string);
+    format_print!("{}{}", "Vendor string: ", vorbis_comment.vendor_string,
+                                             no_flags);
   }
 
   if no_flags {
