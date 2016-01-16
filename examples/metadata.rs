@@ -44,6 +44,18 @@ struct Arguments {
   flag_name: Option<String>,
 }
 
+macro_rules! format_print (
+  ($format_str: expr, $opt_str: expr, $data: expr, $no_flag: expr) => (
+    {
+      println!($format_str, if $no_flag {
+        $opt_str
+      } else {
+        ""
+      }, $data);
+    }
+  );
+);
+
 fn print_stream_info<P>(stream: &Stream<P>, args: &Arguments)
  where P: StreamProducer {
   let info     = stream.info();
@@ -63,19 +75,20 @@ fn print_stream_info<P>(stream: &Stream<P>, args: &Arguments)
   }
 
   if no_flags || args.flag_sample_rate {
-    println!("Sample rate: {} Hz", info.sample_rate);
+    format_print!("{}{} Hz", "Sample rate: ", info.sample_rate, no_flags);
   }
 
   if no_flags || args.flag_channels {
-    println!("Number of channels: {}", info.channels);
+    format_print!("{}{}", "Number of channels: ", info.channels, no_flags);
   }
 
   if no_flags || args.flag_bits_per_sample {
-    println!("Bits per sample: {}", info.bits_per_sample);
+    format_print!("{}{}", "Bits per samples: ", info.bits_per_sample,
+                                                no_flags);
   }
 
   if no_flags || args.flag_total_samples {
-    println!("Total samples: {}", info.total_samples);
+    format_print!("{}{}", "Total samples: ", info.total_samples, no_flags);
   }
 
   if no_flags || args.flag_md5 {
@@ -87,34 +100,33 @@ fn print_stream_info<P>(stream: &Stream<P>, args: &Arguments)
       md5.push_str(&hex);
     }
 
-    println!("MD5 sum: {}", md5);
+    format_print!("{}{}", "MD5 sum: ", md5, no_flags);
   }
 }
 
 fn print_vorbis_comments(vorbis_comment: &VorbisComment, args: &Arguments) {
-  let mut index = 1;
   let no_flags  = (args.flag_vendor || args.flag_name.is_some()) == false;
 
   if no_flags || args.flag_vendor {
-    println!("Vendor String: {}", vorbis_comment.vendor_string);
+    format_print!("{}{}", "Vendor string: ", vorbis_comment.vendor_string,
+                                             no_flags);
   }
 
   if no_flags {
+    let mut index = 1;
+
     println!("Number of Comments: {}", vorbis_comment.comments.len());
-  }
 
-  for comment in &vorbis_comment.comments {
-    let is_name = if let Some(ref name) = args.flag_name {
-      name == comment.0
-    } else {
-      false
-    };
+    for (name, value) in &vorbis_comment.comments {
+      println!("  {}: \"{}\" = {}", index, name, value);
 
-    if no_flags || is_name {
-      println!("  {}: \"{}\" = {}", index, comment.0, comment.1);
+      index += 1;
     }
-
-    index += 1;
+  } else {
+    if let Some(ref name) = args.flag_name {
+      vorbis_comment.comments.get(name)
+                             .map(|value| println!("{}", value));
+    }
   }
 }
 
