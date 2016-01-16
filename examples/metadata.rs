@@ -44,6 +44,18 @@ struct Arguments {
   flag_name: Option<String>,
 }
 
+macro_rules! format_print (
+  ($format_str: expr, $opt_str: expr, $data: expr, $no_flag: expr) => (
+    {
+      println!($format_str, if $no_flag {
+        $opt_str
+      } else {
+        ""
+      }, $data);
+    }
+  );
+);
+
 fn print_stream_info<P>(stream: &Stream<P>, args: &Arguments)
  where P: StreamProducer {
   let info     = stream.info();
