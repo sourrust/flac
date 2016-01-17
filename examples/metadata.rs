@@ -11,8 +11,8 @@ use std::env;
 use std::fs::File;
 
 const USAGE: &'static str = "
-Usage: metadata streaminfo [options] <input>
-       metadata comments [options] <input>
+Usage: metadata streaminfo [options] <filename>
+       metadata comments [options] <filename>
        metadata --help
 
 Options:
