@@ -30,7 +30,7 @@ Options:
 
 #[derive(Debug, RustcDecodable)]
 struct Arguments {
-  arg_input: String,
+  arg_filename: String,
   cmd_streaminfo: bool,
   cmd_comments: bool,
   flag_block_size: bool,
@@ -135,7 +135,7 @@ fn main() {
     .and_then(|d| d.argv(env::args()).decode())
     .unwrap_or_else(|e| e.exit());
 
-  let stream = Stream::<ReadStream<File>>::from_file(&args.arg_input)
+  let stream = Stream::<ReadStream<File>>::from_file(&args.arg_filename)
                  .expect("Couldn't parse file");
 
   if args.cmd_streaminfo {
