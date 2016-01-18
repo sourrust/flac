@@ -5,7 +5,7 @@ extern crate rustc_serialize;
 use docopt::Docopt;
 use flac::{ReadStream, Stream, StreamProducer};
 use flac::metadata;
-use flac::metadata::VorbisComment;
+use flac::metadata::{SeekPoint, VorbisComment};
 
 use std::env;
 use std::fs::File;
@@ -13,6 +13,7 @@ use std::fs::File;
 const USAGE: &'static str = "
 Usage: metadata streaminfo [options] <filename>
        metadata comments [options] <filename>
+       metadata seektable <filename>
        metadata --help
 
 Options:
@@ -33,6 +34,7 @@ struct Arguments {
   arg_filename: String,
   cmd_streaminfo: bool,
   cmd_comments: bool,
+  cmd_seektable: bool,
   flag_block_size: bool,
   flag_frame_size: bool,
   flag_sample_rate: bool,
@@ -130,6 +132,20 @@ fn print_vorbis_comments(vorbis_comment: &VorbisComment, args: &Arguments) {
   }
 }
 
+fn print_seek_table(seek_points: &[SeekPoint]) {
+  let mut count = 0;
+
+  println!("Number of Seek Points: {}", seek_points.len());
+
+  for seek_point in seek_points {
+    println!("Seek Point #{}", count);
+    println!("  Sample number: {}", seek_point.sample_number);
+    println!("  Stream offset: {}", seek_point.stream_offset);
+    println!("  Frame samples: {}", seek_point.frame_samples);
+    count += 1;
+  }
+}
+
 fn main() {
   let args: Arguments = Docopt::new(USAGE)
     .and_then(|d| d.argv(env::args()).decode())
@@ -147,6 +163,11 @@ fn main() {
       metadata::Data::VorbisComment(ref v) => {
         if args.cmd_comments {
           print_vorbis_comments(v, &args)
+        }
+      }
+      metadata::Data::SeekTable(ref s)     => {
+        if args.cmd_seektable {
+          print_seek_table(s);
         }
       }
       _                                    => continue,
