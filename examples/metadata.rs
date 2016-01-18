@@ -165,6 +165,11 @@ fn main() {
           print_vorbis_comments(v, &args)
         }
       }
+      metadata::Data::SeekTable(ref s)     => {
+        if args.cmd_seektable {
+          print_seek_table(s);
+        }
+      }
       _                                    => continue,
     }
   }
