@@ -5,7 +5,7 @@ extern crate rustc_serialize;
 use docopt::Docopt;
 use flac::{ReadStream, Stream, StreamProducer};
 use flac::metadata;
-use flac::metadata::VorbisComment;
+use flac::metadata::{SeekPoint, VorbisComment};
 
 use std::env;
 use std::fs::File;
@@ -129,6 +129,20 @@ fn print_vorbis_comments(vorbis_comment: &VorbisComment, args: &Arguments) {
       vorbis_comment.comments.get(name)
                              .map(|value| println!("{}", value));
     }
+  }
+}
+
+fn print_seek_table(seek_points: &[SeekPoint]) {
+  let mut count = 0;
+
+  println!("Number of Seek Points: {}", seek_points.len());
+
+  for seek_point in seek_points {
+    println!("Seek Point #{}", count);
+    println!("  Sample number: {}", seek_point.sample_number);
+    println!("  Stream offset: {}", seek_point.stream_offset);
+    println!("  Frame samples: {}", seek_point.frame_samples);
+    count += 1;
   }
 }
 
