@@ -236,7 +236,7 @@ fn from_iresult<T>(buffer: &Buffer, result: IResult<&[u8], T>)
   match result {
     IResult::Done(i, o)    => Ok((buffer.len() - i.len(), o)),
     IResult::Incomplete(n) => {
-      let mut needed = buffer.capacity();
+      let mut needed = buffer.capacity() + 1024;
 
       if let Needed::Size(size) = n {
         needed = size;
