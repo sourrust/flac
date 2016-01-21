@@ -26,6 +26,7 @@ Options:
   --md5              Show the MD5 signature from StreamInfo.
   --vendor           Show the vendor string from VorbisComment.
   --name=NAME        Show the comments matching the `NAME` from VorbisComment.
+  --export=FILE      Export VorbisComment to file.
   -h, --help         Show this message.
 ";
 
@@ -44,6 +45,7 @@ struct Arguments {
   flag_md5: bool,
   flag_vendor: bool,
   flag_name: Option<String>,
+  flag_export: Option<String>,
 }
 
 macro_rules! format_print (
