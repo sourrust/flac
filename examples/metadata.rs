@@ -177,7 +177,12 @@ fn main() {
     match meta.data {
       metadata::Data::VorbisComment(ref v) => {
         if args.cmd_comments {
-          print_vorbis_comments(v, &args)
+          if let Some(ref filename) = args.flag_export {
+            export_vorbis_comments(v, filename)
+              .expect("couldn't write to file")
+          } else {
+            print_vorbis_comments(v, &args)
+          }
         }
       }
       metadata::Data::SeekTable(ref s)     => {
