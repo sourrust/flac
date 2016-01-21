@@ -8,6 +8,8 @@ use flac::metadata;
 use flac::metadata::{SeekPoint, VorbisComment};
 
 use std::env;
+use std::io;
+use std::io::Write;
 use std::fs::File;
 
 const USAGE: &'static str = "
@@ -132,6 +134,17 @@ fn print_vorbis_comments(vorbis_comment: &VorbisComment, args: &Arguments) {
                              .map(|value| println!("{}", value));
     }
   }
+}
+
+fn export_vorbis_comments(vorbis_comment: &VorbisComment, filename: &str)
+                          -> io::Result<()> {
+  let mut file  = try!(File::create(filename));
+
+  for (name, value) in &vorbis_comment.comments {
+    try!(write!(file, "{}={}\n", name, value));
+  }
+
+  Ok(())
 }
 
 fn print_seek_table(seek_points: &[SeekPoint]) {
