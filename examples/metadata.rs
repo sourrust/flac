@@ -8,6 +8,8 @@ use flac::metadata;
 use flac::metadata::{SeekPoint, VorbisComment};
 
 use std::env;
+use std::io;
+use std::io::Write;
 use std::fs::File;
 
 const USAGE: &'static str = "
@@ -26,6 +28,7 @@ Options:
   --md5              Show the MD5 signature from StreamInfo.
   --vendor           Show the vendor string from VorbisComment.
   --name=NAME        Show the comments matching the `NAME` from VorbisComment.
+  --export=FILE      Export VorbisComment to file.
   -h, --help         Show this message.
 ";
 
@@ -44,6 +47,7 @@ struct Arguments {
   flag_md5: bool,
   flag_vendor: bool,
   flag_name: Option<String>,
+  flag_export: Option<String>,
 }
 
 macro_rules! format_print (
@@ -132,6 +136,17 @@ fn print_vorbis_comments(vorbis_comment: &VorbisComment, args: &Arguments) {
   }
 }
 
+fn export_vorbis_comments(vorbis_comment: &VorbisComment, filename: &str)
+                          -> io::Result<()> {
+  let mut file  = try!(File::create(filename));
+
+  for (name, value) in &vorbis_comment.comments {
+    try!(write!(file, "{}={}\n", name, value));
+  }
+
+  Ok(())
+}
+
 fn print_seek_table(seek_points: &[SeekPoint]) {
   let mut count = 0;
 
@@ -162,7 +177,12 @@ fn main() {
     match meta.data {
       metadata::Data::VorbisComment(ref v) => {
         if args.cmd_comments {
-          print_vorbis_comments(v, &args)
+          if let Some(ref filename) = args.flag_export {
+            export_vorbis_comments(v, filename)
+              .expect("couldn't write to file")
+          } else {
+            print_vorbis_comments(v, &args)
+          }
         }
       }
       metadata::Data::SeekTable(ref s)     => {
