@@ -4,11 +4,8 @@ use nom::{
   Needed,
 };
 
-use frame;
-use subframe;
-
-use frame::ChannelAssignment;
-use subframe::{Subframe, CodingMethod, PartitionedRiceContents};
+use frame::{self, ChannelAssignment};
+use subframe::{self, Subframe, CodingMethod, PartitionedRiceContents};
 
 // Parser used to parse unary notation. Naming the parser `leading_zeros`
 // was something that felt more clear in the code. It actually tells the
