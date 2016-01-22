@@ -4,12 +4,10 @@ extern crate rustc_serialize;
 
 use docopt::Docopt;
 use flac::{ReadStream, Stream, StreamProducer};
-use flac::metadata;
-use flac::metadata::{SeekPoint, VorbisComment};
+use flac::metadata::{self, SeekPoint, VorbisComment};
 
 use std::env;
-use std::io;
-use std::io::Write;
+use std::io::{self, Write};
 use std::fs::File;
 
 const USAGE: &'static str = "
