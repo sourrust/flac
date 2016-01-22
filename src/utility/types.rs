@@ -1,7 +1,6 @@
 use nom::{Err, IResult, Needed};
 
-use std::io;
-use std::io::Read;
+use std::io::{self, Read};
 use std::ptr;
 use std::cmp;
 
