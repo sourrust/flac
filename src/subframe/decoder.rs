@@ -1,5 +1,4 @@
-use subframe;
-use subframe::{Subframe, MAX_FIXED_ORDER, MAX_LPC_ORDER};
+use subframe::{self, Subframe, MAX_FIXED_ORDER, MAX_LPC_ORDER};
 
 use std::ptr;
 
