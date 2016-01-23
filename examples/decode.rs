@@ -8,7 +8,6 @@ use docopt::Docopt;
 use flac::{Stream, ReadStream};
 
 use std::env;
-use std::error::Error;
 use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};

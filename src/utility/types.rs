@@ -1,4 +1,4 @@
-use nom::{Err, IResult, Needed};
+use nom::{IResult, Needed};
 
 use std::io::{self, Read};
 use std::ptr;
