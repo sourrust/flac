@@ -311,7 +311,7 @@ fn rice_partition(input: (&[u8], usize),
     let result = chain!(mut_input,
       rice_parameter: take_bits!(u32, param_size) ~
       size: cond!(rice_parameter == escape_code, take_bits!(usize, 5)) ~
-      data: apply!(residual_data,
+      apply!(residual_data,
         size, rice_parameter,
         &mut contents.raw_bits[partition],
         &mut residual[start..end]
