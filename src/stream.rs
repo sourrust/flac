@@ -20,7 +20,10 @@ pub struct Stream<P: StreamProducer> {
   output: Vec<i32>,
 }
 
+/// Alias for a FLAC stream produced from `Read`.
 pub type StreamReader<R>  = Stream<ReadStream<R>>;
+
+/// Alias for a FLAC stream produced from a byte stream buffer.
 pub type StreamBuffer<'a> = Stream<ByteStream<'a>>;
 
 impl<P> Stream<P> where P: StreamProducer {
