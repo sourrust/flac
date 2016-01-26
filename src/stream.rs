@@ -20,6 +20,9 @@ pub struct Stream<P: StreamProducer> {
   output: Vec<i32>,
 }
 
+pub type StreamReader<R>  = Stream<ReadStream<R>>;
+pub type StreamBuffer<'a> = Stream<ByteStream<'a>>;
+
 impl<P> Stream<P> where P: StreamProducer {
   /// Constructor for the default state of a FLAC stream.
   #[inline]
