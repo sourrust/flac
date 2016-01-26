@@ -26,7 +26,7 @@ pub type StreamBuffer<'a> = Stream<ByteStream<'a>>;
 impl<P> Stream<P> where P: StreamProducer {
   /// Constructor for the default state of a FLAC stream.
   #[inline]
-  pub fn new<R: io::Read>(reader: R) -> io::Result<Stream<ReadStream<R>>> {
+  pub fn new<R: io::Read>(reader: R) -> io::Result<StreamReader<R>> {
     let producer  = ReadStream::new(reader);
     let error_str = "parser: couldn't parse the reader";
 
@@ -57,7 +57,7 @@ impl<P> Stream<P> where P: StreamProducer {
   /// * `ErrorKind::InvalidData` is returned when the data within the file
   ///   isn't valid FLAC data.
   #[inline]
-  pub fn from_file(filename: &str) -> io::Result<Stream<ReadStream<File>>> {
+  pub fn from_file(filename: &str) -> io::Result<StreamReader<File>> {
     File::open(filename).and_then(|file| {
       let producer  = ReadStream::new(file);
       let error_str = format!("parser: couldn't parse the given file {}",
@@ -76,7 +76,7 @@ impl<P> Stream<P> where P: StreamProducer {
   /// * `ErrorKind::InvalidData` is returned when the data within the buffer
   ///   isn't valid FLAC data.
   #[inline]
-  pub fn from_buffer(buffer: &[u8]) -> io::Result<Stream<ByteStream>> {
+  pub fn from_buffer(buffer: &[u8]) -> io::Result<StreamBuffer> {
     let producer  = ByteStream::new(buffer);
     let error_str = "parser: couldn't parse the buffer";
 
