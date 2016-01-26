@@ -3,6 +3,9 @@
 ### Added
 
 * Example for displaying FLAC metadata
+* Alias for `Stream<P: StreamProducer>`. `StreamReader<R: Read>` for
+  `Stream<ReadStream<R: Read>>` and `StreamBuffer` for
+  `Stream<ByteStream>`
 
 ### Fixed
 
