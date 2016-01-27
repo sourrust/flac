@@ -196,6 +196,15 @@ fn main() {
           print_seek_table(s);
         }
       }
+      metadata::Data::Picture(ref p)       => {
+        if args.cmd_picture {
+          if let Some(ref filename) = args.flag_export {
+            export_picture(p, filename).expect("couldn't write to file");
+
+            break;
+          }
+        }
+      }
       _                                    => continue,
     }
   }
