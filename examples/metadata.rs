@@ -3,13 +3,11 @@ extern crate flac;
 extern crate rustc_serialize;
 
 use docopt::Docopt;
-use flac::{ReadStream, Stream, StreamProducer};
-use flac::metadata;
-use flac::metadata::{Picture, SeekPoint, VorbisComment};
+use flac::{Stream, StreamProducer, StreamReader};
+use flac::metadata::{self, SeekPoint, VorbisComment};
 
 use std::env;
-use std::io;
-use std::io::Write;
+use std::io::{self, Write};
 use std::fs::File;
 
 const USAGE: &'static str = "
@@ -172,7 +170,7 @@ fn main() {
     .and_then(|d| d.argv(env::args()).decode())
     .unwrap_or_else(|e| e.exit());
 
-  let stream = Stream::<ReadStream<File>>::from_file(&args.arg_filename)
+  let stream = StreamReader::<File>::from_file(&args.arg_filename)
                  .expect("Couldn't parse file");
 
   if args.cmd_streaminfo {

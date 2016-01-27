@@ -7,9 +7,8 @@ use nom::{
 
 use std::collections::HashMap;
 
-use metadata;
 use metadata::{
-  Metadata,
+  self, Metadata,
   StreamInfo, Application, VorbisComment, CueSheet, Picture,
   SeekPoint, CueSheetTrack, CueSheetTrackIndex, PictureType,
 };

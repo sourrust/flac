@@ -5,10 +5,9 @@ extern crate nom;
 extern crate rustc_serialize;
 
 use docopt::Docopt;
-use flac::{Stream, ReadStream};
+use flac::StreamReader;
 
 use std::env;
-use std::error::Error;
 use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
@@ -32,7 +31,7 @@ struct Arguments {
 fn decode_file(input_file: &str, output_file: &str)
                -> Result<(), hound::Error> {
   let mut stream = try! {
-    Stream::<ReadStream<fs::File>>::from_file(input_file)
+    StreamReader::<fs::File>::from_file(input_file)
       .map_err(hound::Error::IoError)
   };
 

@@ -1,5 +1,4 @@
-use std::io;
-use std::io::{Error, Result};
+use std::io::{self, Error, Result};
 use std::u32;
 use std::fs::File;
 

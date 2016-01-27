@@ -4,11 +4,8 @@ use nom::{
   Needed,
 };
 
-use frame;
-use subframe;
-
-use frame::ChannelAssignment;
-use subframe::{Subframe, CodingMethod, PartitionedRiceContents};
+use frame::{self, ChannelAssignment};
+use subframe::{self, Subframe, CodingMethod, PartitionedRiceContents};
 
 // Parser used to parse unary notation. Naming the parser `leading_zeros`
 // was something that felt more clear in the code. It actually tells the
@@ -314,7 +311,7 @@ fn rice_partition(input: (&[u8], usize),
     let result = chain!(mut_input,
       rice_parameter: take_bits!(u32, param_size) ~
       size: cond!(rice_parameter == escape_code, take_bits!(usize, 5)) ~
-      data: apply!(residual_data,
+      apply!(residual_data,
         size, rice_parameter,
         &mut contents.raw_bits[partition],
         &mut residual[start..end]
