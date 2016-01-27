@@ -16,6 +16,7 @@ const USAGE: &'static str = "
 Usage: metadata streaminfo [options] <filename>
        metadata comments [options] <filename>
        metadata seektable <filename>
+       metadata picture [options] <filename>
        metadata --help
 
 Options:
@@ -28,7 +29,7 @@ Options:
   --md5              Show the MD5 signature from StreamInfo.
   --vendor           Show the vendor string from VorbisComment.
   --name=NAME        Show the comments matching the `NAME` from VorbisComment.
-  --export=FILE      Export VorbisComment to file.
+  --export=FILE      Export VorbisComment or Picture to file.
   -h, --help         Show this message.
 ";
 
@@ -38,6 +39,7 @@ struct Arguments {
   cmd_streaminfo: bool,
   cmd_comments: bool,
   cmd_seektable: bool,
+  cmd_picture: bool,
   flag_block_size: bool,
   flag_frame_size: bool,
   flag_sample_rate: bool,
