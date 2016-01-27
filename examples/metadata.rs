@@ -14,6 +14,7 @@ const USAGE: &'static str = "
 Usage: metadata streaminfo [options] <filename>
        metadata comments [options] <filename>
        metadata seektable <filename>
+       metadata picture [options] <filename>
        metadata --help
 
 Options:
@@ -26,7 +27,7 @@ Options:
   --md5              Show the MD5 signature from StreamInfo.
   --vendor           Show the vendor string from VorbisComment.
   --name=NAME        Show the comments matching the `NAME` from VorbisComment.
-  --export=FILE      Export VorbisComment to file.
+  --export=FILE      Export VorbisComment or Picture to file.
   -h, --help         Show this message.
 ";
 
@@ -36,6 +37,7 @@ struct Arguments {
   cmd_streaminfo: bool,
   cmd_comments: bool,
   cmd_seektable: bool,
+  cmd_picture: bool,
   flag_block_size: bool,
   flag_frame_size: bool,
   flag_sample_rate: bool,
@@ -136,7 +138,7 @@ fn print_vorbis_comments(vorbis_comment: &VorbisComment, args: &Arguments) {
 
 fn export_vorbis_comments(vorbis_comment: &VorbisComment, filename: &str)
                           -> io::Result<()> {
-  let mut file  = try!(File::create(filename));
+  let mut file = try!(File::create(filename));
 
   for (name, value) in &vorbis_comment.comments {
     try!(write!(file, "{}={}\n", name, value));
@@ -157,6 +159,10 @@ fn print_seek_table(seek_points: &[SeekPoint]) {
     println!("  Frame samples: {}", seek_point.frame_samples);
     count += 1;
   }
+}
+
+fn export_picture(picture: &Picture, filename: &str) -> io::Result<()> {
+  File::create(filename).and_then(|mut file| file.write_all(&picture.data))
 }
 
 fn main() {
@@ -186,6 +192,15 @@ fn main() {
       metadata::Data::SeekTable(ref s)     => {
         if args.cmd_seektable {
           print_seek_table(s);
+        }
+      }
+      metadata::Data::Picture(ref p)       => {
+        if args.cmd_picture {
+          if let Some(ref filename) = args.flag_export {
+            export_picture(p, filename).expect("couldn't write to file");
+
+            break;
+          }
         }
       }
       _                                    => continue,
