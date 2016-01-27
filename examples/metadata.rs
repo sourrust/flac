@@ -4,7 +4,7 @@ extern crate rustc_serialize;
 
 use docopt::Docopt;
 use flac::{Stream, StreamProducer, StreamReader};
-use flac::metadata::{self, SeekPoint, VorbisComment};
+use flac::metadata::{self, Picture, SeekPoint, VorbisComment};
 
 use std::env;
 use std::io::{self, Write};
