@@ -5,7 +5,7 @@ extern crate rustc_serialize;
 use docopt::Docopt;
 use flac::{ReadStream, Stream, StreamProducer};
 use flac::metadata;
-use flac::metadata::{SeekPoint, VorbisComment};
+use flac::metadata::{Picture, SeekPoint, VorbisComment};
 
 use std::env;
 use std::io;
@@ -161,6 +161,10 @@ fn print_seek_table(seek_points: &[SeekPoint]) {
     println!("  Frame samples: {}", seek_point.frame_samples);
     count += 1;
   }
+}
+
+fn export_picture(picture: &Picture, filename: &str) -> io::Result<()> {
+  File::create(filename).and_then(|mut file| file.write_all(&picture.data))
 }
 
 fn main() {
