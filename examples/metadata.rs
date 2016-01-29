@@ -172,6 +172,9 @@ fn main() {
     .and_then(|d| d.argv(env::args()).decode())
     .unwrap_or_else(|e| e.exit());
 
+  let mut index = 0;
+  let _index    = args.flag_index.unwrap_or(0);
+
   let stream = StreamReader::<File>::from_file(&args.arg_filename)
                  .expect("Couldn't parse file");
 
@@ -198,6 +201,12 @@ fn main() {
       }
       metadata::Data::Picture(ref p)       => {
         if args.cmd_picture {
+          if index != _index {
+            index += 1;
+
+            continue;
+          }
+
           if let Some(ref filename) = args.flag_export {
             export_picture(p, filename).expect("couldn't write to file");
 
