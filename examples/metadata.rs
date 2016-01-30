@@ -12,21 +12,14 @@ use std::fs::File;
 
 const USAGE: &'static str = "
 Usage: metadata <command> [<args>...]
-       metadata picture [options] <filename>
-       metadata --help
+       metadata [options]
 
 Options:
-  --export=FILE      Export VorbisComment or Picture to file.
-  --index=NUMBER     Index of the current metadata type.
-  -h, --help         Show this message.
+  -h, --help  Show this message.
 ";
 
 #[derive(Debug, RustcDecodable)]
 struct Arguments {
-  arg_filename: String,
-  cmd_picture: bool,
-  flag_export: Option<String>,
-  flag_index: Option<usize>,
   arg_command: Option<Command>,
   arg_args: Vec<String>,
 }
@@ -42,11 +35,6 @@ macro_rules! format_print (
     }
   );
 );
-
-fn export_picture(picture: &Picture, filename: &str) -> io::Result<()> {
-  File::create(filename).and_then(|mut file| file.write_all(&picture.data))
-}
-
 #[derive(Debug, RustcDecodable)]
 enum Command {
   StreamInfo,
