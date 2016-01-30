@@ -12,7 +12,6 @@ use std::fs::File;
 
 const USAGE: &'static str = "
 Usage: metadata <command> [<args>...]
-       metadata seektable <filename>
        metadata picture [options] <filename>
        metadata --help
 
@@ -25,7 +24,6 @@ Options:
 #[derive(Debug, RustcDecodable)]
 struct Arguments {
   arg_filename: String,
-  cmd_seektable: bool,
   cmd_picture: bool,
   flag_export: Option<String>,
   flag_index: Option<usize>,
@@ -44,21 +42,6 @@ macro_rules! format_print (
     }
   );
 );
-
-
-fn print_seek_table(seek_points: &[SeekPoint]) {
-  let mut count = 0;
-
-  println!("Number of Seek Points: {}", seek_points.len());
-
-  for seek_point in seek_points {
-    println!("Seek Point #{}", count);
-    println!("  Sample number: {}", seek_point.sample_number);
-    println!("  Stream offset: {}", seek_point.stream_offset);
-    println!("  Frame samples: {}", seek_point.frame_samples);
-    count += 1;
-  }
-}
 
 fn export_picture(picture: &Picture, filename: &str) -> io::Result<()> {
   File::create(filename).and_then(|mut file| file.write_all(&picture.data))
