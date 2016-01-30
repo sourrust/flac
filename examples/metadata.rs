@@ -73,13 +73,18 @@ fn print_stream_info<P>(stream: &Stream<P>, args: &Arguments)
                   args.flag_md5) == false;
 
   if no_flags || args.flag_block_size {
-    println!("Minimum block size: {} samples", info.min_block_size);
-    println!("Maximum block size: {} samples", info.max_block_size);
+    let block_size_str = if info.min_block_size == info.max_block_size {
+      format!("{} samples", info.max_block_size)
+    } else {
+      format!("{} - {} samples", info.min_block_size, info.max_block_size)
+    };
+
+    format_print!("{}{}", "Block size: ", block_size_str, no_flags);
   }
 
   if no_flags || args.flag_frame_size {
-    println!("Minimum frame size: {} bytes", info.min_frame_size);
-    println!("Maximum frame size: {} bytes", info.max_frame_size);
+    println!("Frame size: {} - {} bytes", info.min_frame_size,
+                                          info.max_frame_size);
   }
 
   if no_flags || args.flag_sample_rate {
