@@ -79,7 +79,7 @@ fn print_stream_info<P>(stream: &Stream<P>, args: &Arguments)
       format!("{} - {} samples", info.min_block_size, info.max_block_size)
     };
 
-    println!("Block size: {}", block_size_str);
+    format_print!("{}{}", "Block size: ", block_size_str, no_flags);
   }
 
   if no_flags || args.flag_frame_size {
