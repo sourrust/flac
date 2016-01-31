@@ -1,3 +1,7 @@
+use std::fs::File;
+
+use flac::{Stream, StreamProducer, StreamReader};
+
 pub const USAGE: &'static str = "
 Usage: metadata streaminfo [options] <filename>
        metadata streaminfo --help
@@ -76,4 +80,11 @@ fn print_stream_info<P>(stream: &Stream<P>, args: &Arguments)
 
     format_print!("{}{}", "MD5 sum: ", md5, no_flags);
   }
+}
+
+pub fn run(args: &Arguments) {
+  let stream = StreamReader::<File>::from_file(&args.arg_filename)
+                 .expect("Couldn't parse file");
+
+  print_stream_info(&stream, &args);
 }

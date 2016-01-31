@@ -1,3 +1,9 @@
+use std::io::{self, Write};
+use std::fs::File;
+
+use flac::StreamReader;
+use flac::metadata::{self, VorbisComment};
+
 pub const USAGE: &'static str = "
 Usage: metadata comments [options] <filename>
        metadata comments --help
@@ -52,4 +58,23 @@ fn export_vorbis_comments(vorbis_comment: &VorbisComment, filename: &str)
   }
 
   Ok(())
+}
+
+pub fn run(args: &Arguments) {
+  let stream = StreamReader::<File>::from_file(&args.arg_filename)
+                 .expect("Couldn't parse file");
+
+  for meta in stream.metadata() {
+    match meta.data {
+      metadata::Data::VorbisComment(ref v) => {
+        if let Some(ref filename) = args.flag_export {
+          export_vorbis_comments(v, filename)
+            .expect("couldn't write to file")
+        } else {
+          print_vorbis_comments(v, &args)
+        }
+      }
+      _                                    => continue,
+    }
+  }
 }
