@@ -5,15 +5,10 @@ extern crate rustc_serialize;
 #[macro_use]
 mod commands;
 
-use docopt::Docopt;
-use flac::{Stream, StreamProducer, StreamReader};
-use flac::metadata::{self, Picture, SeekPoint, VorbisComment};
-
 use std::env;
-use std::io::{self, Write};
-use std::fs::File;
 
 use commands::{streaminfo, comments, seektable, picture};
+use docopt::Docopt;
 
 const USAGE: &'static str = "
 Usage: metadata <command> [<args>...]
