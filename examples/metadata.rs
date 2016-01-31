@@ -39,52 +39,37 @@ enum Command {
 
 fn main() {
   let args: Arguments = Docopt::new(USAGE)
-    .and_then(|d| d.argv(env::args()).decode())
+    .and_then(|d| d.options_first(true).decode())
     .unwrap_or_else(|e| e.exit());
 
-  let mut index = 0;
-  let _index    = args.flag_index.unwrap_or(0);
+  match args.arg_command.unwrap() {
+    Command::StreamInfo => {
+      let sub_args: streaminfo::Arguments = Docopt::new(streaminfo::USAGE)
+        .and_then(|d| d.argv(env::args()).decode())
+        .unwrap_or_else(|e| e.exit());
 
-  let stream = StreamReader::<File>::from_file(&args.arg_filename)
-                 .expect("Couldn't parse file");
+      streaminfo::run(&sub_args)
+    }
+    Command::Comments   => {
+      let sub_args: comments::Arguments = Docopt::new(comments::USAGE)
+        .and_then(|d| d.argv(env::args()).decode())
+        .unwrap_or_else(|e| e.exit());
 
-  if args.cmd_streaminfo {
-    print_stream_info(&stream, &args);
-  }
+      comments::run(&sub_args)
+    }
+    Command::SeekTable  => {
+      let sub_args: seektable::Arguments = Docopt::new(seektable::USAGE)
+        .and_then(|d| d.argv(env::args()).decode())
+        .unwrap_or_else(|e| e.exit());
 
-  for meta in stream.metadata() {
-    match meta.data {
-      metadata::Data::VorbisComment(ref v) => {
-        if args.cmd_comments {
-          if let Some(ref filename) = args.flag_export {
-            export_vorbis_comments(v, filename)
-              .expect("couldn't write to file")
-          } else {
-            print_vorbis_comments(v, &args)
-          }
-        }
-      }
-      metadata::Data::SeekTable(ref s)     => {
-        if args.cmd_seektable {
-          print_seek_table(s);
-        }
-      }
-      metadata::Data::Picture(ref p)       => {
-        if args.cmd_picture {
-          if index != _index {
-            index += 1;
+      seektable::run(&sub_args)
+    }
+    Command::Picture    => {
+      let sub_args: picture::Arguments = Docopt::new(picture::USAGE)
+        .and_then(|d| d.argv(env::args()).decode())
+        .unwrap_or_else(|e| e.exit());
 
-            continue;
-          }
-
-          if let Some(ref filename) = args.flag_export {
-            export_picture(p, filename).expect("couldn't write to file");
-
-            break;
-          }
-        }
-      }
-      _                                    => continue,
+      picture::run(&sub_args)
     }
   }
 }
