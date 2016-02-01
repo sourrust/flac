@@ -16,6 +16,12 @@ Usage: metadata <command> [<args>...]
 
 Options:
   -h, --help  Show this message.
+
+Commands:
+  streaminfo  Display stream information.
+  comments    Display or export comment tags.
+  seektable   Display seek table.
+  picture     Export picutes.
 ";
 
 #[derive(Debug, RustcDecodable)]
