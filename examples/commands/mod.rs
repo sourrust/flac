@@ -1,5 +1,5 @@
 #[macro_use]
-pub mod utility;
+mod utility;
 
 pub mod streaminfo;
 pub mod comments;

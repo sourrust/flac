@@ -16,6 +16,12 @@ Usage: metadata <command> [<args>...]
 
 Options:
   -h, --help  Show this message.
+
+Commands:
+  streaminfo  Display stream information.
+  comments    Display or export comment tags.
+  seektable   Display seek table.
+  picture     Export picutes.
 ";
 
 #[derive(Debug, RustcDecodable)]
@@ -24,7 +30,7 @@ struct Arguments {
   arg_args: Vec<String>,
 }
 
-#[derive(Debug, RustcDecodable)]
+#[derive(Clone, Copy, Debug, RustcDecodable)]
 enum Command {
   StreamInfo,
   Comments,
@@ -32,12 +38,8 @@ enum Command {
   Picture,
 }
 
-fn main() {
-  let args: Arguments = Docopt::new(USAGE)
-    .and_then(|d| d.options_first(true).decode())
-    .unwrap_or_else(|e| e.exit());
-
-  match args.arg_command.unwrap() {
+fn handle_subcommand(command: Command) {
+  match command {
     Command::StreamInfo => {
       let sub_args: streaminfo::Arguments = Docopt::new(streaminfo::USAGE)
         .and_then(|d| d.argv(env::args()).decode())
@@ -66,5 +68,17 @@ fn main() {
 
       picture::run(&sub_args)
     }
+  }
+}
+
+fn main() {
+  let args: Arguments = Docopt::new(USAGE)
+    .and_then(|d| d.options_first(true).decode())
+    .unwrap_or_else(|e| e.exit());
+
+  if let Some(command) = args.arg_command {
+    handle_subcommand(command);
+  } else {
+    println!("{}", USAGE);
   }
 }
