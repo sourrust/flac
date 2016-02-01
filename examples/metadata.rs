@@ -76,5 +76,9 @@ fn main() {
     .and_then(|d| d.options_first(true).decode())
     .unwrap_or_else(|e| e.exit());
 
-  handle_subcommand(args.arg_command.unwrap());
+  if let Some(command) = args.arg_command {
+    handle_subcommand(command);
+  } else {
+    println!("{}", USAGE);
+  }
 }
