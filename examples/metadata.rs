@@ -30,7 +30,7 @@ struct Arguments {
   arg_args: Vec<String>,
 }
 
-#[derive(Debug, RustcDecodable)]
+#[derive(Clone, Copy, Debug, RustcDecodable)]
 enum Command {
   StreamInfo,
   Comments,
