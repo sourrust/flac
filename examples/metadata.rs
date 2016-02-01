@@ -38,12 +38,8 @@ enum Command {
   Picture,
 }
 
-fn main() {
-  let args: Arguments = Docopt::new(USAGE)
-    .and_then(|d| d.options_first(true).decode())
-    .unwrap_or_else(|e| e.exit());
-
-  match args.arg_command.unwrap() {
+fn handle_subcommand(command: Command) {
+  match command {
     Command::StreamInfo => {
       let sub_args: streaminfo::Arguments = Docopt::new(streaminfo::USAGE)
         .and_then(|d| d.argv(env::args()).decode())
@@ -73,4 +69,12 @@ fn main() {
       picture::run(&sub_args)
     }
   }
+}
+
+fn main() {
+  let args: Arguments = Docopt::new(USAGE)
+    .and_then(|d| d.options_first(true).decode())
+    .unwrap_or_else(|e| e.exit());
+
+  handle_subcommand(args.arg_command.unwrap());
 }
