@@ -9,3 +9,15 @@ macro_rules! format_print (
     }
   );
 );
+
+macro_rules! command (
+  ($name: ident) => (
+    {
+      let args: $name::Arguments = Docopt::new($name::USAGE)
+        .and_then(|d| d.argv(env::args()).decode())
+        .unwrap_or_else(|e| e.exit());
+
+      $name::run(&args)
+    }
+  );
+);
