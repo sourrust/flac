@@ -40,34 +40,10 @@ enum Command {
 
 fn handle_subcommand(command: Command) {
   match command {
-    Command::StreamInfo => {
-      let sub_args: streaminfo::Arguments = Docopt::new(streaminfo::USAGE)
-        .and_then(|d| d.argv(env::args()).decode())
-        .unwrap_or_else(|e| e.exit());
-
-      streaminfo::run(&sub_args)
-    }
-    Command::Comments   => {
-      let sub_args: comments::Arguments = Docopt::new(comments::USAGE)
-        .and_then(|d| d.argv(env::args()).decode())
-        .unwrap_or_else(|e| e.exit());
-
-      comments::run(&sub_args)
-    }
-    Command::SeekTable  => {
-      let sub_args: seektable::Arguments = Docopt::new(seektable::USAGE)
-        .and_then(|d| d.argv(env::args()).decode())
-        .unwrap_or_else(|e| e.exit());
-
-      seektable::run(&sub_args)
-    }
-    Command::Picture    => {
-      let sub_args: picture::Arguments = Docopt::new(picture::USAGE)
-        .and_then(|d| d.argv(env::args()).decode())
-        .unwrap_or_else(|e| e.exit());
-
-      picture::run(&sub_args)
-    }
+    Command::StreamInfo => command!(streaminfo),
+    Command::Comments   => command!(comments),
+    Command::SeekTable  => command!(seektable),
+    Command::Picture    => command!(picture),
   }
 }
 
