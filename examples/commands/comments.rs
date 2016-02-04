@@ -43,8 +43,10 @@ fn print_vorbis_comments(vorbis_comment: &VorbisComment, args: &Arguments) {
     }
   } else {
     if let Some(ref name) = args.flag_name {
-      vorbis_comment.comments.get(name)
-                             .map(|value| println!("{}", value));
+      let error_str = format!("Couldn't find tag name: \"{}\"", name);
+      let result    = vorbis_comment.comments.get(name).unwrap_or(&error_str);
+
+      println!("{}", result)
     }
   }
 }
