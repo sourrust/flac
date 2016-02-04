@@ -21,7 +21,7 @@ Commands:
   streaminfo  Display stream information.
   comments    Display or export comment tags.
   seektable   Display seek table.
-  picture     Export picutes.
+  picture     Export pictures.
 ";
 
 #[derive(Debug, RustcDecodable)]
