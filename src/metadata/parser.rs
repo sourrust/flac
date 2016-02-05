@@ -1,7 +1,7 @@
 use nom::{
   be_u8, be_u16, be_u32, be_u64,
   le_u32,
-  IResult,
+  IResult, Needed,
   ErrorKind, Err,
 };
 
@@ -275,6 +275,14 @@ named!(pub header <&[u8], (bool, u8, u32)>,
 
 pub fn block_data(input: &[u8], block_type: u8, length: u32)
                   -> IResult<&[u8], metadata::Data> {
+  let len = length as usize;
+
+  if len > input.len() {
+    let needed = Needed::Size(len);
+
+    return IResult::Incomplete(needed);
+  }
+
   match block_type {
     0       => stream_info(input),
     1       => padding(input, length),
