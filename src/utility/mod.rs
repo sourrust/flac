@@ -6,8 +6,8 @@ mod types;
 pub use self::crc::{crc8, crc16};
 pub use self::types::{ErrorKind, ByteStream, ReadStream};
 
-use nom::IResult;
-use metadata::{Metadata, metadata_parser};
+use nom::{self, IResult};
+use metadata::{self, Metadata, metadata_parser};
 
 /// An interface for parsing through some type of producer to a byte stream.
 ///
