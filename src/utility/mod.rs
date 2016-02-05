@@ -6,8 +6,8 @@ mod types;
 pub use self::crc::{crc8, crc16};
 pub use self::types::{ErrorKind, ByteStream, ReadStream};
 
-use nom::IResult;
-use metadata::{Metadata, metadata_parser};
+use nom::{self, IResult};
+use metadata::{self, Metadata, metadata_parser};
 
 /// An interface for parsing through some type of producer to a byte stream.
 ///
@@ -45,28 +45,51 @@ pub fn extend_sign(value: u32, bit_count: usize) -> i32 {
   }
 }
 
-fn parser<'a>(input: &'a [u8], is_start: &mut bool)
+#[derive(PartialEq, Eq)]
+enum ParserState {
+  Header,
+  StreamInfo,
+  Metadata
+}
+
+fn parser<'a>(input: &'a [u8], state: &mut ParserState)
               -> IResult<&'a [u8], Metadata> {
   let mut slice = input;
+  let error     = nom::Err::Code(nom::ErrorKind::Custom(10));
 
-  if *is_start {
+
+  if *state == ParserState::Header {
     let (i, _) = try_parse!(slice, tag!("fLaC"));
 
-    slice     = i;
-    *is_start = false;
+    slice  = i;
+    *state = ParserState::StreamInfo;
   }
 
-  metadata_parser(slice)
+  match *state {
+    ParserState::StreamInfo => {
+      let (i, block) = try_parse!(slice, metadata_parser);
+
+      if let metadata::Data::StreamInfo(_) = block.data {
+        *state = ParserState::Metadata;
+
+        IResult::Done(i, block)
+      } else {
+        IResult::Error(error)
+      }
+    }
+    ParserState::Metadata   => metadata_parser(slice),
+    _                       => IResult::Error(error),
+  }
 }
 
 pub fn many_metadata<S, F>(stream: &mut S, mut f: F) -> bool
  where S: StreamProducer,
        F: FnMut(Metadata) {
-  let mut is_start = true;
+  let mut state    = ParserState::Header;
   let mut is_error = false;
 
   loop {
-    match stream.parse(|i| parser(i, &mut is_start)) {
+    match stream.parse(|i| parser(i, &mut state)) {
       Ok(block)                => {
         let is_last = block.is_last;
 
