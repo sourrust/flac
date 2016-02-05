@@ -55,6 +55,7 @@ enum ParserState {
 fn parser<'a>(input: &'a [u8], state: &mut ParserState)
               -> IResult<&'a [u8], Metadata> {
   let mut slice = input;
+  let error     = nom::Err::Code(nom::ErrorKind::Custom(10));
 
 
   if *state == ParserState::Header {
@@ -64,7 +65,21 @@ fn parser<'a>(input: &'a [u8], state: &mut ParserState)
     *state = ParserState::StreamInfo;
   }
 
-  metadata_parser(slice)
+  match *state {
+    ParserState::StreamInfo => {
+      let (i, block) = try_parse!(slice, metadata_parser);
+
+      if let metadata::Data::StreamInfo(_) = block.data {
+        *state = ParserState::Metadata;
+
+        IResult::Done(i, block)
+      } else {
+        IResult::Error(error)
+      }
+    }
+    ParserState::Metadata   => metadata_parser(slice),
+    _                       => IResult::Error(error),
+  }
 }
 
 pub fn many_metadata<S, F>(stream: &mut S, mut f: F) -> bool
