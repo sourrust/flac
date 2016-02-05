@@ -45,15 +45,23 @@ pub fn extend_sign(value: u32, bit_count: usize) -> i32 {
   }
 }
 
-fn parser<'a>(input: &'a [u8], is_start: &mut bool)
+#[derive(PartialEq, Eq)]
+enum ParserState {
+  Header,
+  StreamInfo,
+  Metadata
+}
+
+fn parser<'a>(input: &'a [u8], state: &mut ParserState)
               -> IResult<&'a [u8], Metadata> {
   let mut slice = input;
 
-  if *is_start {
+
+  if *state == ParserState::Header {
     let (i, _) = try_parse!(slice, tag!("fLaC"));
 
-    slice     = i;
-    *is_start = false;
+    slice  = i;
+    *state = ParserState::StreamInfo;
   }
 
   metadata_parser(slice)
@@ -62,11 +70,11 @@ fn parser<'a>(input: &'a [u8], is_start: &mut bool)
 pub fn many_metadata<S, F>(stream: &mut S, mut f: F) -> bool
  where S: StreamProducer,
        F: FnMut(Metadata) {
-  let mut is_start = true;
+  let mut state    = ParserState::Header;
   let mut is_error = false;
 
   loop {
-    match stream.parse(|i| parser(i, &mut is_start)) {
+    match stream.parse(|i| parser(i, &mut state)) {
       Ok(block)                => {
         let is_last = block.is_last;
 
