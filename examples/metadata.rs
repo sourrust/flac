@@ -7,14 +7,15 @@ mod commands;
 
 use std::env;
 
-use commands::{streaminfo, comments, seektable, picture};
+use commands::{streaminfo, comments, seektable, picture, list_block_names};
 use docopt::Docopt;
 
 const USAGE: &'static str = "
 Usage: metadata <command> [<args>...]
-       metadata [options]
+       metadata [options] [<filename>]
 
 Options:
+  --list      List all blocks by name.
   -h, --help  Show this message.
 
 Commands:
@@ -27,6 +28,8 @@ Commands:
 #[derive(Debug, RustcDecodable)]
 struct Arguments {
   arg_command: Option<Command>,
+  arg_filename: Option<String>,
+  flag_list: bool,
   arg_args: Vec<String>,
 }
 
@@ -54,6 +57,10 @@ fn main() {
 
   if let Some(command) = args.arg_command {
     handle_subcommand(command);
+  } else if let Some(ref filename) = args.arg_filename {
+    if args.flag_list {
+      list_block_names(filename);
+    }
   } else {
     println!("{}", USAGE);
   }
