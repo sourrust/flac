@@ -12,9 +12,10 @@ use docopt::Docopt;
 
 const USAGE: &'static str = "
 Usage: metadata <command> [<args>...]
-       metadata [options]
+       metadata [options] [<filename>]
 
 Options:
+  --list      List all blocks by name.
   -h, --help  Show this message.
 
 Commands:
@@ -27,6 +28,8 @@ Commands:
 #[derive(Debug, RustcDecodable)]
 struct Arguments {
   arg_command: Option<Command>,
+  arg_filename: Option<String>,
+  flag_list: bool,
   arg_args: Vec<String>,
 }
 
