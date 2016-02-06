@@ -7,7 +7,7 @@ mod commands;
 
 use std::env;
 
-use commands::{streaminfo, comments, seektable, picture};
+use commands::{streaminfo, comments, seektable, picture, list_block_names};
 use docopt::Docopt;
 
 const USAGE: &'static str = "
@@ -57,6 +57,10 @@ fn main() {
 
   if let Some(command) = args.arg_command {
     handle_subcommand(command);
+  } else if let Some(ref filename) = args.arg_filename {
+    if args.flag_list {
+      list_block_names(filename);
+    }
   } else {
     println!("{}", USAGE);
   }
