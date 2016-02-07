@@ -9,7 +9,10 @@
 
 ### Fixed
 
-* Infinite loop in Rust beta ([#2](https://github.com/sourrust/flac/issues/2))
+* Infinite loop in Rust beta
+  ([#2](https://github.com/sourrust/flac/issues/2))
+* Out of memory error on Linux
+  ([#3](https://github.com/sourrust/flac/issues/3))
 
 ## 0.1.0 - 2016-01-08
 
