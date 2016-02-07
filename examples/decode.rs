@@ -1,7 +1,6 @@
 extern crate docopt;
 extern crate flac;
 extern crate hound;
-extern crate nom;
 extern crate rustc_serialize;
 
 use docopt::Docopt;
