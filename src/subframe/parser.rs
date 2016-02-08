@@ -62,7 +62,8 @@ pub fn adjust_bits_per_sample(frame_header: &frame::Header,
 
   match frame_header.channel_assignment {
     ChannelAssignment::Independent  => bits_per_sample,
-    ChannelAssignment::LeftSide     => {
+    ChannelAssignment::LeftSide     |
+    ChannelAssignment::MidpointSide => {
       if channel == 1 {
         bits_per_sample + 1
       } else {
@@ -71,13 +72,6 @@ pub fn adjust_bits_per_sample(frame_header: &frame::Header,
     }
     ChannelAssignment::RightSide    => {
       if channel == 0 {
-        bits_per_sample + 1
-      } else {
-        bits_per_sample
-      }
-    }
-    ChannelAssignment::MidpointSide => {
-      if channel == 1 {
         bits_per_sample + 1
       } else {
         bits_per_sample
