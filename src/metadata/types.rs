@@ -229,3 +229,23 @@ pub enum PictureType {
   /// Publisher, or studio, logotype.
   PublisherLogo,
 }
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn test_is_varied_block_size() {
+    let mut info = StreamInfo::new();
+
+    info.min_block_size = 512;
+    info.max_block_size = 1024;
+
+    assert!(info.is_varied_block_size());
+
+    info.min_block_size = 2048;
+    info.max_block_size = 2048;
+
+    assert!(!info.is_varied_block_size());
+  }
+}
