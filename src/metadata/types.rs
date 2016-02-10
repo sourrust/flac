@@ -73,6 +73,11 @@ impl StreamInfo {
       md5_sum: [0; 16],
     }
   }
+
+  #[inline]
+  pub fn is_varied_block_size(&self) -> bool {
+    self.min_block_size != self.max_block_size
+  }
 }
 
 /// Data used by third-party applications.
