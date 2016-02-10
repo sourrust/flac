@@ -78,6 +78,11 @@ impl StreamInfo {
   pub fn is_varied_block_size(&self) -> bool {
     self.min_block_size != self.max_block_size
   }
+
+  #[inline]
+  pub fn is_fixed_block_size(&self) -> bool {
+    self.min_block_size == self.max_block_size
+  }
 }
 
 /// Data used by third-party applications.
