@@ -73,6 +73,16 @@ impl StreamInfo {
       md5_sum: [0; 16],
     }
   }
+
+  #[inline]
+  pub fn is_varied_block_size(&self) -> bool {
+    self.min_block_size != self.max_block_size
+  }
+
+  #[inline]
+  pub fn is_fixed_block_size(&self) -> bool {
+    self.min_block_size == self.max_block_size
+  }
 }
 
 /// Data used by third-party applications.
@@ -218,4 +228,39 @@ pub enum PictureType {
   BandLogo,
   /// Publisher, or studio, logotype.
   PublisherLogo,
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn test_is_varied_block_size() {
+    let mut info = StreamInfo::new();
+
+    info.min_block_size = 512;
+    info.max_block_size = 1024;
+
+    assert!(info.is_varied_block_size());
+
+    info.min_block_size = 2048;
+    info.max_block_size = 2048;
+
+    assert!(!info.is_varied_block_size());
+  }
+
+  #[test]
+  fn test_is_fixed_block_size() {
+    let mut info = StreamInfo::new();
+
+    info.min_block_size = 512;
+    info.max_block_size = 512;
+
+    assert!(info.is_fixed_block_size());
+
+    info.min_block_size = 1024;
+    info.max_block_size = 2048;
+
+    assert!(!info.is_fixed_block_size());
+  }
 }

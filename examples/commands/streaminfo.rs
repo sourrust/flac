@@ -38,7 +38,7 @@ fn print_stream_info<P>(stream: &Stream<P>, args: &Arguments)
                   args.flag_md5) == false;
 
   if no_flags || args.flag_block_size {
-    let block_size_str = if info.min_block_size == info.max_block_size {
+    let block_size_str = if info.is_fixed_block_size() {
       format!("{} samples", info.max_block_size)
     } else {
       format!("{} - {} samples", info.min_block_size, info.max_block_size)
