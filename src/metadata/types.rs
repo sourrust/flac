@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::fmt;
 
 /// Data associated with a single metadata block.
 #[derive(Debug)]
@@ -228,6 +229,34 @@ pub enum PictureType {
   BandLogo,
   /// Publisher, or studio, logotype.
   PublisherLogo,
+}
+
+impl fmt::Display for PictureType {
+  fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+    write!(formatter, "{}", match *self {
+      PictureType::Other              => "Other",
+      PictureType::FileIconStandard   => "File Icon (standard)",
+      PictureType::FileIcon           => "File Icon",
+      PictureType::FrontCover         => "Cover (front)",
+      PictureType::BackCover          => "Cover (back)",
+      PictureType::LeafletPage        => "Leaflet Page",
+      PictureType::Media              => "Media",
+      PictureType::LeadArtist         => "Lead Artist",
+      PictureType::Artist             => "Arist",
+      PictureType::Conductor          => "Conductor",
+      PictureType::Band               => "Band",
+      PictureType::Composer           => "Composer",
+      PictureType::Lyricist           => "Lyricist",
+      PictureType::RecordingLocation  => "Recoding Location",
+      PictureType::DuringRecording    => "During Recording",
+      PictureType::DuringPerformace   => "During Performace",
+      PictureType::VideoScreenCapture => "Video Screen Capture",
+      PictureType::Fish               => "Fish",
+      PictureType::Illustration       => "Illustration",
+      PictureType::BandLogo           => "Band Logo",
+      PictureType::PublisherLogo      => "Publisher Logo",
+    })
+  }
 }
 
 #[cfg(test)]
