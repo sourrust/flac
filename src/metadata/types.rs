@@ -8,7 +8,7 @@ pub struct Metadata {
   pub is_last: bool,
   /// The length, in bytes, of the block being parsed. This does not include
   /// the metadata block header.
-  pub length: u32,
+  length: u32,
   /// Block data containing one of the eight different types of metadata.
   pub data: Data,
 }
