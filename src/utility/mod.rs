@@ -91,7 +91,7 @@ pub fn many_metadata<S, F>(stream: &mut S, mut f: F) -> bool
   loop {
     match stream.parse(|i| parser(i, &mut state)) {
       Ok(block)                => {
-        let is_last = block.is_last;
+        let is_last = block.is_last();
 
         f(block);
 
