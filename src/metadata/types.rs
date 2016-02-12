@@ -13,6 +13,16 @@ pub struct Metadata {
   pub data: Data,
 }
 
+impl Metadata {
+  pub fn new(is_last: bool, length: u32, data: Data) -> Self {
+    Metadata {
+      is_last: is_last,
+      length: length,
+      data: data,
+    }
+  }
+}
+
 /// General enum that hold all the different metadata block data.
 #[derive(Debug, PartialEq, Eq)]
 pub enum Data {
