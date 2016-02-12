@@ -20,13 +20,7 @@ pub fn metadata_parser(input: &[u8]) -> IResult<&[u8], Metadata> {
   chain!(input,
     block_header: header ~
     data: apply!(block_data, block_header.1, block_header.2),
-    || {
-      Metadata {
-        is_last: block_header.0,
-        length: block_header.2,
-        data: data
-      }
-    }
+    || { Metadata::new(block_header.0, block_header.2, data) }
   )
 }
 
