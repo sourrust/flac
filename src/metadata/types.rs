@@ -21,6 +21,12 @@ impl Metadata {
       data: data,
     }
   }
+
+  /// Return whether the current metadata block is the last.
+  #[inline]
+  pub fn is_last(&self) -> bool {
+    self.is_last
+  }
 }
 
 /// General enum that hold all the different metadata block data.
