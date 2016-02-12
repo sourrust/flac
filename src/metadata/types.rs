@@ -5,7 +5,7 @@ use std::fmt;
 #[derive(Debug)]
 pub struct Metadata {
   /// Marks whether the current metadata block is the last.
-  pub is_last: bool,
+  is_last: bool,
   /// The length, in bytes, of the block being parsed. This does not include
   /// the metadata block header.
   length: u32,
