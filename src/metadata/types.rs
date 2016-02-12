@@ -5,12 +5,28 @@ use std::fmt;
 #[derive(Debug)]
 pub struct Metadata {
   /// Marks whether the current metadata block is the last.
-  pub is_last: bool,
+  is_last: bool,
   /// The length, in bytes, of the block being parsed. This does not include
   /// the metadata block header.
-  pub length: u32,
+  length: u32,
   /// Block data containing one of the eight different types of metadata.
   pub data: Data,
+}
+
+impl Metadata {
+  pub fn new(is_last: bool, length: u32, data: Data) -> Self {
+    Metadata {
+      is_last: is_last,
+      length: length,
+      data: data,
+    }
+  }
+
+  /// Return whether the current metadata block is the last.
+  #[inline]
+  pub fn is_last(&self) -> bool {
+    self.is_last
+  }
 }
 
 /// General enum that hold all the different metadata block data.
