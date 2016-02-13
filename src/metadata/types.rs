@@ -13,6 +13,18 @@ pub struct Metadata {
   pub data: Data,
 }
 
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum Type {
+  StreamInfo,
+  Padding,
+  Application,
+  SeekTable,
+  VorbisComment,
+  CueSheet,
+  Picture,
+  Unknown,
+}
+
 impl Metadata {
   pub fn new(is_last: bool, length: u32, data: Data) -> Self {
     Metadata {
