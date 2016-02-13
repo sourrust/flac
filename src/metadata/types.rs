@@ -39,6 +39,19 @@ impl Metadata {
   pub fn is_last(&self) -> bool {
     self.is_last
   }
+
+  pub fn data_type(&self) -> Type {
+    match self.data {
+      Data::StreamInfo(_)    => Type::StreamInfo,
+      Data::Padding(_)       => Type::Padding,
+      Data::Application(_)   => Type::Application,
+      Data::SeekTable(_)     => Type::SeekTable,
+      Data::VorbisComment(_) => Type::VorbisComment,
+      Data::CueSheet(_)      => Type::CueSheet,
+      Data::Picture(_)       => Type::Picture,
+      Data::Unknown(_)       => Type::Unknown,
+    }
+  }
 }
 
 /// General enum that hold all the different metadata block data.
