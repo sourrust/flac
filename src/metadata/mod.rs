@@ -5,7 +5,7 @@ mod parser;
 mod metadata;
 
 pub use self::types::{
-  Metadata, Data,
+  Metadata, Data, Type,
   StreamInfo, Application, VorbisComment, CueSheet, Picture,
   SeekPoint, CueSheetTrack, CueSheetTrackIndex, PictureType,
 };
