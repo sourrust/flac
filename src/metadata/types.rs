@@ -13,6 +13,18 @@ pub struct Metadata {
   pub data: Data,
 }
 
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum Type {
+  StreamInfo,
+  Padding,
+  Application,
+  SeekTable,
+  VorbisComment,
+  CueSheet,
+  Picture,
+  Unknown,
+}
+
 impl Metadata {
   pub fn new(is_last: bool, length: u32, data: Data) -> Self {
     Metadata {
@@ -26,6 +38,19 @@ impl Metadata {
   #[inline]
   pub fn is_last(&self) -> bool {
     self.is_last
+  }
+
+  pub fn data_type(&self) -> Type {
+    match self.data {
+      Data::StreamInfo(_)    => Type::StreamInfo,
+      Data::Padding(_)       => Type::Padding,
+      Data::Application(_)   => Type::Application,
+      Data::SeekTable(_)     => Type::SeekTable,
+      Data::VorbisComment(_) => Type::VorbisComment,
+      Data::CueSheet(_)      => Type::CueSheet,
+      Data::Picture(_)       => Type::Picture,
+      Data::Unknown(_)       => Type::Unknown,
+    }
   }
 }
 
