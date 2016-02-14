@@ -153,6 +153,8 @@ impl StreamInfo {
     self.min_block_size != self.max_block_size
   }
 
+  /// Returns true if `min_block_size` and `max_block_size` are equal,
+  /// otherwise false.
   #[inline]
   pub fn is_fixed_block_size(&self) -> bool {
     self.min_block_size == self.max_block_size
