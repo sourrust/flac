@@ -43,7 +43,7 @@ impl Metadata {
     }
   }
 
-  /// Return whether the current metadata block is the last.
+  /// Returns whether the current metadata block is the last.
   #[inline]
   pub fn is_last(&self) -> bool {
     self.is_last
