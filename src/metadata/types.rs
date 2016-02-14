@@ -131,6 +131,7 @@ pub struct StreamInfo {
 }
 
 impl StreamInfo {
+  /// Constructs a zeroed out `StreamInfo` struct.
   pub fn new() -> StreamInfo {
     StreamInfo {
       min_block_size: 0,
