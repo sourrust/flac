@@ -25,6 +25,15 @@ pub enum Type {
   Unknown,
 }
 
+macro_rules! is_block_type (
+  ($name: ident, $block_type: ident) => (
+    #[inline]
+    pub fn $name(&self) -> bool {
+      self.data_type() == Type::$block_type
+    }
+  );
+);
+
 impl Metadata {
   pub fn new(is_last: bool, length: u32, data: Data) -> Self {
     Metadata {
