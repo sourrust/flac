@@ -13,15 +13,24 @@ pub struct Metadata {
   pub data: Data,
 }
 
+/// An enum that represents a metadata block type.
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum Type {
+  /// Represents the current block is stream information.
   StreamInfo,
+  /// Represents the current block is padding.
   Padding,
+  /// Represents the current block is application data.
   Application,
+  /// Represents the current block is a seek table.
   SeekTable,
+  /// Represents the current block is a vorbis comment.
   VorbisComment,
+  /// Represents the current block is a cue sheet.
   CueSheet,
+  /// Represents the current block is a picture.
   Picture,
+  /// Represents the current block is unknow.
   Unknown,
 }
 
@@ -35,6 +44,7 @@ macro_rules! is_block_type (
 );
 
 impl Metadata {
+  /// Constructs a new `Metadata` struct based on the arguments passed in.
   pub fn new(is_last: bool, length: u32, data: Data) -> Self {
     Metadata {
       is_last: is_last,
@@ -43,12 +53,13 @@ impl Metadata {
     }
   }
 
-  /// Return whether the current metadata block is the last.
+  /// Returns whether the current metadata block is the last.
   #[inline]
   pub fn is_last(&self) -> bool {
     self.is_last
   }
 
+  /// Returns the metadata block's type.
   pub fn data_type(&self) -> Type {
     match self.data {
       Data::StreamInfo(_)    => Type::StreamInfo,
@@ -120,6 +131,7 @@ pub struct StreamInfo {
 }
 
 impl StreamInfo {
+  /// Constructs a zeroed out `StreamInfo` struct.
   pub fn new() -> StreamInfo {
     StreamInfo {
       min_block_size: 0,
@@ -134,11 +146,15 @@ impl StreamInfo {
     }
   }
 
+  /// Returns true if `min_block_size` and `max_block_size` are different,
+  /// otherwise false.
   #[inline]
   pub fn is_varied_block_size(&self) -> bool {
     self.min_block_size != self.max_block_size
   }
 
+  /// Returns true if `min_block_size` and `max_block_size` are equal,
+  /// otherwise false.
   #[inline]
   pub fn is_fixed_block_size(&self) -> bool {
     self.min_block_size == self.max_block_size
