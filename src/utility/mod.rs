@@ -7,7 +7,7 @@ pub use self::crc::{crc8, crc16};
 pub use self::types::{ErrorKind, ByteStream, ReadStream};
 
 use nom::{self, IResult};
-use metadata::{self, Metadata, metadata_parser};
+use metadata::{Metadata, metadata_parser};
 
 /// An interface for parsing through some type of producer to a byte stream.
 ///
@@ -69,7 +69,7 @@ fn parser<'a>(input: &'a [u8], state: &mut ParserState)
     ParserState::StreamInfo => {
       let (i, block) = try_parse!(slice, metadata_parser);
 
-      if let metadata::Data::StreamInfo(_) = block.data {
+      if block.is_stream_info() {
         *state = ParserState::Metadata;
 
         IResult::Done(i, block)
