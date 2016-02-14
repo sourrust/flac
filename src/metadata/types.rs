@@ -44,6 +44,7 @@ macro_rules! is_block_type (
 );
 
 impl Metadata {
+  /// Constructs a new `Metadata` struct based on the arguments passed in.
   pub fn new(is_last: bool, length: u32, data: Data) -> Self {
     Metadata {
       is_last: is_last,
