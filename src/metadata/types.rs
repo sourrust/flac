@@ -13,15 +13,24 @@ pub struct Metadata {
   pub data: Data,
 }
 
+/// An enum that represents a metadata block type.
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum Type {
+  /// Represents the current block is stream information.
   StreamInfo,
+  /// Represents the current block is padding.
   Padding,
+  /// Represents the current block is application data.
   Application,
+  /// Represents the current block is a seek table.
   SeekTable,
+  /// Represents the current block is a vorbis comment.
   VorbisComment,
+  /// Represents the current block is a cue sheet.
   CueSheet,
+  /// Represents the current block is a picture.
   Picture,
+  /// Represents the current block is unknow.
   Unknown,
 }
 
