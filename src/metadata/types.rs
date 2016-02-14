@@ -61,6 +61,15 @@ impl Metadata {
       Data::Unknown(_)       => Type::Unknown,
     }
   }
+
+  is_block_type!(is_stream_info, StreamInfo);
+  is_block_type!(is_padding, Padding);
+  is_block_type!(is_application, Application);
+  is_block_type!(is_seek_table, SeekTable);
+  is_block_type!(is_vorbis_comment, VorbisComment);
+  is_block_type!(is_cue_sheet, CueSheet);
+  is_block_type!(is_picture, Picture);
+  is_block_type!(is_unknown, Unknown);
 }
 
 /// General enum that hold all the different metadata block data.
