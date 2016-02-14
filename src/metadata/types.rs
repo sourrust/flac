@@ -59,6 +59,7 @@ impl Metadata {
     self.is_last
   }
 
+  /// Returns the metadata block's type.
   pub fn data_type(&self) -> Type {
     match self.data {
       Data::StreamInfo(_)    => Type::StreamInfo,
