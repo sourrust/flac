@@ -146,6 +146,8 @@ impl StreamInfo {
     }
   }
 
+  /// Returns true if `min_block_size` and `max_block_size` are different,
+  /// otherwise false.
   #[inline]
   pub fn is_varied_block_size(&self) -> bool {
     self.min_block_size != self.max_block_size
