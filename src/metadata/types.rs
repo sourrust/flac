@@ -293,7 +293,7 @@ pub enum PictureType {
   /// During recording.
   DuringRecording,
   /// During performance.
-  DuringPerformace,
+  DuringPerformance,
   /// Movie, or video, screen capture.
   VideoScreenCapture,
   /// A bright colored fish.
