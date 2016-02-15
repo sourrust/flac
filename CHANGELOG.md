@@ -1,5 +1,10 @@
 ## [Unreleased]
 
+### Changed
+
+* Variant `PictureType::DuringPerformace` to
+  `PictureType::DuringPerformance`, there was missing "n"
+
 ## [0.2.0] - 2016-02-06
 
 ### Added
