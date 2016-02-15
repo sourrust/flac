@@ -324,7 +324,7 @@ impl fmt::Display for PictureType {
       PictureType::Lyricist           => "Lyricist",
       PictureType::RecordingLocation  => "Recoding Location",
       PictureType::DuringRecording    => "During Recording",
-      PictureType::DuringPerformace   => "During Performace",
+      PictureType::DuringPerformance  => "During Performance",
       PictureType::VideoScreenCapture => "Video Screen Capture",
       PictureType::Fish               => "Fish",
       PictureType::Illustration       => "Illustration",
