@@ -3,7 +3,7 @@
 ### Changed
 
 * Variant `PictureType::DuringPerformace` to
-  `PictureType::DuringPerformance`, there was missing "n"
+  `PictureType::DuringPerformance`, there was a missing "n"
 
 ## [0.2.0] - 2016-02-06
 
