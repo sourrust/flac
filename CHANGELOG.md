@@ -1,5 +1,22 @@
 ## [Unreleased]
 
+### Added
+
+* `StreamInfo` methods for checking block size range:
+  - `is_varied_block_size`
+  - `is_fixed_block_size`
+* `Type` enum for metadata block type
+* `Metadata::data_type` for returning the `Type` of the current metadata
+* `Metadata` methods for block data type checking:
+  - `is_stream_info`
+  - `is_padding`
+  - `is_application`
+  - `is_seek_table`
+  - `is_vorbis_comment`
+  - `is_cue_sheet`
+  - `is_picture`
+  - `is_unknown`
+
 ### Changed
 
 * Method field `length` is now private
