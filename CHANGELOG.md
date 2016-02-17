@@ -2,6 +2,9 @@
 
 ### Changed
 
+* Method field `length` is now private
+* Metadata field `is_last` is now private in favor of the method
+  `Method::is_last`
 * Variant `PictureType::DuringPerformace` to
   `PictureType::DuringPerformance`, there was a missing "n"
 
