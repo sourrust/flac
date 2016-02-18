@@ -45,6 +45,11 @@ pub fn extend_sign(value: u32, bit_count: usize) -> i32 {
   }
 }
 
+#[inline]
+pub fn power_of_two(exponent: u32) -> u32 {
+  1 << exponent
+}
+
 #[derive(PartialEq, Eq)]
 enum ParserState {
   Header,
