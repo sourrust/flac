@@ -25,17 +25,27 @@ fn export_picture(picture: &Picture, filename: &str) -> io::Result<()> {
   File::create(filename).and_then(|mut file| file.write_all(&picture.data))
 }
 
+fn print_picture(picture: &Picture) {
+  println!("Picture type: {}", picture.picture_type);
+  println!("Mime type: \"{}\"", picture.mime_type);
+  println!("Description: \"{}\"", picture.description);
+  println!("Dimensions: {}x{}", picture.width, picture.height);
+  println!("Depth: {}", picture.depth);
+  println!("Colors: {}", picture.colors);
+  println!("Data length: {} bytes", picture.data.len());
+}
+
 pub fn run(args: &Arguments) {
   let stream = StreamReader::<File>::from_file(&args.arg_filename)
                  .expect("Couldn't parse file");
 
   let mut index = 0;
-  let _index    = args.flag_index.unwrap_or(0);
+  let end_index = args.flag_index.unwrap_or(0);
 
   for meta in stream.metadata() {
     match meta.data {
       metadata::Data::Picture(ref p) => {
-        if index != _index {
+        if index < end_index {
           index += 1;
 
           continue;
@@ -45,6 +55,8 @@ pub fn run(args: &Arguments) {
           export_picture(p, filename).expect("couldn't write to file");
 
           break;
+        } else {
+          print_picture(p);
         }
       }
        _                             => continue,
