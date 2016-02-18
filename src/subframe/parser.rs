@@ -6,6 +6,7 @@ use nom::{
 
 use frame::{self, ChannelAssignment};
 use subframe::{self, Subframe, CodingMethod, PartitionedRiceContents};
+use utility::power_of_two;
 
 // Parser used to parse unary notation. Naming the parser `leading_zeros`
 // was something that felt more clear in the code. It actually tells the
@@ -282,7 +283,7 @@ fn rice_partition(input: (&[u8], usize),
 
   // Adjust block size to not include allocation for warm up samples
   let residual_size = block_size - predictor_order;
-  let partitions    = 2_usize.pow(partition_order);
+  let partitions    = power_of_two(partition_order) as usize;
 
   let mut mut_input = input;
   let mut residual  = Vec::with_capacity(residual_size);
@@ -365,7 +366,7 @@ fn encoded_residuals<'a>(input: (&'a [u8], usize),
                          samples: &mut [i32])
                          -> IResult<(&'a[u8], usize), ()> {
   let length  = samples.len();
-  let modulus = 2_u32.pow(parameter);
+  let modulus = power_of_two(parameter);
 
   let mut count     = 0;
   let mut is_error  = false;
