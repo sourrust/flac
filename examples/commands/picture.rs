@@ -30,12 +30,12 @@ pub fn run(args: &Arguments) {
                  .expect("Couldn't parse file");
 
   let mut index = 0;
-  let _index    = args.flag_index.unwrap_or(0);
+  let end_index = args.flag_index.unwrap_or(0);
 
   for meta in stream.metadata() {
     match meta.data {
       metadata::Data::Picture(ref p) => {
-        if index != _index {
+        if index != end_index {
           index += 1;
 
           continue;
