@@ -35,7 +35,7 @@ pub fn run(args: &Arguments) {
   for meta in stream.metadata() {
     match meta.data {
       metadata::Data::Picture(ref p) => {
-        if index != end_index {
+        if index < end_index {
           index += 1;
 
           continue;
