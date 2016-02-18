@@ -25,6 +25,16 @@ fn export_picture(picture: &Picture, filename: &str) -> io::Result<()> {
   File::create(filename).and_then(|mut file| file.write_all(&picture.data))
 }
 
+fn print_picture(picture: &Picture) {
+  println!("Picture type: {}", picture.picture_type);
+  println!("Mime type: \"{}\"", picture.mime_type);
+  println!("Description: \"{}\"", picture.description);
+  println!("Dimensions: {}x{}", picture.width, picture.height);
+  println!("Depth: {}", picture.depth);
+  println!("Colors: {}", picture.colors);
+  println!("Data length: {} bytes", picture.data.len());
+}
+
 pub fn run(args: &Arguments) {
   let stream = StreamReader::<File>::from_file(&args.arg_filename)
                  .expect("Couldn't parse file");
