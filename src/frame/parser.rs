@@ -15,7 +15,7 @@ use frame::{
 use subframe::{subframe_parser, Subframe};
 
 use metadata::StreamInfo;
-use utility::{crc8, crc16, to_u32};
+use utility::{crc8, crc16, to_u32, power_of_two};
 
 /// Parses an audio frame
 pub fn frame_parser<'a>(input: &'a [u8], stream_info: &StreamInfo)
@@ -242,9 +242,9 @@ pub fn header<'a>(input: &'a [u8], stream_info: &StreamInfo)
 
       let block_size = match block_byte {
         0b0001          => 192,
-        0b0010...0b0101 => 576 * 2_u32.pow(block_byte as u32 - 2),
+        0b0010...0b0101 => 576 * power_of_two(block_byte as u32 - 2),
         0b0110 | 0b0111 => alt_block_size.unwrap() + 1,
-        0b1000...0b1111 => 256 * 2_u32.pow(block_byte as u32 - 8),
+        0b1000...0b1111 => 256 * power_of_two(block_byte as u32 - 8),
         _               => unreachable!(),
       };
 
