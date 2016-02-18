@@ -55,6 +55,8 @@ pub fn run(args: &Arguments) {
           export_picture(p, filename).expect("couldn't write to file");
 
           break;
+        } else {
+          print_picture(p);
         }
       }
        _                             => continue,
