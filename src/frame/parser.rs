@@ -72,23 +72,19 @@ pub fn frame_parser<'a>(input: &'a [u8], stream_info: &StreamInfo)
 // following bit must be zero. The last bit is whether or not the block size
 // is fixed or varied.
 pub fn blocking_strategy(input: &[u8]) -> IResult<&[u8], bool> {
-  match take!(input, 2) {
-    IResult::Done(i, bytes)   => {
-      let sync_code = ((bytes[0] as u16) << 6) +
-                      ((bytes[1] as u16) >> 2);
-      let is_valid  = sync_code == 0b11111111111110 &&
-                      ((bytes[1] >> 1) & 0b01) == 0;
+  let (i, bytes) = try_parse!(input, take!(2));
 
-      if is_valid {
-        let is_variable_block_size = (bytes[1] & 0b01) == 1;
+  let sync_code = ((bytes[0] as u16) << 6) +
+                  ((bytes[1] as u16) >> 2);
+  let is_valid  = sync_code == 0b11111111111110 &&
+                  ((bytes[1] >> 1) & 0b01) == 0;
 
-        IResult::Done(i, is_variable_block_size)
-      } else {
-        IResult::Error(Err::Position(ErrorKind::Digit, input))
-      }
-    }
-    IResult::Error(error)     => IResult::Error(error),
-    IResult::Incomplete(need) => IResult::Incomplete(need),
+  if is_valid {
+    let is_variable_block_size = (bytes[1] & 0b01) == 1;
+
+    IResult::Done(i, is_variable_block_size)
+  } else {
+    IResult::Error(Err::Position(ErrorKind::Digit, input))
   }
 }
 
