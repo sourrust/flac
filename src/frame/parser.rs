@@ -113,34 +113,30 @@ pub fn block_sample(input: &[u8]) -> IResult<&[u8], (u8, u8)> {
 // be a zero.
 pub fn channel_bits(input: &[u8])
                     -> IResult<&[u8], (ChannelAssignment, u8, u8)> {
-  match be_u8(input) {
-    IResult::Done(i, byte)    => {
-      let mut channels       = 2;
-      let channel_byte       = byte >> 4;
-      let channel_assignment = match channel_byte {
-        0b0000...0b0111 => {
-          channels = channel_byte + 1;
+  let (i, byte) = try_parse!(input, be_u8);
 
-          ChannelAssignment::Independent
-        }
-        0b1000          => ChannelAssignment::LeftSide,
-        0b1001          => ChannelAssignment::RightSide,
-        0b1010          => ChannelAssignment::MidpointSide,
-        _               => ChannelAssignment::Independent,
-      };
-      let size_byte = (byte >> 1) & 0b0111;
-      let is_valid  = channel_byte < 0b1011 &&
-                      (size_byte != 0b0011 && size_byte != 0b0111) &&
-                      (byte & 0b01) == 0;
+  let mut channels       = 2;
+  let channel_byte       = byte >> 4;
+  let channel_assignment = match channel_byte {
+    0b0000...0b0111 => {
+      channels = channel_byte + 1;
 
-      if is_valid {
-        IResult::Done(i, (channel_assignment, channels, size_byte))
-      } else {
-        IResult::Error(Err::Position(ErrorKind::Digit, input))
-      }
+      ChannelAssignment::Independent
     }
-    IResult::Error(error)     => IResult::Error(error),
-    IResult::Incomplete(need) => IResult::Incomplete(need),
+    0b1000          => ChannelAssignment::LeftSide,
+    0b1001          => ChannelAssignment::RightSide,
+    0b1010          => ChannelAssignment::MidpointSide,
+    _               => ChannelAssignment::Independent,
+  };
+  let size_byte = (byte >> 1) & 0b0111;
+  let is_valid  = channel_byte < 0b1011 &&
+                  (size_byte != 0b0011 && size_byte != 0b0111) &&
+                  (byte & 0b01) == 0;
+
+  if is_valid {
+    IResult::Done(i, (channel_assignment, channels, size_byte))
+  } else {
+    IResult::Error(Err::Position(ErrorKind::Digit, input))
   }
 }
 
