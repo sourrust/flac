@@ -246,15 +246,12 @@ fn residual(input: (&[u8], usize),
             block_size: usize)
             -> IResult<(&[u8], usize),
                        (subframe::EntropyCodingMethod, Vec<i32>)> {
-  match pair!(input, coding_method, take_bits!(u32, 4)) {
-    IResult::Done(i, data)    => {
-      let (method, order) = data;
+  let (i, data) = try_parse!(input,
+                    pair!(coding_method, take_bits!(u32, 4)));
 
-      rice_partition(i, order, predictor_order, block_size, method)
-    }
-    IResult::Error(error)     => IResult::Error(error),
-    IResult::Incomplete(need) => IResult::Incomplete(need),
-  }
+  let (method, order) = data;
+
+  rice_partition(i, order, predictor_order, block_size, method)
 }
 
 fn rice_partition(input: (&[u8], usize),
