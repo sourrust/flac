@@ -93,20 +93,16 @@ pub fn blocking_strategy(input: &[u8]) -> IResult<&[u8], bool> {
 // because that value is reserved. And sample rate bits can't be 0b1111 to
 // prevent sync code fooling.
 pub fn block_sample(input: &[u8]) -> IResult<&[u8], (u8, u8)> {
-  match be_u8(input) {
-    IResult::Done(i, byte)    => {
-      let block_byte  = byte >> 4;
-      let sample_byte = byte & 0b1111;
-      let is_valid    = block_byte != 0b0000 && sample_byte != 0b1111;
+  let (i, byte) = try_parse!(input, be_u8);
 
-      if is_valid {
-        IResult::Done(i, (block_byte, sample_byte))
-      } else {
-        IResult::Error(Err::Position(ErrorKind::Digit, input))
-      }
-    }
-    IResult::Error(error)     => IResult::Error(error),
-    IResult::Incomplete(need) => IResult::Incomplete(need),
+  let block_byte  = byte >> 4;
+  let sample_byte = byte & 0b1111;
+  let is_valid    = block_byte != 0b0000 && sample_byte != 0b1111;
+
+  if is_valid {
+    IResult::Done(i, (block_byte, sample_byte))
+  } else {
+    IResult::Error(Err::Position(ErrorKind::Digit, input))
   }
 }
 
