@@ -72,23 +72,19 @@ pub fn frame_parser<'a>(input: &'a [u8], stream_info: &StreamInfo)
 // following bit must be zero. The last bit is whether or not the block size
 // is fixed or varied.
 pub fn blocking_strategy(input: &[u8]) -> IResult<&[u8], bool> {
-  match take!(input, 2) {
-    IResult::Done(i, bytes)   => {
-      let sync_code = ((bytes[0] as u16) << 6) +
-                      ((bytes[1] as u16) >> 2);
-      let is_valid  = sync_code == 0b11111111111110 &&
-                      ((bytes[1] >> 1) & 0b01) == 0;
+  let (i, bytes) = try_parse!(input, take!(2));
 
-      if is_valid {
-        let is_variable_block_size = (bytes[1] & 0b01) == 1;
+  let sync_code = ((bytes[0] as u16) << 6) +
+                  ((bytes[1] as u16) >> 2);
+  let is_valid  = sync_code == 0b11111111111110 &&
+                  ((bytes[1] >> 1) & 0b01) == 0;
 
-        IResult::Done(i, is_variable_block_size)
-      } else {
-        IResult::Error(Err::Position(ErrorKind::Digit, input))
-      }
-    }
-    IResult::Error(error)     => IResult::Error(error),
-    IResult::Incomplete(need) => IResult::Incomplete(need),
+  if is_valid {
+    let is_variable_block_size = (bytes[1] & 0b01) == 1;
+
+    IResult::Done(i, is_variable_block_size)
+  } else {
+    IResult::Error(Err::Position(ErrorKind::Digit, input))
   }
 }
 
@@ -97,20 +93,16 @@ pub fn blocking_strategy(input: &[u8]) -> IResult<&[u8], bool> {
 // because that value is reserved. And sample rate bits can't be 0b1111 to
 // prevent sync code fooling.
 pub fn block_sample(input: &[u8]) -> IResult<&[u8], (u8, u8)> {
-  match be_u8(input) {
-    IResult::Done(i, byte)    => {
-      let block_byte  = byte >> 4;
-      let sample_byte = byte & 0b1111;
-      let is_valid    = block_byte != 0b0000 && sample_byte != 0b1111;
+  let (i, byte) = try_parse!(input, be_u8);
 
-      if is_valid {
-        IResult::Done(i, (block_byte, sample_byte))
-      } else {
-        IResult::Error(Err::Position(ErrorKind::Digit, input))
-      }
-    }
-    IResult::Error(error)     => IResult::Error(error),
-    IResult::Incomplete(need) => IResult::Incomplete(need),
+  let block_byte  = byte >> 4;
+  let sample_byte = byte & 0b1111;
+  let is_valid    = block_byte != 0b0000 && sample_byte != 0b1111;
+
+  if is_valid {
+    IResult::Done(i, (block_byte, sample_byte))
+  } else {
+    IResult::Error(Err::Position(ErrorKind::Digit, input))
   }
 }
 
@@ -121,34 +113,30 @@ pub fn block_sample(input: &[u8]) -> IResult<&[u8], (u8, u8)> {
 // be a zero.
 pub fn channel_bits(input: &[u8])
                     -> IResult<&[u8], (ChannelAssignment, u8, u8)> {
-  match be_u8(input) {
-    IResult::Done(i, byte)    => {
-      let mut channels       = 2;
-      let channel_byte       = byte >> 4;
-      let channel_assignment = match channel_byte {
-        0b0000...0b0111 => {
-          channels = channel_byte + 1;
+  let (i, byte) = try_parse!(input, be_u8);
 
-          ChannelAssignment::Independent
-        }
-        0b1000          => ChannelAssignment::LeftSide,
-        0b1001          => ChannelAssignment::RightSide,
-        0b1010          => ChannelAssignment::MidpointSide,
-        _               => ChannelAssignment::Independent,
-      };
-      let size_byte = (byte >> 1) & 0b0111;
-      let is_valid  = channel_byte < 0b1011 &&
-                      (size_byte != 0b0011 && size_byte != 0b0111) &&
-                      (byte & 0b01) == 0;
+  let mut channels       = 2;
+  let channel_byte       = byte >> 4;
+  let channel_assignment = match channel_byte {
+    0b0000...0b0111 => {
+      channels = channel_byte + 1;
 
-      if is_valid {
-        IResult::Done(i, (channel_assignment, channels, size_byte))
-      } else {
-        IResult::Error(Err::Position(ErrorKind::Digit, input))
-      }
+      ChannelAssignment::Independent
     }
-    IResult::Error(error)     => IResult::Error(error),
-    IResult::Incomplete(need) => IResult::Incomplete(need),
+    0b1000          => ChannelAssignment::LeftSide,
+    0b1001          => ChannelAssignment::RightSide,
+    0b1010          => ChannelAssignment::MidpointSide,
+    _               => ChannelAssignment::Independent,
+  };
+  let size_byte = (byte >> 1) & 0b0111;
+  let is_valid  = channel_byte < 0b1011 &&
+                  (size_byte != 0b0011 && size_byte != 0b0111) &&
+                  (byte & 0b01) == 0;
+
+  if is_valid {
+    IResult::Done(i, (channel_assignment, channels, size_byte))
+  } else {
+    IResult::Error(Err::Position(ErrorKind::Digit, input))
   }
 }
 
@@ -177,32 +165,28 @@ pub fn utf8_header(input: &[u8], is_u64: bool)
 pub fn number_type(input: &[u8], is_sample: bool,
                    (size, value): (usize, u8))
                    -> IResult<&[u8], NumberType> {
+  let (i, bytes) = try_parse!(input, take!(size));
+
   let mut result   = value as u64;
   let mut is_error = false;
 
-  match take!(input, size) {
-    IResult::Done(i, bytes)   => {
-      for i in 0..size {
-        let byte = bytes[i] as u64;
+  for i in 0..size {
+    let byte = bytes[i] as u64;
 
-        if byte >= 0b10000000 && byte <= 0b10111111 {
-          result = (result << 6) + (byte & 0b00111111);
-        } else {
-          is_error = true;
-          break;
-        }
-      }
-
-      if is_error {
-        IResult::Error(Err::Position(ErrorKind::Digit, input))
-      } else if is_sample {
-        IResult::Done(i, NumberType::Sample(result))
-      } else {
-        IResult::Done(i, NumberType::Frame(result as u32))
-      }
+    if byte >= 0b10000000 && byte <= 0b10111111 {
+      result = (result << 6) + (byte & 0b00111111);
+    } else {
+      is_error = true;
+      break;
     }
-    IResult::Error(error)     => IResult::Error(error),
-    IResult::Incomplete(need) => IResult::Incomplete(need),
+  }
+
+  if is_error {
+    IResult::Error(Err::Position(ErrorKind::Digit, input))
+  } else if is_sample {
+    IResult::Done(i, NumberType::Sample(result))
+  } else {
+    IResult::Done(i, NumberType::Frame(result as u32))
   }
 }
 
