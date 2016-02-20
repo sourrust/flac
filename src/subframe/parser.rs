@@ -178,16 +178,12 @@ pub fn fixed(input: (&[u8], usize),
 // coefficient. To preven sync fooling, four bit value cant be all onces.
 fn qlp_coefficient_precision(input: (&[u8], usize))
                              -> IResult<(&[u8], usize), u8> {
-  match take_bits!(input, u8, 4) {
-    IResult::Done(i, precision) => {
-      if precision == 0b1111 {
-        IResult::Error(Err::Position(ErrorKind::Digit, input))
-      } else {
-        IResult::Done(i, precision + 1)
-      }
-    }
-    IResult::Error(error)       => IResult::Error(error),
-    IResult::Incomplete(need)   => IResult::Incomplete(need),
+  let (i, precision) = try_parse!(input, take_bits!(u8, 4));
+
+  if precision == 0b1111 {
+    IResult::Error(Err::Position(ErrorKind::Digit, input))
+  } else {
+    IResult::Done(i, precision + 1)
   }
 }
 
