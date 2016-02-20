@@ -116,20 +116,16 @@ pub fn subframe_parser<'a>(input: (&'a [u8], usize),
 // Last bit is is there is wasted bits per sample, value one being true.
 pub fn header(input: (&[u8], usize))
               -> IResult<(&[u8], usize), (usize, bool)> {
-  match take_bits!(input, u8, 8) {
-    IResult::Done(i, byte)    => {
-      let is_valid        = (byte >> 7) == 0;
-      let subframe_type   = (byte >> 1) & 0b111111;
-      let has_wasted_bits = (byte & 0b01) == 1;
+  let (i, byte) = try_parse!(input, take_bits!(u8, 8));
 
-      if is_valid {
-        IResult::Done(i, (subframe_type as usize, has_wasted_bits))
-      } else {
-        IResult::Error(Err::Position(ErrorKind::Digit, input))
-      }
-    }
-    IResult::Error(error)     => IResult::Error(error),
-    IResult::Incomplete(need) => IResult::Incomplete(need),
+  let is_valid        = (byte >> 7) == 0;
+  let subframe_type   = (byte >> 1) & 0b111111;
+  let has_wasted_bits = (byte & 0b01) == 1;
+
+  if is_valid {
+    IResult::Done(i, (subframe_type as usize, has_wasted_bits))
+  } else {
+    IResult::Error(Err::Position(ErrorKind::Digit, input))
   }
 }
 
@@ -182,16 +178,12 @@ pub fn fixed(input: (&[u8], usize),
 // coefficient. To preven sync fooling, four bit value cant be all onces.
 fn qlp_coefficient_precision(input: (&[u8], usize))
                              -> IResult<(&[u8], usize), u8> {
-  match take_bits!(input, u8, 4) {
-    IResult::Done(i, precision) => {
-      if precision == 0b1111 {
-        IResult::Error(Err::Position(ErrorKind::Digit, input))
-      } else {
-        IResult::Done(i, precision + 1)
-      }
-    }
-    IResult::Error(error)       => IResult::Error(error),
-    IResult::Incomplete(need)   => IResult::Incomplete(need),
+  let (i, precision) = try_parse!(input, take_bits!(u8, 4));
+
+  if precision == 0b1111 {
+    IResult::Error(Err::Position(ErrorKind::Digit, input))
+  } else {
+    IResult::Done(i, precision + 1)
   }
 }
 
@@ -240,16 +232,12 @@ pub fn verbatim(input: (&[u8], usize),
 // two, and the parser with fail when value is greater than one.
 fn coding_method(input: (&[u8], usize))
                  -> IResult<(&[u8], usize), CodingMethod> {
-  match take_bits!(input, u8, 2) {
-    IResult::Done(i, method)  => {
-      match method {
-        0 => IResult::Done(i, CodingMethod::PartitionedRice),
-        1 => IResult::Done(i, CodingMethod::PartitionedRice2),
-        _ => IResult::Error(Err::Position(ErrorKind::Alt, input)),
-      }
-    }
-    IResult::Error(error)     => IResult::Error(error),
-    IResult::Incomplete(need) => IResult::Incomplete(need),
+  let (i, method) = try_parse!(input, take_bits!(u8, 2));
+
+  match method {
+    0 => IResult::Done(i, CodingMethod::PartitionedRice),
+    1 => IResult::Done(i, CodingMethod::PartitionedRice2),
+    _ => IResult::Error(Err::Position(ErrorKind::Alt, input)),
   }
 }
 
@@ -258,15 +246,12 @@ fn residual(input: (&[u8], usize),
             block_size: usize)
             -> IResult<(&[u8], usize),
                        (subframe::EntropyCodingMethod, Vec<i32>)> {
-  match pair!(input, coding_method, take_bits!(u32, 4)) {
-    IResult::Done(i, data)    => {
-      let (method, order) = data;
+  let (i, data) = try_parse!(input,
+                    pair!(coding_method, take_bits!(u32, 4)));
 
-      rice_partition(i, order, predictor_order, block_size, method)
-    }
-    IResult::Error(error)     => IResult::Error(error),
-    IResult::Incomplete(need) => IResult::Incomplete(need),
-  }
+  let (method, order) = data;
+
+  rice_partition(i, order, predictor_order, block_size, method)
 }
 
 fn rice_partition(input: (&[u8], usize),
