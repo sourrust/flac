@@ -116,20 +116,16 @@ pub fn subframe_parser<'a>(input: (&'a [u8], usize),
 // Last bit is is there is wasted bits per sample, value one being true.
 pub fn header(input: (&[u8], usize))
               -> IResult<(&[u8], usize), (usize, bool)> {
-  match take_bits!(input, u8, 8) {
-    IResult::Done(i, byte)    => {
-      let is_valid        = (byte >> 7) == 0;
-      let subframe_type   = (byte >> 1) & 0b111111;
-      let has_wasted_bits = (byte & 0b01) == 1;
+  let (i, byte) = try_parse!(input, take_bits!(u8, 8));
 
-      if is_valid {
-        IResult::Done(i, (subframe_type as usize, has_wasted_bits))
-      } else {
-        IResult::Error(Err::Position(ErrorKind::Digit, input))
-      }
-    }
-    IResult::Error(error)     => IResult::Error(error),
-    IResult::Incomplete(need) => IResult::Incomplete(need),
+  let is_valid        = (byte >> 7) == 0;
+  let subframe_type   = (byte >> 1) & 0b111111;
+  let has_wasted_bits = (byte & 0b01) == 1;
+
+  if is_valid {
+    IResult::Done(i, (subframe_type as usize, has_wasted_bits))
+  } else {
+    IResult::Error(Err::Position(ErrorKind::Digit, input))
   }
 }
 
