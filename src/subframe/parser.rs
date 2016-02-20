@@ -232,16 +232,12 @@ pub fn verbatim(input: (&[u8], usize),
 // two, and the parser with fail when value is greater than one.
 fn coding_method(input: (&[u8], usize))
                  -> IResult<(&[u8], usize), CodingMethod> {
-  match take_bits!(input, u8, 2) {
-    IResult::Done(i, method)  => {
-      match method {
-        0 => IResult::Done(i, CodingMethod::PartitionedRice),
-        1 => IResult::Done(i, CodingMethod::PartitionedRice2),
-        _ => IResult::Error(Err::Position(ErrorKind::Alt, input)),
-      }
-    }
-    IResult::Error(error)     => IResult::Error(error),
-    IResult::Incomplete(need) => IResult::Incomplete(need),
+  let (i, method) = try_parse!(input, take_bits!(u8, 2));
+
+  match method {
+    0 => IResult::Done(i, CodingMethod::PartitionedRice),
+    1 => IResult::Done(i, CodingMethod::PartitionedRice2),
+    _ => IResult::Error(Err::Position(ErrorKind::Alt, input)),
   }
 }
 
