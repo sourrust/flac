@@ -233,20 +233,37 @@ mod tests {
       wasted_bits: 0,
     };
 
-    decode(&constant, &mut output);
+    decode(&constant, 16, &mut output);
     assert_eq!(&output, &[4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]);
 
-    decode(&verbatim, &mut output);
+    decode(&verbatim, 16, &mut output);
     assert_eq!(&output, &[16, -3, 55, 49, -32, 6, 40 , -90, 1, 0, 77, -12, 84
                          ,10 , -112, 136]);
 
-    decode(&fixed, &mut output);
-    assert_eq!(&output, &[-729, -722, -667, -583, -486, -359, -225, -91, 59
-                         ,209, 354, 497, 630, 740, 812, 845]);
+    {
+      let residual = [-19, -16, 17, -23, -7, 16, -16, -5, 3 , -8, -13, -15
+                     ,-1];
 
-    decode(&lpc, &mut output);
-    assert_eq!(&output, &[-796, -547, -285, -32, 199, 443, 670, 875, 1046
-                         ,1208, 1343, 1454, 1541, 1616, 1663, 1701]);
+      for i in 0..residual.len() {
+        output[i + 3] = residual[i];
+      }
+
+      decode(&fixed, 16, &mut output);
+      assert_eq!(&output, &[-729, -722, -667, -583, -486, -359, -225, -91, 59
+                           ,209, 354, 497, 630, 740, 812, 845]);
+    }
+
+    {
+      let residual = [-2, -23, 14, 6, 3, -4, 12, -2, 10];
+
+      for i in 0..residual.len() {
+        output[i + 7] = residual[i];
+      }
+
+      decode(&lpc, 16, &mut output);
+      assert_eq!(&output, &[-796, -547, -285, -32, 199, 443, 670, 875, 1046
+                           ,1208, 1343, 1454, 1541, 1616, 1663, 1701]);
+    }
   }
 
   #[test]
@@ -258,7 +275,7 @@ mod tests {
       wasted_bits: 10,
     };
 
-    decode(&constant, &mut output);
+    decode(&constant, 4, &mut output);
     assert_eq!(&output, &[1024, 1024, 1024, 1024]);
   }
 }
