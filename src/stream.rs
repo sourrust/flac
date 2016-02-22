@@ -136,10 +136,10 @@ impl<P> Stream<P> where P: StreamProducer {
   }
 
   fn next_frame<'a>(&'a mut self) -> Option<usize> {
-    let stream_info = self.info();
+    let stream_info = &self.info;
 
     loop {
-      match self.producer.parse(|i| frame_parser(i, &stream_info)) {
+      match self.producer.parse(|i| frame_parser(i, stream_info)) {
         Ok(frame)                  => {
           let channels    = frame.header.channels as usize;
           let block_size  = frame.header.block_size as usize;
