@@ -346,7 +346,7 @@ fn unencoded_residuals<'a>(input: (&'a [u8], usize),
                            bits_per_sample: usize,
                            raw_bit: &mut u32,
                            samples: &mut [i32])
-                           -> IResult<(&'a[u8], usize), ()> {
+                           -> IResult<(&'a [u8], usize), ()> {
   *raw_bit = bits_per_sample as u32;
 
   count_slice!(input, take_signed_bits!(bits_per_sample), &mut samples[..])
@@ -356,7 +356,7 @@ fn encoded_residuals<'a>(input: (&'a [u8], usize),
                          parameter: u32,
                          raw_bit: &mut u32,
                          samples: &mut [i32])
-                         -> IResult<(&'a[u8], usize), ()> {
+                         -> IResult<(&'a [u8], usize), ()> {
   let length  = samples.len();
   let modulus = power_of_two(parameter);
 
