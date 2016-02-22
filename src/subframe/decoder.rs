@@ -12,7 +12,7 @@ use std::ptr;
 // This function also assumes that `output` already has the warm up values
 // from the `Fixed` subframe in it.
 pub fn fixed_restore_signal(order: usize,
-                            residual: &[i32],
+                            block_size: usize,
                             output: &mut [i32]) {
   debug_assert!(order <= MAX_FIXED_ORDER);
 
@@ -24,8 +24,9 @@ pub fn fixed_restore_signal(order: usize,
                    ];
 
   let coefficients = polynomial[order];
+  let length       = block_size - order;
 
-  for i in 0..residual.len() {
+  for i in 0..length {
     let offset     = i + order;
     let prediction = coefficients.iter()
                       .zip(&output[i..offset])
@@ -33,7 +34,7 @@ pub fn fixed_restore_signal(order: usize,
                             result + coefficient * signal);
 
 
-    output[offset] = residual[i] + prediction;
+    output[offset] += prediction;
   }
 }
 
@@ -53,21 +54,22 @@ pub fn fixed_restore_signal(order: usize,
 // `MAX_LPC_ORDER`, which is 32. This function also assumes that `output`
 // already has the warm up values from the `LPC` subframe in it.
 pub fn lpc_restore_signal(quantization_level: i8,
+                          block_size: usize,
                           coefficients: &[i32],
-                          residual: &[i32],
                           output: &mut [i32]) {
-  let order = coefficients.len();
+  let order  = coefficients.len();
+  let length = block_size - order;
 
   debug_assert!(order <= MAX_LPC_ORDER);
 
-  for i in 0..residual.len() {
+  for i in 0..length {
     let offset     = i + order;
     let prediction = coefficients.iter().rev()
                        .zip(&output[i..offset])
                        .fold(0, |result, (coefficient, signal)|
                              result + coefficient * signal);
 
-    output[offset] = residual[i] + (prediction >> quantization_level);
+    output[offset] += prediction >> quantization_level;
   }
 }
 
@@ -81,7 +83,7 @@ pub fn lpc_restore_signal(quantization_level: i8,
 ///   the result into `output`.
 /// * `LPC` - restore the signal of the finite impulse response linear
 ///   prediction and put the result into `output`.
-pub fn decode(subframe: &Subframe, output: &mut [i32]) {
+pub fn decode(subframe: &Subframe, block_size: usize, output: &mut [i32]) {
   match subframe.data {
     subframe::Data::Constant(constant)     => {
       for i in 0..output.len() {
@@ -102,7 +104,7 @@ pub fn decode(subframe: &Subframe, output: &mut [i32]) {
         output[i] = fixed.warmup[i];
       }
 
-      fixed_restore_signal(order, &fixed.residual, output);
+      fixed_restore_signal(order, block_size, output);
     }
     subframe::Data::LPC(ref lpc)           => {
       let order        = lpc.order as usize;
@@ -112,7 +114,7 @@ pub fn decode(subframe: &Subframe, output: &mut [i32]) {
         output[i] = lpc.warmup[i];
       }
 
-      lpc_restore_signal(lpc.quantization_level, coefficients, &lpc.residual,
+      lpc_restore_signal(lpc.quantization_level, block_size, coefficients,
                          output);
     }
   }
@@ -137,17 +139,13 @@ mod tests {
 
   #[test]
   fn test_fixed_restore_signal() {
-    let residuals   = [ &[-19, -16, 17, -23, -7, 16, -16, -5, 3
-                         , -8, -13, -15, -1][..]
-                      , &[-6513][..]
-                      ];
-    let mut outputs = [ &mut [-729, -722, -667, 0, 0, 0, 0, 0, 0
-                             , 0, 0, 0, 0, 0, 0, 0][..]
-                      , &mut [21877, 27482, 0][..]
+    let mut outputs = [ &mut [-729, -722, -667, -19, -16, 17, -23, -7, 16
+                             , -16, -5, 3, -8, -13, -15, -1][..]
+                      , &mut [21877, 27482, -6513][..]
                       ];
 
-    fixed_restore_signal(3, &residuals[0], &mut outputs[0]);
-    fixed_restore_signal(2, &residuals[1], &mut outputs[1]);
+    fixed_restore_signal(3, 16, &mut outputs[0]);
+    fixed_restore_signal(2, 3, &mut outputs[1]);
 
     assert_eq!(&outputs[0], &[-729, -722, -667, -583, -486, -359, -225, -91
                              , 59, 209, 354, 497, 630, 740, 812, 845]);
@@ -156,20 +154,17 @@ mod tests {
 
   #[test]
   fn test_lpc_restore_signal() {
-    let residuals    = [ &[-2, -23, 14, 6, 3, -4, 12, -2, 10][..]
-                       , &[3157][..]
-                       ];
     let coefficients = [ &[1042, -399, -75, -269, 121, 166, -75][..]
                        , &[1757, -1199, 879, -836, 555, -255, 119][..]
                        ];
     let mut outputs = [ &mut [-796, -547, -285, -32, 199, 443, 670
-                             , 0, 0, 0, 0, 0, 0, 0, 0, 0][..]
+                             , -2, -23, 14, 6, 3, -4, 12, -2, 10][..]
                       , &mut [-21363, -21951, -22649, -24364, -27297, -26870
-                             ,-30017, 0][..]
+                             ,-30017, 3157][..]
                       ];
 
-    lpc_restore_signal(9, &coefficients[0], &residuals[0], &mut outputs[0]);
-    lpc_restore_signal(10, &coefficients[1], &residuals[1], &mut outputs[1]);
+    lpc_restore_signal(9, 16, &coefficients[0], &mut outputs[0]);
+    lpc_restore_signal(10, 8, &coefficients[1], &mut outputs[1]);
 
     assert_eq!(&outputs[0], &[-796, -547, -285, -32, 199, 443, 670, 875
                              , 1046, 1208, 1343, 1454, 1541, 1616, 1663
@@ -238,20 +233,37 @@ mod tests {
       wasted_bits: 0,
     };
 
-    decode(&constant, &mut output);
+    decode(&constant, 16, &mut output);
     assert_eq!(&output, &[4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]);
 
-    decode(&verbatim, &mut output);
+    decode(&verbatim, 16, &mut output);
     assert_eq!(&output, &[16, -3, 55, 49, -32, 6, 40 , -90, 1, 0, 77, -12, 84
                          ,10 , -112, 136]);
 
-    decode(&fixed, &mut output);
-    assert_eq!(&output, &[-729, -722, -667, -583, -486, -359, -225, -91, 59
-                         ,209, 354, 497, 630, 740, 812, 845]);
+    {
+      let residual = [-19, -16, 17, -23, -7, 16, -16, -5, 3 , -8, -13, -15
+                     ,-1];
 
-    decode(&lpc, &mut output);
-    assert_eq!(&output, &[-796, -547, -285, -32, 199, 443, 670, 875, 1046
-                         ,1208, 1343, 1454, 1541, 1616, 1663, 1701]);
+      for i in 0..residual.len() {
+        output[i + 3] = residual[i];
+      }
+
+      decode(&fixed, 16, &mut output);
+      assert_eq!(&output, &[-729, -722, -667, -583, -486, -359, -225, -91, 59
+                           ,209, 354, 497, 630, 740, 812, 845]);
+    }
+
+    {
+      let residual = [-2, -23, 14, 6, 3, -4, 12, -2, 10];
+
+      for i in 0..residual.len() {
+        output[i + 7] = residual[i];
+      }
+
+      decode(&lpc, 16, &mut output);
+      assert_eq!(&output, &[-796, -547, -285, -32, 199, 443, 670, 875, 1046
+                           ,1208, 1343, 1454, 1541, 1616, 1663, 1701]);
+    }
   }
 
   #[test]
@@ -263,7 +275,7 @@ mod tests {
       wasted_bits: 10,
     };
 
-    decode(&constant, &mut output);
+    decode(&constant, 4, &mut output);
     assert_eq!(&output, &[1024, 1024, 1024, 1024]);
   }
 }

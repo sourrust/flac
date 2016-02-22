@@ -18,7 +18,9 @@ use metadata::StreamInfo;
 use utility::{crc8, crc16, to_u32, power_of_two};
 
 /// Parses an audio frame
-pub fn frame_parser<'a>(input: &'a [u8], stream_info: &StreamInfo)
+pub fn frame_parser<'a>(input: &'a [u8],
+                        stream_info: &StreamInfo,
+                        buffer: &mut [i32])
                         -> IResult<&'a [u8], Frame> {
   // Unsafe way to initialize subframe data, but I would rather do this
   // than have `Subframe` derive `Copy` to do something like:
@@ -36,7 +38,7 @@ pub fn frame_parser<'a>(input: &'a [u8], stream_info: &StreamInfo)
     frame_header: apply!(header, stream_info) ~
     bits!(
       count_slice!(
-        apply!(subframe_parser, &mut channel, &frame_header),
+        apply!(subframe_parser, &frame_header, &mut channel, buffer),
         &mut subframes[0..(frame_header.channels as usize)]
       )
     ) ~
