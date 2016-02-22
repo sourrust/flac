@@ -151,7 +151,7 @@ impl<P> Stream<P> where P: StreamProducer {
             let end    = (channel + 1) * block_size;
             let output = &mut buffer[start..end];
 
-            subframe::decode(&subframe, output);
+            subframe::decode(&subframe, block_size, output);
 
             channel += 1;
           }
