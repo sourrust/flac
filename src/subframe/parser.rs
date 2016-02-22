@@ -553,7 +553,7 @@ mod tests {
                       },
                       order: 4,
                       warmup: [-24, 0, 64, -81],
-                      residual: vec![642, 0, 5, 148, -141, 178],
+                      residual: Vec::new(),
                     }))
                   , IResult::Done((&[][..], 0), Data::Fixed(Fixed {
                       entropy_coding_method: EntropyCodingMethod {
@@ -568,12 +568,20 @@ mod tests {
                       },
                       order: 2,
                       warmup: [-1, 5, 0, 0],
-                      residual: vec![-36, 66, 142, -4, 2, 0, -32, 16],
+                      residual: Vec::new(),
                     }))
                   ];
 
-    assert_eq!(fixed(inputs[0], 4, 8, 10), results[0]);
-    assert_eq!(fixed(inputs[1], 2, 4, 10), results[1]);
+    let mut buffer = [0; 10];
+    let residuals  = [ &[642, 0, 5, 148, -141, 178][..]
+                     , &[-36, 66, 142, -4, 2, 0, -32, 16][..]
+                     ];
+
+    assert_eq!(fixed(inputs[0], 4, 8, 10, &mut buffer), results[0]);
+    assert_eq!(&buffer[4..10], residuals[0]);
+
+    assert_eq!(fixed(inputs[1], 2, 4, 10, &mut buffer), results[1]);
+    assert_eq!(&buffer[2..10], residuals[1]);
   }
 
   #[test]
