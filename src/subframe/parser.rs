@@ -83,11 +83,15 @@ pub fn adjust_bits_per_sample(frame_header: &frame::Header,
 
 /// Parse a single channel of audio data.
 pub fn subframe_parser<'a>(input: (&'a [u8], usize),
+                           frame_header: &frame::Header,
                            channel: &mut usize,
-                           frame_header: &frame::Header)
+                           buffer: &mut [i32])
                            -> IResult<(&'a [u8], usize), Subframe> {
   let block_size      = frame_header.block_size as usize;
   let bits_per_sample = adjust_bits_per_sample(frame_header, *channel);
+  let start           = *channel * block_size;
+  let end             = (*channel + 1) * block_size;
+  let buffer_slice    = &mut buffer[start..end];
 
   chain!(input,
     subframe_header: header ~
@@ -97,7 +101,8 @@ pub fn subframe_parser<'a>(input: (&'a [u8], usize),
     ) ~
     subframe_data: apply!(data,
       bits_per_sample - (wasted_bits as usize),
-      block_size, subframe_header.0),
+      block_size, subframe_header.0,
+      buffer_slice),
     || {
       // Iterate over the current channel being parsed. This probably should
       // be abstracted away, but for now this is the solution.
@@ -129,18 +134,19 @@ pub fn header(input: (&[u8], usize))
   }
 }
 
-fn data(input: (&[u8], usize),
-        bits_per_sample: usize,
-        block_size: usize,
-        subframe_type: usize)
-        -> IResult<(&[u8], usize), subframe::Data> {
+fn data<'a>(input: (&'a [u8], usize),
+            bits_per_sample: usize,
+            block_size: usize,
+            subframe_type: usize,
+            buffer: &mut [i32])
+            -> IResult<(&'a [u8], usize), subframe::Data> {
   match subframe_type {
     0b000000            => constant(input, bits_per_sample),
     0b000001            => verbatim(input, bits_per_sample, block_size),
     0b001000...0b001100 => fixed(input, subframe_type & 0b0111,
-                                 bits_per_sample, block_size),
+                                 bits_per_sample, block_size, buffer),
     0b100000...0b111111 => lpc(input, (subframe_type & 0b011111) + 1,
-                               bits_per_sample, block_size),
+                               bits_per_sample, block_size, buffer),
     _                   => IResult::Error(Err::Position(
                              ErrorKind::Alt, input))
   }
@@ -151,16 +157,17 @@ pub fn constant(input: (&[u8], usize), bits_per_sample: usize)
   map!(input, take_signed_bits!(bits_per_sample), subframe::Data::Constant)
 }
 
-pub fn fixed(input: (&[u8], usize),
-             order: usize,
-             bits_per_sample: usize,
-             block_size: usize)
-             -> IResult<(&[u8], usize), subframe::Data> {
+pub fn fixed<'a>(input: (&'a [u8], usize),
+                 order: usize,
+                 bits_per_sample: usize,
+                 block_size: usize,
+                 buffer: &mut [i32])
+                 -> IResult<(&'a [u8], usize), subframe::Data> {
   let mut warmup = [0; subframe::MAX_FIXED_ORDER];
 
   chain!(input,
     count_slice!(take_signed_bits!(bits_per_sample), &mut warmup[0..order]) ~
-    tuple: apply!(residual, order, block_size),
+    tuple: apply!(residual, order, block_size, buffer),
     || {
       let data = tuple;
 
@@ -187,11 +194,12 @@ fn qlp_coefficient_precision(input: (&[u8], usize))
   }
 }
 
-pub fn lpc(input: (&[u8], usize),
-           order: usize,
-           bits_per_sample: usize,
-           block_size: usize)
-           -> IResult<(&[u8], usize), subframe::Data> {
+pub fn lpc<'a>(input: (&'a [u8], usize),
+               order: usize,
+               bits_per_sample: usize,
+               block_size: usize,
+               buffer: &mut [i32])
+               -> IResult<(&'a [u8], usize), subframe::Data> {
   let mut warmup           = [0; subframe::MAX_LPC_ORDER];
   let mut qlp_coefficients = [0; subframe::MAX_LPC_ORDER];
 
@@ -203,7 +211,7 @@ pub fn lpc(input: (&[u8], usize),
       take_signed_bits!(qlp_coeff_precision as usize),
       &mut qlp_coefficients[0..order]
     ) ~
-    tuple: apply!(residual, order, block_size),
+    tuple: apply!(residual, order, block_size, buffer),
     || {
       let data = tuple;
 
@@ -241,41 +249,40 @@ fn coding_method(input: (&[u8], usize))
   }
 }
 
-fn residual(input: (&[u8], usize),
-            predictor_order: usize,
-            block_size: usize)
-            -> IResult<(&[u8], usize),
-                       (subframe::EntropyCodingMethod, Vec<i32>)> {
+fn residual<'a>(input: (&'a [u8], usize),
+                predictor_order: usize,
+                block_size: usize,
+                buffer: &mut [i32])
+                -> IResult<(&'a [u8], usize),
+                           (subframe::EntropyCodingMethod, Vec<i32>)> {
   let (i, data) = try_parse!(input,
                     pair!(coding_method, take_bits!(u32, 4)));
 
   let (method, order) = data;
 
-  rice_partition(i, order, predictor_order, block_size, method)
+  rice_partition(i, order, predictor_order, block_size, method, buffer)
 }
 
-fn rice_partition(input: (&[u8], usize),
-                  partition_order: u32,
-                  predictor_order: usize,
-                  block_size: usize,
-                  method: CodingMethod)
-                  -> IResult<(&[u8], usize),
-                             (subframe::EntropyCodingMethod, Vec<i32>)> {
+fn rice_partition<'a>(input: (&'a [u8], usize),
+                      partition_order: u32,
+                      predictor_order: usize,
+                      block_size: usize,
+                      method: CodingMethod,
+                      buffer: &mut [i32])
+                      -> IResult<(&'a [u8], usize),
+                                 (subframe::EntropyCodingMethod, Vec<i32>)> {
   let (param_size, escape_code) = match method {
     CodingMethod::PartitionedRice  => (4, 0b1111),
     CodingMethod::PartitionedRice2 => (5, 0b11111),
   };
 
   // Adjust block size to not include allocation for warm up samples
-  let residual_size = block_size - predictor_order;
-  let partitions    = power_of_two(partition_order) as usize;
+  let partitions = power_of_two(partition_order) as usize;
+  let residual   = &mut buffer[predictor_order..];
 
   let mut mut_input = input;
-  let mut residual  = Vec::with_capacity(residual_size);
   let mut sample    = 0;
   let mut contents  = PartitionedRiceContents::new(partitions);
-
-  unsafe { residual.set_len(residual_size) }
 
   for partition in 0..partitions {
     let offset = if partition_order == 0 {
@@ -319,7 +326,7 @@ fn rice_partition(input: (&[u8], usize),
     },
   };
 
-  IResult::Done(mut_input, (entropy_coding_method, residual))
+  IResult::Done(mut_input, (entropy_coding_method, Vec::new()))
 }
 
 fn residual_data<'a>(input: (&'a [u8], usize),
