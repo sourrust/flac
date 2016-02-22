@@ -54,21 +54,22 @@ pub fn fixed_restore_signal(order: usize,
 // `MAX_LPC_ORDER`, which is 32. This function also assumes that `output`
 // already has the warm up values from the `LPC` subframe in it.
 pub fn lpc_restore_signal(quantization_level: i8,
+                          block_size: usize,
                           coefficients: &[i32],
-                          residual: &[i32],
                           output: &mut [i32]) {
-  let order = coefficients.len();
+  let order  = coefficients.len();
+  let length = block_size - order;
 
   debug_assert!(order <= MAX_LPC_ORDER);
 
-  for i in 0..residual.len() {
+  for i in 0..length {
     let offset     = i + order;
     let prediction = coefficients.iter().rev()
                        .zip(&output[i..offset])
                        .fold(0, |result, (coefficient, signal)|
                              result + coefficient * signal);
 
-    output[offset] = residual[i] + (prediction >> quantization_level);
+    output[offset] += prediction >> quantization_level;
   }
 }
 
