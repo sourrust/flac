@@ -615,7 +615,7 @@ mod tests {
                                         , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
                                         , 0, 0, 0, 0, 0, 0, 0, 0, 0
                                         ],
-                      residual: vec![22, 0, 5, 24, -17, 54],
+                      residual: Vec::new(),
                     }))
                   , IResult::Done(slice, Data::LPC(LPC {
                       entropy_coding_method: EntropyCodingMethod {
@@ -639,13 +639,21 @@ mod tests {
                                         , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
                                         , 0, 0, 0, 0, 0, 0, 0, 0, 0
                                         ],
-                      residual: vec![ -2, 3, -1, -4, 2, 27, -28, 20, 11, 9
-                                    , 12, -22, -3, 1, 1, -25, -20, 26
-                                    ],
+                      residual: Vec::new(),
                     }))
                   ];
 
-    assert_eq!(lpc(inputs[0], 4, 8, 10), results[0]);
-    assert_eq!(lpc(inputs[1], 8, 4, 26), results[1]);
+    let mut buffer = [0; 26];
+    let residuals  = [ &[22, 0, 5, 24, -17, 54][..],
+                       &[ -2, 3, -1, -4, 2, 27, -28, 20, 11, 9, 12, -22, -3, 1
+                        , 1, -25, -20, 26
+                        ][..]
+                     ];
+
+    assert_eq!(lpc(inputs[0], 4, 8, 10, &mut buffer), results[0]);
+    assert_eq!(&buffer[4..10], residuals[0]);
+
+    assert_eq!(lpc(inputs[1], 8, 4, 26, &mut buffer), results[1]);
+    assert_eq!(&buffer[8..26], residuals[1]);
   }
 }
