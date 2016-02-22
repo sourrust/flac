@@ -139,17 +139,13 @@ mod tests {
 
   #[test]
   fn test_fixed_restore_signal() {
-    let residuals   = [ &[-19, -16, 17, -23, -7, 16, -16, -5, 3
-                         , -8, -13, -15, -1][..]
-                      , &[-6513][..]
-                      ];
-    let mut outputs = [ &mut [-729, -722, -667, 0, 0, 0, 0, 0, 0
-                             , 0, 0, 0, 0, 0, 0, 0][..]
-                      , &mut [21877, 27482, 0][..]
+    let mut outputs = [ &mut [-729, -722, -667, -19, -16, 17, -23, -7, 16
+                             , -16, -5, 3, -8, -13, -15, -1][..]
+                      , &mut [21877, 27482, -6513][..]
                       ];
 
-    fixed_restore_signal(3, &residuals[0], &mut outputs[0]);
-    fixed_restore_signal(2, &residuals[1], &mut outputs[1]);
+    fixed_restore_signal(3, 16, &mut outputs[0]);
+    fixed_restore_signal(2, 3, &mut outputs[1]);
 
     assert_eq!(&outputs[0], &[-729, -722, -667, -583, -486, -359, -225, -91
                              , 59, 209, 354, 497, 630, 740, 812, 845]);
