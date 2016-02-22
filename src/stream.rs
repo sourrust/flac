@@ -137,6 +137,7 @@ impl<P> Stream<P> where P: StreamProducer {
 
   fn next_frame<'a>(&'a mut self) -> Option<usize> {
     let stream_info = &self.info;
+    let buffer      = &mut self.output;
 
     loop {
       match self.producer.parse(|i| frame_parser(i, stream_info)) {
@@ -148,14 +149,14 @@ impl<P> Stream<P> where P: StreamProducer {
           for subframe in &frame.subframes[0..channels] {
             let start  = channel * block_size;
             let end    = (channel + 1) * block_size;
-            let output = &mut self.output[start..end];
+            let output = &mut buffer[start..end];
 
             subframe::decode(&subframe, output);
 
             channel += 1;
           }
 
-          frame::decode(frame.header.channel_assignment, &mut self.output);
+          frame::decode(frame.header.channel_assignment, buffer);
 
           return Some(block_size);
         }
