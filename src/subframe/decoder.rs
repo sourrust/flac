@@ -83,7 +83,7 @@ pub fn lpc_restore_signal(quantization_level: i8,
 ///   the result into `output`.
 /// * `LPC` - restore the signal of the finite impulse response linear
 ///   prediction and put the result into `output`.
-pub fn decode(subframe: &Subframe, output: &mut [i32]) {
+pub fn decode(subframe: &Subframe, block_size: usize, output: &mut [i32]) {
   match subframe.data {
     subframe::Data::Constant(constant)     => {
       for i in 0..output.len() {
@@ -104,7 +104,7 @@ pub fn decode(subframe: &Subframe, output: &mut [i32]) {
         output[i] = fixed.warmup[i];
       }
 
-      fixed_restore_signal(order, &fixed.residual, output);
+      fixed_restore_signal(order, block_size, output);
     }
     subframe::Data::LPC(ref lpc)           => {
       let order        = lpc.order as usize;
@@ -114,7 +114,7 @@ pub fn decode(subframe: &Subframe, output: &mut [i32]) {
         output[i] = lpc.warmup[i];
       }
 
-      lpc_restore_signal(lpc.quantization_level, coefficients, &lpc.residual,
+      lpc_restore_signal(lpc.quantization_level, block_size, coefficients,
                          output);
     }
   }
