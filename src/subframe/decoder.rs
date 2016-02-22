@@ -12,7 +12,7 @@ use std::ptr;
 // This function also assumes that `output` already has the warm up values
 // from the `Fixed` subframe in it.
 pub fn fixed_restore_signal(order: usize,
-                            residual: &[i32],
+                            block_size: usize,
                             output: &mut [i32]) {
   debug_assert!(order <= MAX_FIXED_ORDER);
 
@@ -24,8 +24,9 @@ pub fn fixed_restore_signal(order: usize,
                    ];
 
   let coefficients = polynomial[order];
+  let length       = block_size - order;
 
-  for i in 0..residual.len() {
+  for i in 0..length {
     let offset     = i + order;
     let prediction = coefficients.iter()
                       .zip(&output[i..offset])
@@ -33,7 +34,7 @@ pub fn fixed_restore_signal(order: usize,
                             result + coefficient * signal);
 
 
-    output[offset] = residual[i] + prediction;
+    output[offset] += prediction;
   }
 }
 
