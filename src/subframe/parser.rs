@@ -295,7 +295,7 @@ fn rice_partition<'a>(input: (&'a [u8], usize),
       size: cond!(rice_parameter == escape_code, take_bits!(usize, 5)) ~
       apply!(residual_data,
         size, rice_parameter,
-        &mut contents.raw_bits[partition],
+        &mut contents.raw_bits()[partition],
         &mut residual[start..end]
       ),
       || { rice_parameter }
@@ -306,7 +306,7 @@ fn rice_partition<'a>(input: (&'a [u8], usize),
         mut_input = i;
         sample    = end;
 
-        contents.parameters[partition] = parameter;
+        contents.parameters()[partition] = parameter;
       }
       IResult::Error(error)       => return IResult::Error(error),
       IResult::Incomplete(need)   => return IResult::Incomplete(need),
@@ -541,8 +541,8 @@ mod tests {
                         data: PartitionedRice {
                           order: 0,
                           contents: PartitionedRiceContents {
-                            parameters: vec![8],
-                            raw_bits: vec![0],
+                            capacity: 1,
+                            data: vec![8, 0],
                           },
                         },
                       },
@@ -556,8 +556,8 @@ mod tests {
                         data: PartitionedRice {
                           order: 1,
                           contents: PartitionedRiceContents {
-                            parameters: vec![31, 31],
-                            raw_bits: vec![16, 6],
+                            capacity: 2,
+                            data: vec![31, 31, 16, 6],
                           },
                         },
                       },
@@ -594,8 +594,8 @@ mod tests {
                         data: PartitionedRice {
                           order: 0,
                           contents: PartitionedRiceContents {
-                            parameters: vec![15],
-                            raw_bits: vec![8],
+                            capacity: 1,
+                            data: vec![15, 8],
                           },
                         },
                       },
@@ -618,8 +618,8 @@ mod tests {
                         data: PartitionedRice {
                           order: 1,
                           contents: PartitionedRiceContents {
-                            parameters: vec![3, 5],
-                            raw_bits: vec![0, 0],
+                            capacity: 2,
+                            data: vec![3, 5, 0, 0],
                           },
                         },
                       },
