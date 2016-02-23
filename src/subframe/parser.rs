@@ -167,15 +167,13 @@ pub fn fixed<'a>(input: (&'a [u8], usize),
 
   chain!(input,
     count_slice!(take_signed_bits!(bits_per_sample), &mut warmup[0..order]) ~
-    tuple: apply!(residual, order, block_size, buffer),
+    entropy_coding_method: apply!(residual, order, block_size, buffer),
     || {
-      let data = tuple;
-
       subframe::Data::Fixed(subframe::Fixed {
-        entropy_coding_method: data.0,
+        entropy_coding_method: entropy_coding_method,
         order: order as u8,
         warmup: warmup,
-        residual: data.1,
+        residual: Vec::new(),
       })
     }
   )
