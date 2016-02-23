@@ -295,7 +295,7 @@ fn rice_partition<'a>(input: (&'a [u8], usize),
       size: cond!(rice_parameter == escape_code, take_bits!(usize, 5)) ~
       apply!(residual_data,
         size, rice_parameter,
-        &mut contents.raw_bits[partition],
+        &mut contents.raw_bits()[partition],
         &mut residual[start..end]
       ),
       || { rice_parameter }
@@ -306,7 +306,7 @@ fn rice_partition<'a>(input: (&'a [u8], usize),
         mut_input = i;
         sample    = end;
 
-        contents.parameters[partition] = parameter;
+        contents.parameters()[partition] = parameter;
       }
       IResult::Error(error)       => return IResult::Error(error),
       IResult::Incomplete(need)   => return IResult::Incomplete(need),
