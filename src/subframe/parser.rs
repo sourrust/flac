@@ -541,8 +541,8 @@ mod tests {
                         data: PartitionedRice {
                           order: 0,
                           contents: PartitionedRiceContents {
-                            parameters: vec![8],
-                            raw_bits: vec![0],
+                            capacity: 1,
+                            data: vec![8, 0],
                           },
                         },
                       },
@@ -556,8 +556,8 @@ mod tests {
                         data: PartitionedRice {
                           order: 1,
                           contents: PartitionedRiceContents {
-                            parameters: vec![31, 31],
-                            raw_bits: vec![16, 6],
+                            capacity: 2,
+                            data: vec![31, 31, 16, 6],
                           },
                         },
                       },
@@ -594,8 +594,8 @@ mod tests {
                         data: PartitionedRice {
                           order: 0,
                           contents: PartitionedRiceContents {
-                            parameters: vec![15],
-                            raw_bits: vec![8],
+                            capacity: 1,
+                            data: vec![15, 8],
                           },
                         },
                       },
@@ -618,8 +618,8 @@ mod tests {
                         data: PartitionedRice {
                           order: 1,
                           contents: PartitionedRiceContents {
-                            parameters: vec![3, 5],
-                            raw_bits: vec![0, 0],
+                            capacity: 2,
+                            data: vec![3, 5, 0, 0],
                           },
                         },
                       },
