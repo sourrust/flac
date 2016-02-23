@@ -105,4 +105,16 @@ impl PartitionedRiceContents {
       data: data,
     }
   }
+
+  /// Rice parameters for each context.
+  #[inline]
+  pub fn parameters(&mut self) -> &mut [u32] {
+    &mut self.data[0..self.capacity]
+  }
+
+  /// Widths for escaped-coded partitions.
+  #[inline]
+  pub fn raw_bits(&mut self) -> &mut [u32] {
+    &mut self.data[self.capacity..]
+  }
 }
