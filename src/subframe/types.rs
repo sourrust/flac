@@ -87,25 +87,22 @@ pub struct PartitionedRice {
 /// Contents of a Rice partitioned residual.
 #[derive(Debug, PartialEq, Eq)]
 pub struct PartitionedRiceContents {
-  /// Rice parameters for each context.
-  pub parameters: Vec<u32>,
-  /// Widths for escaped-coded partitions.
-  pub raw_bits: Vec<u32>,
+  /// Size of `parameters` and `raw_bits` within the data buffer.
+  pub capacity: usize,
+  /// Data buffer containing both `parameters` and `raw_bits`.
+  pub data: Vec<u32>,
 }
 
 impl PartitionedRiceContents {
   pub fn new(capacity: usize) -> PartitionedRiceContents {
-    let mut parameters = Vec::with_capacity(capacity);
-    let mut raw_bits   = Vec::with_capacity(capacity);
+    let full_capacity = capacity * 2;
+    let mut data      = Vec::with_capacity(full_capacity);
 
-    unsafe {
-      parameters.set_len(capacity);
-      raw_bits.set_len(capacity);
-    }
+    unsafe { data.set_len(full_capacity) }
 
     PartitionedRiceContents {
-      parameters: parameters,
-      raw_bits: raw_bits,
+      capacity: capacity,
+      data: data,
     }
   }
 }
