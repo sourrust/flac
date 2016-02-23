@@ -195,8 +195,8 @@ mod tests {
           data: PartitionedRice {
             order: 0,
             contents: PartitionedRiceContents {
-              parameters: vec![],
-              raw_bits: vec![],
+              capacity: 0,
+              data: Vec::new(),
             },
           },
         },
@@ -215,8 +215,8 @@ mod tests {
           data: PartitionedRice {
             order: 0,
             contents: PartitionedRiceContents {
-              parameters: vec![],
-              raw_bits: vec![],
+              capacity: 0,
+              data: Vec::new(),
             },
           },
         },
