@@ -253,8 +253,7 @@ fn residual<'a>(input: (&'a [u8], usize),
                 predictor_order: usize,
                 block_size: usize,
                 buffer: &mut [i32])
-                -> IResult<(&'a [u8], usize),
-                           (subframe::EntropyCodingMethod, Vec<i32>)> {
+                -> IResult<(&'a [u8], usize), subframe::EntropyCodingMethod> {
   let (i, data) = try_parse!(input,
                     pair!(coding_method, take_bits!(u32, 4)));
 
