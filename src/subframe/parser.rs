@@ -167,15 +167,13 @@ pub fn fixed<'a>(input: (&'a [u8], usize),
 
   chain!(input,
     count_slice!(take_signed_bits!(bits_per_sample), &mut warmup[0..order]) ~
-    tuple: apply!(residual, order, block_size, buffer),
+    entropy_coding_method: apply!(residual, order, block_size, buffer),
     || {
-      let data = tuple;
-
       subframe::Data::Fixed(subframe::Fixed {
-        entropy_coding_method: data.0,
+        entropy_coding_method: entropy_coding_method,
         order: order as u8,
         warmup: warmup,
-        residual: data.1,
+        residual: Vec::new(),
       })
     }
   )
@@ -211,18 +209,16 @@ pub fn lpc<'a>(input: (&'a [u8], usize),
       take_signed_bits!(qlp_coeff_precision as usize),
       &mut qlp_coefficients[0..order]
     ) ~
-    tuple: apply!(residual, order, block_size, buffer),
+    entropy_coding_method: apply!(residual, order, block_size, buffer),
     || {
-      let data = tuple;
-
       subframe::Data::LPC(subframe::LPC {
-        entropy_coding_method: data.0,
+        entropy_coding_method: entropy_coding_method,
         order: order as u8,
         qlp_coeff_precision: qlp_coeff_precision,
         quantization_level: quantization_level,
         qlp_coefficients: qlp_coefficients,
         warmup: warmup,
-        residual: data.1,
+        residual: Vec::new(),
       })
     }
   )
@@ -253,8 +249,7 @@ fn residual<'a>(input: (&'a [u8], usize),
                 predictor_order: usize,
                 block_size: usize,
                 buffer: &mut [i32])
-                -> IResult<(&'a [u8], usize),
-                           (subframe::EntropyCodingMethod, Vec<i32>)> {
+                -> IResult<(&'a [u8], usize), subframe::EntropyCodingMethod> {
   let (i, data) = try_parse!(input,
                     pair!(coding_method, take_bits!(u32, 4)));
 
@@ -270,7 +265,7 @@ fn rice_partition<'a>(input: (&'a [u8], usize),
                       method: CodingMethod,
                       buffer: &mut [i32])
                       -> IResult<(&'a [u8], usize),
-                                 (subframe::EntropyCodingMethod, Vec<i32>)> {
+                                 subframe::EntropyCodingMethod> {
   let (param_size, escape_code) = match method {
     CodingMethod::PartitionedRice  => (4, 0b1111),
     CodingMethod::PartitionedRice2 => (5, 0b11111),
@@ -326,7 +321,7 @@ fn rice_partition<'a>(input: (&'a [u8], usize),
     },
   };
 
-  IResult::Done(mut_input, (entropy_coding_method, Vec::new()))
+  IResult::Done(mut_input, entropy_coding_method)
 }
 
 fn residual_data<'a>(input: (&'a [u8], usize),
