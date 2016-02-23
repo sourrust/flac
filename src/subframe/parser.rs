@@ -211,18 +211,16 @@ pub fn lpc<'a>(input: (&'a [u8], usize),
       take_signed_bits!(qlp_coeff_precision as usize),
       &mut qlp_coefficients[0..order]
     ) ~
-    tuple: apply!(residual, order, block_size, buffer),
+    entropy_coding_method: apply!(residual, order, block_size, buffer),
     || {
-      let data = tuple;
-
       subframe::Data::LPC(subframe::LPC {
-        entropy_coding_method: data.0,
+        entropy_coding_method: entropy_coding_method,
         order: order as u8,
         qlp_coeff_precision: qlp_coeff_precision,
         quantization_level: quantization_level,
         qlp_coefficients: qlp_coefficients,
         warmup: warmup,
-        residual: data.1,
+        residual: Vec::new(),
       })
     }
   )
