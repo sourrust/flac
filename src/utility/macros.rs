@@ -83,3 +83,10 @@ macro_rules! take_signed_bits (
     take_signed_bits!($input, i32, $count);
   );
 );
+
+macro_rules! to_custom_error (
+  ($error_type: ident) => (
+    |_| $crate::nom::Err::Code($crate::nom::ErrorKind::Custom(
+          ::utility::ErrorKind::$error_type))
+  );
+);
