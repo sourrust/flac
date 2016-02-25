@@ -13,6 +13,8 @@ pub enum ErrorKind {
   Continue,
   EndOfInput,
   Unknown,
+  // Parser Error
+  HeaderParser,
 }
 
 /// Structure that hold a slice of bytes.
@@ -44,8 +46,8 @@ impl<'a> ByteStream<'a> {
 }
 
 impl<'a> StreamProducer for ByteStream<'a> {
-  fn parse<F, T>(&mut self, f: F) -> Result<T, ErrorKind>
-   where F: FnOnce(&[u8]) -> IResult<&[u8], T> {
+  fn parse<F, T, E>(&mut self, f: F) -> Result<T, ErrorKind>
+   where F: FnOnce(&[u8]) -> IResult<&[u8], T, E> {
     if self.is_empty() {
       return Err(ErrorKind::EndOfInput);
     }
@@ -230,8 +232,8 @@ impl<R> ReadStream<R> where R: Read {
   }
 }
 
-fn from_iresult<T>(buffer: &Buffer, result: IResult<&[u8], T>)
-                   -> Result<(usize, T), ErrorKind> {
+fn from_iresult<T, E>(buffer: &Buffer, result: IResult<&[u8], T, E>)
+                      -> Result<(usize, T), ErrorKind> {
   match result {
     IResult::Done(i, o)    => Ok((buffer.len() - i.len(), o)),
     IResult::Incomplete(n) => {
@@ -248,8 +250,8 @@ fn from_iresult<T>(buffer: &Buffer, result: IResult<&[u8], T>)
 }
 
 impl<R> StreamProducer for ReadStream<R> where R: Read {
-  fn parse<F, T>(&mut self, f: F) -> Result<T, ErrorKind>
-   where F: FnOnce(&[u8]) -> IResult<&[u8], T> {
+  fn parse<F, T, E>(&mut self, f: F) -> Result<T, ErrorKind>
+   where F: FnOnce(&[u8]) -> IResult<&[u8], T, E> {
     if self.state != ParserState::EndOfInput {
       try!(self.fill().map_err(ErrorKind::IO));
     }
