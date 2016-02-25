@@ -69,13 +69,13 @@ fn metadata_parser_(input: &[u8]) -> IResult<&[u8], Metadata, ErrorKind> {
 }
 
 fn parser<'a>(input: &'a [u8], state: &mut ParserState)
-              -> IResult<&'a [u8], Metadata> {
+              -> IResult<&'a [u8], Metadata, ErrorKind> {
   let mut slice = input;
-  let error     = nom::Err::Code(nom::ErrorKind::Custom(10));
+  let error     = nom::Err::Code(nom::ErrorKind::Custom(ErrorKind::Unknown));
 
 
   if *state == ParserState::Header {
-    let (i, _) = try_parse!(slice, tag!("fLaC"));
+    let (i, _) = try_parse!(slice, header_parser);
 
     slice  = i;
     *state = ParserState::StreamInfo;
@@ -83,7 +83,7 @@ fn parser<'a>(input: &'a [u8], state: &mut ParserState)
 
   match *state {
     ParserState::StreamInfo => {
-      let (i, block) = try_parse!(slice, metadata_parser);
+      let (i, block) = try_parse!(slice, metadata_parser_);
 
       if block.is_stream_info() {
         *state = ParserState::Metadata;
@@ -93,7 +93,7 @@ fn parser<'a>(input: &'a [u8], state: &mut ParserState)
         IResult::Error(error)
       }
     }
-    ParserState::Metadata   => metadata_parser(slice),
+    ParserState::Metadata   => metadata_parser_(slice),
     _                       => IResult::Error(error),
   }
 }
