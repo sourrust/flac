@@ -58,6 +58,16 @@ enum ParserState {
   Metadata
 }
 
+#[inline]
+fn header_parser(input: &[u8]) -> IResult<&[u8], &[u8], ErrorKind> {
+  tag!(input, "fLaC").map_err(to_custom_error!(HeaderParser))
+}
+
+#[inline]
+fn metadata_parser_(input: &[u8]) -> IResult<&[u8], Metadata, ErrorKind> {
+  metadata_parser(input).map_err(to_custom_error!(Unknown))
+}
+
 fn parser<'a>(input: &'a [u8], state: &mut ParserState)
               -> IResult<&'a [u8], Metadata> {
   let mut slice = input;
