@@ -13,6 +13,8 @@ pub enum ErrorKind {
   Continue,
   EndOfInput,
   Unknown,
+  // Parser Error
+  HeaderParser,
 }
 
 /// Structure that hold a slice of bytes.
