@@ -1,8 +1,9 @@
 use nom::{
+  self,
   be_u8, be_u16, be_u32, be_u64,
   le_u32,
   IResult, Needed,
-  ErrorKind, Err,
+  Err,
 };
 
 use std::collections::HashMap;
@@ -13,7 +14,7 @@ use metadata::{
   SeekPoint, CueSheetTrack, CueSheetTrackIndex, PictureType,
 };
 
-use utility::to_u32;
+use utility::{ErrorKind, to_u32};
 
 /// Parse a metadata block.
 pub fn metadata_parser(input: &[u8]) -> IResult<&[u8], Metadata> {
@@ -254,8 +255,8 @@ pub fn unknown(input: &[u8], length: u32) -> IResult<&[u8], metadata::Data> {
     metadata::Data::Unknown(data.to_owned()))
 }
 
-named!(pub header <&[u8], (bool, u8, u32)>,
-  chain!(
+pub fn header(input: &[u8]) -> IResult<&[u8], (bool, u8, u32), ErrorKind> {
+  chain!(input,
     block_byte: be_u8 ~
     length: map!(take!(3), to_u32),
     || {
@@ -264,8 +265,8 @@ named!(pub header <&[u8], (bool, u8, u32)>,
 
       (is_last, block_type, length)
     }
-  )
-);
+  ).map_err(to_custom_error!(MetadataHeaderParser))
+}
 
 pub fn block_data(input: &[u8], block_type: u8, length: u32)
                   -> IResult<&[u8], metadata::Data> {
