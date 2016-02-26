@@ -8,7 +8,7 @@ use super::StreamProducer;
 
 #[derive(Debug)]
 pub enum ErrorKind {
-  IO(io::Error),
+  IO(io::ErrorKind),
   Incomplete(usize),
   Continue,
   EndOfInput,
@@ -253,7 +253,7 @@ impl<R> StreamProducer for ReadStream<R> where R: Read {
   fn parse<F, T, E>(&mut self, f: F) -> Result<T, ErrorKind>
    where F: FnOnce(&[u8]) -> IResult<&[u8], T, E> {
     if self.state != ParserState::EndOfInput {
-      try!(self.fill().map_err(ErrorKind::IO));
+      try!(self.fill().map_err(|e| ErrorKind::IO(e.kind())));
     }
 
     let mut buffer = &mut self.buffer;
