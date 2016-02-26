@@ -15,6 +15,17 @@ pub enum ErrorKind {
   Unknown,
   // Parser Error
   HeaderParser,
+  MetadataHeaderParser,
+  StreamInfoParser,
+  PaddingParser,
+  ApplicationParser,
+  SeekTableParser,
+  VorbisCommentParser,
+  CueSheetParser,
+  PictureParser,
+  UnknowParser,
+  // Invalid Error
+  InvalidBlockType,
 }
 
 /// Structure that hold a slice of bytes.
