@@ -17,7 +17,7 @@ use metadata::{
 use utility::{ErrorKind, to_u32};
 
 /// Parse a metadata block.
-pub fn metadata_parser(input: &[u8]) -> IResult<&[u8], Metadata> {
+pub fn metadata_parser(input: &[u8]) -> IResult<&[u8], Metadata, ErrorKind> {
   chain!(input,
     block_header: header ~
     data: apply!(block_data, block_header.1, block_header.2),
