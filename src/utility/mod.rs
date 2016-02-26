@@ -63,16 +63,10 @@ fn header_parser(input: &[u8]) -> IResult<&[u8], &[u8], ErrorKind> {
   tag!(input, "fLaC").map_err(to_custom_error!(HeaderParser))
 }
 
-#[inline]
-fn metadata_parser_(input: &[u8]) -> IResult<&[u8], Metadata, ErrorKind> {
-  metadata_parser(input).map_err(to_custom_error!(Unknown))
-}
-
 fn parser<'a>(input: &'a [u8], state: &mut ParserState)
               -> IResult<&'a [u8], Metadata, ErrorKind> {
   let mut slice = input;
   let error     = nom::Err::Code(nom::ErrorKind::Custom(ErrorKind::Unknown));
-
 
   if *state == ParserState::Header {
     let (i, _) = try_parse!(slice, header_parser);
@@ -83,7 +77,7 @@ fn parser<'a>(input: &'a [u8], state: &mut ParserState)
 
   match *state {
     ParserState::StreamInfo => {
-      let (i, block) = try_parse!(slice, metadata_parser_);
+      let (i, block) = try_parse!(slice, metadata_parser);
 
       if block.is_stream_info() {
         *state = ParserState::Metadata;
@@ -93,7 +87,7 @@ fn parser<'a>(input: &'a [u8], state: &mut ParserState)
         IResult::Error(error)
       }
     }
-    ParserState::Metadata   => metadata_parser_(slice),
+    ParserState::Metadata   => metadata_parser(slice),
     _                       => IResult::Error(error),
   }
 }
