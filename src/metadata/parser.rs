@@ -269,7 +269,7 @@ pub fn header(input: &[u8]) -> IResult<&[u8], (bool, u8, u32), ErrorKind> {
 }
 
 pub fn block_data(input: &[u8], block_type: u8, length: u32)
-                  -> IResult<&[u8], metadata::Data> {
+                  -> IResult<&[u8], metadata::Data, ErrorKind> {
   let len = length as usize;
 
   if len > input.len() {
@@ -279,15 +279,20 @@ pub fn block_data(input: &[u8], block_type: u8, length: u32)
   }
 
   match block_type {
-    0       => stream_info(input),
-    1       => padding(input, length),
-    2       => application(input, length),
-    3       => seek_table(input, length),
-    4       => vorbis_comment(input),
-    5       => cue_sheet(input),
-    6       => picture(input),
-    7...126 => unknown(input, length),
-    _       => IResult::Error(Err::Position(ErrorKind::Alt, input)),
+    0       => stream_info(input).map_err(to_custom_error!(StreamInfoParser)),
+    1       => padding(input, length).map_err(
+                 to_custom_error!(PaddingParser)),
+    2       => application(input, length).map_err(
+                 to_custom_error!(ApplicationParser)),
+    3       => seek_table(input, length).map_err(
+                 to_custom_error!(SeekTableParser)),
+    4       => vorbis_comment(input).map_err(
+                 to_custom_error!(VorbisCommentParser)),
+    5       => cue_sheet(input).map_err(to_custom_error!(CueSheetParser)),
+    6       => picture(input).map_err(to_custom_error!(PictureParser)),
+    7...126 => unknown(input, length).map_err(to_custom_error!(UnknowParser)),
+    _       => IResult::Error(Err::Code(
+                 nom::ErrorKind::Custom(ErrorKind::InvalidBlockType))),
   }
 }
 
