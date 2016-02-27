@@ -1,12 +1,8 @@
-use nom::{
-  IResult,
-  ErrorKind, Err,
-  Needed,
-};
+use nom::{self, IResult, Err, Needed};
 
 use frame::{self, ChannelAssignment};
 use subframe::{self, Subframe, CodingMethod, PartitionedRiceContents};
-use utility::power_of_two;
+use utility::{ErrorKind, power_of_two};
 
 // Parser used to parse unary notation. Naming the parser `leading_zeros`
 // was something that felt more clear in the code. It actually tells the
@@ -49,7 +45,7 @@ pub fn leading_zeros(input: (&[u8], usize)) -> IResult<(&[u8], usize), u32> {
   } else if index + 2 > bytes_len {
     IResult::Incomplete(Needed::Size(index + 2))
   } else {
-    IResult::Error(Err::Position(ErrorKind::TakeUntil, (bytes, offset)))
+    IResult::Error(Err::Position(nom::ErrorKind::TakeUntil, (bytes, offset)))
   }
 }
 
@@ -86,7 +82,8 @@ pub fn subframe_parser<'a>(input: (&'a [u8], usize),
                            frame_header: &frame::Header,
                            channel: &mut usize,
                            buffer: &mut [i32])
-                           -> IResult<(&'a [u8], usize), Subframe> {
+                           -> IResult<(&'a [u8], usize), Subframe,
+                                      ErrorKind> {
   let block_size      = frame_header.block_size as usize;
   let bits_per_sample = adjust_bits_per_sample(frame_header, *channel);
   let start           = *channel * block_size;
@@ -113,7 +110,7 @@ pub fn subframe_parser<'a>(input: (&'a [u8], usize),
         wasted_bits: wasted_bits,
       }
     }
-  )
+  ).map_err(to_custom_error!(Unknown))
 }
 
 // Parses the first byte of the subframe. The first bit must be zero to
@@ -130,7 +127,7 @@ pub fn header(input: (&[u8], usize))
   if is_valid {
     IResult::Done(i, (subframe_type as usize, has_wasted_bits))
   } else {
-    IResult::Error(Err::Position(ErrorKind::Digit, input))
+    IResult::Error(Err::Position(nom::ErrorKind::Digit, input))
   }
 }
 
@@ -148,7 +145,7 @@ fn data<'a>(input: (&'a [u8], usize),
     0b100000...0b111111 => lpc(input, (subframe_type & 0b011111) + 1,
                                bits_per_sample, block_size, buffer),
     _                   => IResult::Error(Err::Position(
-                             ErrorKind::Alt, input))
+                             nom::ErrorKind::Alt, input))
   }
 }
 
@@ -186,7 +183,7 @@ fn qlp_coefficient_precision(input: (&[u8], usize))
   let (i, precision) = try_parse!(input, take_bits!(u8, 4));
 
   if precision == 0b1111 {
-    IResult::Error(Err::Position(ErrorKind::Digit, input))
+    IResult::Error(Err::Position(nom::ErrorKind::Digit, input))
   } else {
     IResult::Done(i, precision + 1)
   }
@@ -241,7 +238,7 @@ fn coding_method(input: (&[u8], usize))
   match method {
     0 => IResult::Done(i, CodingMethod::PartitionedRice),
     1 => IResult::Done(i, CodingMethod::PartitionedRice2),
-    _ => IResult::Error(Err::Position(ErrorKind::Alt, input)),
+    _ => IResult::Error(Err::Position(nom::ErrorKind::Alt, input)),
   }
 }
 
@@ -389,7 +386,7 @@ fn encoded_residuals<'a>(input: (&'a [u8], usize),
   }
 
   if is_error {
-    IResult::Error(Err::Position(ErrorKind::Count, input))
+    IResult::Error(Err::Position(nom::ErrorKind::Count, input))
   } else if count == length {
     IResult::Done(mut_input, ())
   } else {

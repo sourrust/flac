@@ -1,7 +1,8 @@
 use nom::{
+  self,
   be_u8, be_u16,
   IResult,
-  ErrorKind, Err,
+  Err,
 };
 
 use std::mem;
@@ -15,13 +16,13 @@ use frame::{
 use subframe::{subframe_parser, Subframe};
 
 use metadata::StreamInfo;
-use utility::{crc8, crc16, to_u32, power_of_two};
+use utility::{ErrorKind, crc8, crc16, to_u32, power_of_two};
 
 /// Parses an audio frame
 pub fn frame_parser<'a>(input: &'a [u8],
                         stream_info: &StreamInfo,
                         buffer: &mut [i32])
-                        -> IResult<&'a [u8], Frame> {
+                        -> IResult<&'a [u8], Frame, ErrorKind> {
   // Unsafe way to initialize subframe data, but I would rather do this
   // than have `Subframe` derive `Copy` to do something like:
   //
@@ -61,7 +62,8 @@ pub fn frame_parser<'a>(input: &'a [u8],
       if crc16(&input[0..end]) == crc {
         IResult::Done(i, frame)
       } else {
-        IResult::Error(Err::Position(ErrorKind::Digit, input))
+        IResult::Error(Err::Position(
+          nom::ErrorKind::Custom(ErrorKind::InvalidCRC16), input))
       }
     }
     IResult::Error(error)     => IResult::Error(error),
@@ -86,7 +88,7 @@ pub fn blocking_strategy(input: &[u8]) -> IResult<&[u8], bool> {
 
     IResult::Done(i, is_variable_block_size)
   } else {
-    IResult::Error(Err::Position(ErrorKind::Digit, input))
+    IResult::Error(Err::Position(nom::ErrorKind::Digit, input))
   }
 }
 
@@ -104,7 +106,7 @@ pub fn block_sample(input: &[u8]) -> IResult<&[u8], (u8, u8)> {
   if is_valid {
     IResult::Done(i, (block_byte, sample_byte))
   } else {
-    IResult::Error(Err::Position(ErrorKind::Digit, input))
+    IResult::Error(Err::Position(nom::ErrorKind::Digit, input))
   }
 }
 
@@ -138,7 +140,7 @@ pub fn channel_bits(input: &[u8])
   if is_valid {
     IResult::Done(i, (channel_assignment, channels, size_byte))
   } else {
-    IResult::Error(Err::Position(ErrorKind::Digit, input))
+    IResult::Error(Err::Position(nom::ErrorKind::Digit, input))
   }
 }
 
@@ -184,7 +186,7 @@ pub fn number_type(input: &[u8], is_sample: bool,
   }
 
   if is_error {
-    IResult::Error(Err::Position(ErrorKind::Digit, input))
+    IResult::Error(Err::Position(nom::ErrorKind::Digit, input))
   } else if is_sample {
     IResult::Done(i, NumberType::Sample(result))
   } else {
@@ -211,7 +213,7 @@ pub fn secondary_sample_rate(input: &[u8], sample_byte: u8)
 }
 
 pub fn header<'a>(input: &'a [u8], stream_info: &StreamInfo)
-                  -> IResult<&'a [u8], Header> {
+                  -> IResult<&'a [u8], Header, ErrorKind> {
   let result = chain!(input,
     is_variable_block_size: blocking_strategy ~
     tuple0: block_sample ~
@@ -273,7 +275,7 @@ pub fn header<'a>(input: &'a [u8], stream_info: &StreamInfo)
         crc: crc,
       }
     }
-  );
+  ).map_err(to_custom_error!(Unknown));
 
   match result {
     IResult::Done(i, frame_header) => {
@@ -283,7 +285,8 @@ pub fn header<'a>(input: &'a [u8], stream_info: &StreamInfo)
       if crc8(&input[0..end]) == frame_header.crc {
         IResult::Done(i, frame_header)
       } else {
-        IResult::Error(Err::Position(ErrorKind::Digit, input))
+        IResult::Error(Err::Position(
+          nom::ErrorKind::Custom(ErrorKind::InvalidCRC8), input))
       }
     }
     IResult::Error(error)          => IResult::Error(error),
@@ -291,7 +294,9 @@ pub fn header<'a>(input: &'a [u8], stream_info: &StreamInfo)
   }
 }
 
-named!(pub footer <&[u8], Footer>, map!(be_u16, Footer));
+pub fn footer(input: &[u8]) -> IResult<&[u8], Footer, ErrorKind> {
+  map!(input, be_u16, Footer).map_err(to_custom_error!(FrameFooterParser))
+}
 
 #[cfg(test)]
 mod tests {

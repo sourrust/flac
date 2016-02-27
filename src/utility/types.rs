@@ -24,8 +24,11 @@ pub enum ErrorKind {
   CueSheetParser,
   PictureParser,
   UnknowParser,
+  FrameFooterParser,
   // Invalid Error
   InvalidBlockType,
+  InvalidCRC8,
+  InvalidCRC16,
 }
 
 /// Structure that hold a slice of bytes.
