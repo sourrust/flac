@@ -88,7 +88,7 @@ pub fn blocking_strategy(input: &[u8]) -> IResult<&[u8], bool> {
 
     IResult::Done(i, is_variable_block_size)
   } else {
-    IResult::Error(Err::Position(ErrorKind::Digit, input))
+    IResult::Error(Err::Position(nom::ErrorKind::Digit, input))
   }
 }
 
@@ -106,7 +106,7 @@ pub fn block_sample(input: &[u8]) -> IResult<&[u8], (u8, u8)> {
   if is_valid {
     IResult::Done(i, (block_byte, sample_byte))
   } else {
-    IResult::Error(Err::Position(ErrorKind::Digit, input))
+    IResult::Error(Err::Position(nom::ErrorKind::Digit, input))
   }
 }
 
@@ -140,7 +140,7 @@ pub fn channel_bits(input: &[u8])
   if is_valid {
     IResult::Done(i, (channel_assignment, channels, size_byte))
   } else {
-    IResult::Error(Err::Position(ErrorKind::Digit, input))
+    IResult::Error(Err::Position(nom::ErrorKind::Digit, input))
   }
 }
 
@@ -186,7 +186,7 @@ pub fn number_type(input: &[u8], is_sample: bool,
   }
 
   if is_error {
-    IResult::Error(Err::Position(ErrorKind::Digit, input))
+    IResult::Error(Err::Position(nom::ErrorKind::Digit, input))
   } else if is_sample {
     IResult::Done(i, NumberType::Sample(result))
   } else {
