@@ -294,7 +294,9 @@ pub fn header<'a>(input: &'a [u8], stream_info: &StreamInfo)
   }
 }
 
-named!(pub footer <&[u8], Footer>, map!(be_u16, Footer));
+pub fn footer(input: &[u8]) -> IResult<&[u8], Footer, ErrorKind> {
+  map!(input, be_u16, Footer).map_err(to_custom_error!(FrameFooterParser))
+}
 
 #[cfg(test)]
 mod tests {
