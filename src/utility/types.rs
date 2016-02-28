@@ -1,4 +1,4 @@
-use nom::{IResult, Needed};
+use nom::{self, IResult, Needed};
 
 use std::io::{self, Read};
 use std::ptr;
@@ -81,7 +81,20 @@ impl<'a> StreamProducer for ByteStream<'a> {
 
         Err(ErrorKind::Incomplete(needed))
       }
-      IResult::Error(_)      => Err(ErrorKind::Unknown),
+      IResult::Error(e)      => {
+        match e {
+          nom::Err::Code(k)               |
+          nom::Err::Node(k, _)            |
+          nom::Err::Position(k, _)        |
+          nom::Err::NodePosition(k, _, _) => {
+            if let nom::ErrorKind::Custom(kind) = k {
+              Err(kind)
+            } else {
+              Err(ErrorKind::Unknown)
+            }
+          }
+        }
+      },
     }
   }
 }
@@ -246,8 +259,8 @@ impl<R> ReadStream<R> where R: Read {
   }
 }
 
-fn from_iresult<T, E>(buffer: &Buffer, result: IResult<&[u8], T, E>)
-                      -> Result<(usize, T), ErrorKind> {
+fn from_iresult<T>(buffer: &Buffer, result: IResult<&[u8], T, ErrorKind>)
+                   -> Result<(usize, T), ErrorKind> {
   match result {
     IResult::Done(i, o)    => Ok((buffer.len() - i.len(), o)),
     IResult::Incomplete(n) => {
