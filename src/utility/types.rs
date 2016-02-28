@@ -320,7 +320,12 @@ impl<R> StreamProducer for ReadStream<R> where R: Read {
 mod tests {
   use super::*;
   use utility::StreamProducer;
-  use nom::be_u32;
+  use nom::{self, IResult};
+
+  #[inline]
+  fn be_u32(input: &[u8]) -> IResult<&[u8], u32, ErrorKind> {
+    nom::be_u32(input).map_err(to_custom_error!(Unknown))
+  }
 
   #[test]
   fn test_buffer() {
