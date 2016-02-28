@@ -14,8 +14,8 @@ use metadata::{Metadata, metadata_parser};
 /// External parsers get passed in and consumes the bytes held internally
 /// and outputs the `Result` of that parser.
 pub trait StreamProducer {
-  fn parse<F, T, E>(&mut self, f: F) -> Result<T, ErrorKind>
-   where F: FnOnce(&[u8]) -> IResult<&[u8], T, E>;
+  fn parse<F, T>(&mut self, f: F) -> Result<T, ErrorKind>
+   where F: FnOnce(&[u8]) -> IResult<&[u8], T, ErrorKind>;
 }
 
 // Convert one to four byte slices into an unsigned 32-bit number.

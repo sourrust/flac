@@ -60,8 +60,8 @@ impl<'a> ByteStream<'a> {
 }
 
 impl<'a> StreamProducer for ByteStream<'a> {
-  fn parse<F, T, E>(&mut self, f: F) -> Result<T, ErrorKind>
-   where F: FnOnce(&[u8]) -> IResult<&[u8], T, E> {
+  fn parse<F, T>(&mut self, f: F) -> Result<T, ErrorKind>
+   where F: FnOnce(&[u8]) -> IResult<&[u8], T, ErrorKind> {
     if self.is_empty() {
       return Err(ErrorKind::EndOfInput);
     }
@@ -259,13 +259,26 @@ fn from_iresult<T, E>(buffer: &Buffer, result: IResult<&[u8], T, E>)
 
       Err(ErrorKind::Incomplete(needed))
     }
-    IResult::Error(_)      => Err(ErrorKind::Unknown),
+    IResult::Error(e)      => {
+      match e {
+        nom::Err::Code(k)               |
+        nom::Err::Node(k, _)            |
+        nom::Err::Position(k, _)        |
+        nom::Err::NodePosition(k, _, _) => {
+          if let nom::ErrorKind::Custom(kind) = k {
+            Err(kind)
+          } else {
+            Err(ErrorKind::Unknown)
+          }
+        }
+      }
+    },
   }
 }
 
 impl<R> StreamProducer for ReadStream<R> where R: Read {
-  fn parse<F, T, E>(&mut self, f: F) -> Result<T, ErrorKind>
-   where F: FnOnce(&[u8]) -> IResult<&[u8], T, E> {
+  fn parse<F, T>(&mut self, f: F) -> Result<T, ErrorKind>
+   where F: FnOnce(&[u8]) -> IResult<&[u8], T, ErrorKind> {
     if self.state != ParserState::EndOfInput {
       try!(self.fill().map_err(|e| ErrorKind::IO(e.kind())));
     }
