@@ -1,8 +1,8 @@
-use std::io::{self, Error, Result};
+use std::io;
 use std::u32;
 use std::fs::File;
 
-use utility::{ReadStream, many_metadata};
+use utility::{ErrorKind, ReadStream, many_metadata};
 
 use metadata::{
   Metadata, Data,
@@ -27,17 +27,21 @@ pub fn optional_eq<T: Eq>(option: Option<T>, other: T) -> bool {
 // * `ErrorKind::NotFound` is returned when the given filename isn't found.
 // * `ErrorKind::InvalidData` is returned when the data within the file
 //   isn't valid FLAC data.
-pub fn get_metadata(filename: &str) -> Result<Vec<Metadata>> {
-  File::open(filename).and_then(|file| {
+pub fn get_metadata(filename: &str) -> Result<Vec<Metadata>, ErrorKind> {
+  File::open(filename).map_err(|e| ErrorKind::IO(e.kind()))
+                      .and_then(|file| {
     let mut stream   = ReadStream::new(file);
     let mut metadata = Vec::new();
 
-    let is_error = many_metadata(&mut stream, |block| metadata.push(block));
+    let result = many_metadata(&mut stream, |block| metadata.push(block));
 
-    if is_error {
-      let error_str = "parser: couldn't find any metadata";
-
-      Err(Error::new(io::ErrorKind::InvalidData, error_str))
+    if let Err(kind) = result {
+      match kind {
+        ErrorKind::HeaderParser |
+        ErrorKind::Unknown      => Err(ErrorKind::IO(
+                                     io::ErrorKind::InvalidData)),
+        _                       => Err(kind),
+      }
     } else {
       Ok(metadata)
     }
