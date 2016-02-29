@@ -69,7 +69,7 @@ pub fn get_metadata(filename: &str) -> Result<Vec<Metadata>, ErrorKind> {
 ///   Ok(stream_info) => {
 ///     // Use the stream_info variable...
 ///   }
-///   Err(error)      => println!("{}", error),
+///   Err(error)      => println!("{:?}", error),
 /// }
 /// ```
 ///
@@ -116,7 +116,7 @@ pub fn get_stream_info(filename: &str) -> Result<StreamInfo, ErrorKind> {
 ///   Ok(vorbis_comment) => {
 ///     // Use the vorbis_comment variable...
 ///   }
-///   Err(error)         => println!("{}", error),
+///   Err(error)         => println!("{:?}", error),
 /// }
 /// ```
 ///
@@ -164,7 +164,7 @@ pub fn get_vorbis_comment(filename: &str)
 ///   Ok(cue_sheet) => {
 ///     // Use the cue_sheet variable...
 ///   }
-///   Err(error)    => println!("{}", error),
+///   Err(error)    => println!("{:?}", error),
 /// }
 /// ```
 ///
@@ -227,7 +227,7 @@ pub fn get_cue_sheet(filename: &str) -> Result<CueSheet, ErrorKind> {
 ///   Ok(picture) => {
 ///     // Use the picture variable...
 ///   }
-///   Err(error)  => println!("{}", error),
+///   Err(error)  => println!("{:?}", error),
 /// }
 /// ```
 ///
