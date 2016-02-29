@@ -29,6 +29,8 @@ pub enum ErrorKind {
   InvalidBlockType,
   InvalidCRC8,
   InvalidCRC16,
+  // Not Found
+  NotFound,
 }
 
 /// Structure that hold a slice of bytes.
