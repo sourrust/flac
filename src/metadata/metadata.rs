@@ -291,7 +291,9 @@ pub fn get_picture(filename: &str,
 #[cfg(test)]
 mod tests {
   use super::*;
-  use std::io::ErrorKind;
+  use std::io;
+
+  use utility::ErrorKind;
 
   #[test]
   #[should_panic]
@@ -311,8 +313,10 @@ mod tests {
     let invalid_data = get_metadata("README.md");
     let result       = get_metadata("tests/assets/input-SVAUP.flac");
 
-    assert_eq!(not_found.unwrap_err().kind(), ErrorKind::NotFound);
-    assert_eq!(invalid_data.unwrap_err().kind(), ErrorKind::InvalidData);
+    assert_eq!(not_found.unwrap_err(), ErrorKind::IO(
+                                         io::ErrorKind::NotFound));
+    assert_eq!(invalid_data.unwrap_err(), ErrorKind::IO(
+                                            io::ErrorKind::InvalidData));
     assert!(result.is_ok());
   }
 }
