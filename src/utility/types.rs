@@ -23,7 +23,7 @@ pub enum ErrorKind {
   VorbisCommentParser,
   CueSheetParser,
   PictureParser,
-  UnknowParser,
+  UnknownParser,
   FrameFooterParser,
   // Invalid Error
   InvalidBlockType,
