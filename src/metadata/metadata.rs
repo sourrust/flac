@@ -80,10 +80,9 @@ pub fn get_metadata(filename: &str) -> Result<Vec<Metadata>, ErrorKind> {
 ///
 /// let stream_info = metadata::get_stream_info("path/to/file.flac").unwrap();
 /// ```
-pub fn get_stream_info(filename: &str) -> Result<StreamInfo> {
+pub fn get_stream_info(filename: &str) -> Result<StreamInfo, ErrorKind> {
   get_metadata(filename).and_then(|blocks| {
-    let error_str  = "metadata: couldn't find StreamInfo";
-    let mut result = Err(Error::new(io::ErrorKind::NotFound, error_str));
+    let mut result = Err(ErrorKind::NotFound);
 
     for block in blocks {
       if let Data::StreamInfo(stream_info) = block.data {
@@ -129,10 +128,10 @@ pub fn get_stream_info(filename: &str) -> Result<StreamInfo> {
 /// let vorbis_comment =
 ///   metadata::get_vorbis_comment("path/to/file.flac").unwrap();
 /// ```
-pub fn get_vorbis_comment(filename: &str) -> Result<VorbisComment> {
+pub fn get_vorbis_comment(filename: &str)
+                          -> Result<VorbisComment, ErrorKind> {
   get_metadata(filename).and_then(|blocks| {
-    let error_str  = "metadata: couldn't find VorbisComment";
-    let mut result = Err(Error::new(io::ErrorKind::NotFound, error_str));
+    let mut result = Err(ErrorKind::NotFound);
 
     for block in blocks {
       if let Data::VorbisComment(vorbis_comment) = block.data {
@@ -176,10 +175,9 @@ pub fn get_vorbis_comment(filename: &str) -> Result<VorbisComment> {
 ///
 /// let cue_sheet = metadata::get_cue_sheet("path/to/file.flac").unwrap();
 /// ```
-pub fn get_cue_sheet(filename: &str) -> Result<CueSheet> {
+pub fn get_cue_sheet(filename: &str) -> Result<CueSheet, ErrorKind> {
   get_metadata(filename).and_then(|blocks| {
-    let error_str  = "metadata: couldn't find CueSheet";
-    let mut result = Err(Error::new(io::ErrorKind::NotFound, error_str));
+    let mut result = Err(ErrorKind::NotFound);
 
     for block in blocks {
       if let Data::CueSheet(cue_sheet) = block.data {
@@ -253,10 +251,9 @@ pub fn get_picture(filename: &str,
                    max_height: Option<u32>,
                    max_depth: Option<u32>,
                    max_colors: Option<u32>)
-                   -> Result<Picture> {
+                   -> Result<Picture, ErrorKind> {
   get_metadata(filename).and_then(|blocks| {
-    let error_str  = "metadata: couldn't find any Picture";
-    let mut result = Err(Error::new(io::ErrorKind::NotFound, error_str));
+    let mut result = Err(ErrorKind::NotFound);
 
     let mut max_area_seen  = 0;
     let mut max_depth_seen = 0;
