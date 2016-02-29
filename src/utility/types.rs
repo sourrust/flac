@@ -23,12 +23,14 @@ pub enum ErrorKind {
   VorbisCommentParser,
   CueSheetParser,
   PictureParser,
-  UnknowParser,
+  UnknownParser,
   FrameFooterParser,
   // Invalid Error
   InvalidBlockType,
   InvalidCRC8,
   InvalidCRC16,
+  // Not Found
+  NotFound,
 }
 
 /// Structure that hold a slice of bytes.

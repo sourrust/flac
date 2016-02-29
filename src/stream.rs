@@ -91,7 +91,7 @@ impl<P> Stream<P> where P: StreamProducer {
     let mut stream_info = StreamInfo::new();
     let mut metadata    = Vec::new();
 
-    let is_error = many_metadata(&mut producer, |block| {
+    let result = many_metadata(&mut producer, |block| {
       if let metadata::Data::StreamInfo(info) = block.data {
         stream_info = info;
       } else {
@@ -99,7 +99,7 @@ impl<P> Stream<P> where P: StreamProducer {
       }
     });
 
-    if !is_error {
+    if result.is_ok() {
       Ok(Stream {
         info: stream_info,
         metadata: metadata,

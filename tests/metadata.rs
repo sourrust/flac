@@ -1,8 +1,7 @@
 extern crate flac;
 
-use flac::metadata;
+use flac::{metadata, ErrorKind};
 use flac::metadata::{Picture, PictureType};
-use std::io::ErrorKind;
 
 fn compare_all_but_data(picture: &Picture, other_picture: &Picture) -> bool {
   (picture.picture_type == other_picture.picture_type) &&
@@ -27,7 +26,7 @@ fn test_get_vorbis_comment() {
   let no_tags = metadata::get_vorbis_comment("tests/assets/input-SCPAP.flac");
 
   assert!(tags.is_ok(), "Should have vorbis comments");
-  assert_eq!(no_tags.unwrap_err().kind(), ErrorKind::NotFound);
+  assert_eq!(no_tags.unwrap_err(), ErrorKind::NotFound);
 }
 
 #[test]
@@ -36,7 +35,7 @@ fn test_get_cue_sheet() {
   let no_cue_sheet = metadata::get_cue_sheet("tests/assets/input-SVAUP.flac");
 
   assert!(cue_sheet.is_ok(), "Should have a cue sheet");
-  assert_eq!(no_cue_sheet.unwrap_err().kind(), ErrorKind::NotFound);
+  assert_eq!(no_cue_sheet.unwrap_err(), ErrorKind::NotFound);
 }
 
 #[test]
@@ -97,5 +96,5 @@ fn test_get_picture() {
           "One constraint option");
   assert!(compare_all_but_data(&no_option.unwrap(), &picture3),
           "No constraint option");
-  assert_eq!(no_picture.unwrap_err().kind(), ErrorKind::NotFound);
+  assert_eq!(no_picture.unwrap_err(), ErrorKind::NotFound);
 }

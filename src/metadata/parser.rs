@@ -290,7 +290,8 @@ pub fn block_data(input: &[u8], block_type: u8, length: u32)
                  to_custom_error!(VorbisCommentParser)),
     5       => cue_sheet(input).map_err(to_custom_error!(CueSheetParser)),
     6       => picture(input).map_err(to_custom_error!(PictureParser)),
-    7...126 => unknown(input, length).map_err(to_custom_error!(UnknowParser)),
+    7...126 => unknown(input, length).map_err(
+                 to_custom_error!(UnknownParser)),
     _       => IResult::Error(Err::Code(
                  nom::ErrorKind::Custom(ErrorKind::InvalidBlockType))),
   }

@@ -92,11 +92,11 @@ fn parser<'a>(input: &'a [u8], state: &mut ParserState)
   }
 }
 
-pub fn many_metadata<S, F>(stream: &mut S, mut f: F) -> bool
+pub fn many_metadata<S, F>(stream: &mut S, mut f: F) -> Result<(), ErrorKind>
  where S: StreamProducer,
        F: FnMut(Metadata) {
-  let mut state    = ParserState::Header;
-  let mut is_error = false;
+  let mut state  = ParserState::Header;
+  let mut result = Ok(());
 
   loop {
     match stream.parse(|i| parser(i, &mut state)) {
@@ -110,15 +110,15 @@ pub fn many_metadata<S, F>(stream: &mut S, mut f: F) -> bool
         }
       }
       Err(ErrorKind::Continue) => continue,
-      Err(_)                   => {
-        is_error = true;
+      Err(e)                   => {
+        result = Err(e);
 
         break;
       }
     }
   }
 
-  is_error
+  result
 }
 
 #[cfg(test)]

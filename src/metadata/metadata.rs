@@ -1,8 +1,8 @@
-use std::io::{self, Error, Result};
+use std::io;
 use std::u32;
 use std::fs::File;
 
-use utility::{ReadStream, many_metadata};
+use utility::{ErrorKind, ReadStream, many_metadata};
 
 use metadata::{
   Metadata, Data,
@@ -27,17 +27,21 @@ pub fn optional_eq<T: Eq>(option: Option<T>, other: T) -> bool {
 // * `ErrorKind::NotFound` is returned when the given filename isn't found.
 // * `ErrorKind::InvalidData` is returned when the data within the file
 //   isn't valid FLAC data.
-pub fn get_metadata(filename: &str) -> Result<Vec<Metadata>> {
-  File::open(filename).and_then(|file| {
+pub fn get_metadata(filename: &str) -> Result<Vec<Metadata>, ErrorKind> {
+  File::open(filename).map_err(|e| ErrorKind::IO(e.kind()))
+                      .and_then(|file| {
     let mut stream   = ReadStream::new(file);
     let mut metadata = Vec::new();
 
-    let is_error = many_metadata(&mut stream, |block| metadata.push(block));
+    let result = many_metadata(&mut stream, |block| metadata.push(block));
 
-    if is_error {
-      let error_str = "parser: couldn't find any metadata";
-
-      Err(Error::new(io::ErrorKind::InvalidData, error_str))
+    if let Err(kind) = result {
+      match kind {
+        ErrorKind::HeaderParser |
+        ErrorKind::Unknown      => Err(ErrorKind::IO(
+                                     io::ErrorKind::InvalidData)),
+        _                       => Err(kind),
+      }
     } else {
       Ok(metadata)
     }
@@ -65,7 +69,7 @@ pub fn get_metadata(filename: &str) -> Result<Vec<Metadata>> {
 ///   Ok(stream_info) => {
 ///     // Use the stream_info variable...
 ///   }
-///   Err(error)      => println!("{}", error),
+///   Err(error)      => println!("{:?}", error),
 /// }
 /// ```
 ///
@@ -76,10 +80,9 @@ pub fn get_metadata(filename: &str) -> Result<Vec<Metadata>> {
 ///
 /// let stream_info = metadata::get_stream_info("path/to/file.flac").unwrap();
 /// ```
-pub fn get_stream_info(filename: &str) -> Result<StreamInfo> {
+pub fn get_stream_info(filename: &str) -> Result<StreamInfo, ErrorKind> {
   get_metadata(filename).and_then(|blocks| {
-    let error_str  = "metadata: couldn't find StreamInfo";
-    let mut result = Err(Error::new(io::ErrorKind::NotFound, error_str));
+    let mut result = Err(ErrorKind::NotFound);
 
     for block in blocks {
       if let Data::StreamInfo(stream_info) = block.data {
@@ -113,7 +116,7 @@ pub fn get_stream_info(filename: &str) -> Result<StreamInfo> {
 ///   Ok(vorbis_comment) => {
 ///     // Use the vorbis_comment variable...
 ///   }
-///   Err(error)         => println!("{}", error),
+///   Err(error)         => println!("{:?}", error),
 /// }
 /// ```
 ///
@@ -125,10 +128,10 @@ pub fn get_stream_info(filename: &str) -> Result<StreamInfo> {
 /// let vorbis_comment =
 ///   metadata::get_vorbis_comment("path/to/file.flac").unwrap();
 /// ```
-pub fn get_vorbis_comment(filename: &str) -> Result<VorbisComment> {
+pub fn get_vorbis_comment(filename: &str)
+                          -> Result<VorbisComment, ErrorKind> {
   get_metadata(filename).and_then(|blocks| {
-    let error_str  = "metadata: couldn't find VorbisComment";
-    let mut result = Err(Error::new(io::ErrorKind::NotFound, error_str));
+    let mut result = Err(ErrorKind::NotFound);
 
     for block in blocks {
       if let Data::VorbisComment(vorbis_comment) = block.data {
@@ -161,7 +164,7 @@ pub fn get_vorbis_comment(filename: &str) -> Result<VorbisComment> {
 ///   Ok(cue_sheet) => {
 ///     // Use the cue_sheet variable...
 ///   }
-///   Err(error)    => println!("{}", error),
+///   Err(error)    => println!("{:?}", error),
 /// }
 /// ```
 ///
@@ -172,10 +175,9 @@ pub fn get_vorbis_comment(filename: &str) -> Result<VorbisComment> {
 ///
 /// let cue_sheet = metadata::get_cue_sheet("path/to/file.flac").unwrap();
 /// ```
-pub fn get_cue_sheet(filename: &str) -> Result<CueSheet> {
+pub fn get_cue_sheet(filename: &str) -> Result<CueSheet, ErrorKind> {
   get_metadata(filename).and_then(|blocks| {
-    let error_str  = "metadata: couldn't find CueSheet";
-    let mut result = Err(Error::new(io::ErrorKind::NotFound, error_str));
+    let mut result = Err(ErrorKind::NotFound);
 
     for block in blocks {
       if let Data::CueSheet(cue_sheet) = block.data {
@@ -225,7 +227,7 @@ pub fn get_cue_sheet(filename: &str) -> Result<CueSheet> {
 ///   Ok(picture) => {
 ///     // Use the picture variable...
 ///   }
-///   Err(error)  => println!("{}", error),
+///   Err(error)  => println!("{:?}", error),
 /// }
 /// ```
 ///
@@ -249,10 +251,9 @@ pub fn get_picture(filename: &str,
                    max_height: Option<u32>,
                    max_depth: Option<u32>,
                    max_colors: Option<u32>)
-                   -> Result<Picture> {
+                   -> Result<Picture, ErrorKind> {
   get_metadata(filename).and_then(|blocks| {
-    let error_str  = "metadata: couldn't find any Picture";
-    let mut result = Err(Error::new(io::ErrorKind::NotFound, error_str));
+    let mut result = Err(ErrorKind::NotFound);
 
     let mut max_area_seen  = 0;
     let mut max_depth_seen = 0;
@@ -290,7 +291,9 @@ pub fn get_picture(filename: &str,
 #[cfg(test)]
 mod tests {
   use super::*;
-  use std::io::ErrorKind;
+  use std::io;
+
+  use utility::ErrorKind;
 
   #[test]
   #[should_panic]
@@ -310,8 +313,10 @@ mod tests {
     let invalid_data = get_metadata("README.md");
     let result       = get_metadata("tests/assets/input-SVAUP.flac");
 
-    assert_eq!(not_found.unwrap_err().kind(), ErrorKind::NotFound);
-    assert_eq!(invalid_data.unwrap_err().kind(), ErrorKind::InvalidData);
+    assert_eq!(not_found.unwrap_err(), ErrorKind::IO(
+                                         io::ErrorKind::NotFound));
+    assert_eq!(invalid_data.unwrap_err(), ErrorKind::IO(
+                                            io::ErrorKind::InvalidData));
     assert!(result.is_ok());
   }
 }
