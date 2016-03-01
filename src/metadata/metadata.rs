@@ -54,6 +54,8 @@ pub fn get_metadata(filename: &str) -> Result<Vec<Metadata>, ErrorKind> {
 ///
 /// # Failures
 ///
+/// * `ErrorKind::NotFound` is returned when the there is no `StreamInfo`
+///   within the file.
 /// * `ErrorKind::IO(io::ErrorKind::NotFound)` is returned when the given
 ///   filename isn't found.
 /// * `ErrorKind::IO(io::ErrorKind::InvalidData)` is returned when the data
@@ -101,6 +103,8 @@ pub fn get_stream_info(filename: &str) -> Result<StreamInfo, ErrorKind> {
 ///
 /// # Failures
 ///
+/// * `ErrorKind::NotFound` is returned when the there is no `VorbisComment`
+///   within the file.
 /// * `ErrorKind::IO(io::ErrorKind::NotFound)` is returned when the given
 ///   filename isn't found.
 /// * `ErrorKind::IO(io::ErrorKind::InvalidData)` is returned when the data
@@ -149,6 +153,8 @@ pub fn get_vorbis_comment(filename: &str)
 ///
 /// # Failures
 ///
+/// * `ErrorKind::NotFound` is returned when the there is no `CueSheet`
+///   within the file.
 /// * `ErrorKind::IO(io::ErrorKind::NotFound)` is returned when the given
 ///   filename isn't found.
 /// * `ErrorKind::IO(io::ErrorKind::InvalidData)` is returned when the data
@@ -204,6 +210,8 @@ pub fn get_cue_sheet(filename: &str) -> Result<CueSheet, ErrorKind> {
 ///
 /// # Failures
 ///
+/// * `ErrorKind::NotFound` is returned when the there is no `Picture`
+///   within the file, or no `Picture` that fits the given constraints.
 /// * `ErrorKind::IO(io::ErrorKind::NotFound)` is returned when the given
 ///   filename isn't found.
 /// * `ErrorKind::IO(io::ErrorKind::InvalidData)` is returned when the data
