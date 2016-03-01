@@ -24,9 +24,10 @@ pub fn optional_eq<T: Eq>(option: Option<T>, other: T) -> bool {
 //
 // # Failures
 //
-// * `ErrorKind::NotFound` is returned when the given filename isn't found.
-// * `ErrorKind::InvalidData` is returned when the data within the file
-//   isn't valid FLAC data.
+// * `ErrorKind::IO(io::ErrorKind::NotFound)` is returned when the given
+//   filename isn't found.
+// * `ErrorKind::IO(io::ErrorKind::InvalidData)` is returned when the data
+//   within the file isn't valid FLAC data.
 pub fn get_metadata(filename: &str) -> Result<Vec<Metadata>, ErrorKind> {
   File::open(filename).map_err(|e| ErrorKind::IO(e.kind()))
                       .and_then(|file| {
@@ -53,10 +54,10 @@ pub fn get_metadata(filename: &str) -> Result<Vec<Metadata>, ErrorKind> {
 ///
 /// # Failures
 ///
-/// * `ErrorKind::NotFound` is returned when the given filename isn't found
-///   or there is no `StreamInfo` within the file.
-/// * `ErrorKind::InvalidData` is returned when the data within the file
-///   isn't valid FLAC data.
+/// * `ErrorKind::IO(io::ErrorKind::NotFound)` is returned when the given
+///   filename isn't found.
+/// * `ErrorKind::IO(io::ErrorKind::InvalidData)` is returned when the data
+///   within the file isn't valid FLAC data.
 ///
 /// # Examples
 ///
@@ -100,10 +101,10 @@ pub fn get_stream_info(filename: &str) -> Result<StreamInfo, ErrorKind> {
 ///
 /// # Failures
 ///
-/// * `ErrorKind::NotFound` is returned when the given filename isn't found
-///   or there is no `VorbisComment` within the file.
-/// * `ErrorKind::InvalidData` is returned when the data within the file
-///   isn't valid FLAC data.
+/// * `ErrorKind::IO(io::ErrorKind::NotFound)` is returned when the given
+///   filename isn't found.
+/// * `ErrorKind::IO(io::ErrorKind::InvalidData)` is returned when the data
+///   within the file isn't valid FLAC data.
 ///
 /// # Examples
 ///
@@ -148,10 +149,10 @@ pub fn get_vorbis_comment(filename: &str)
 ///
 /// # Failures
 ///
-/// * `ErrorKind::NotFound` is returned when the given filename isn't found
-///   or there is no `CueSheet` within the file.
-/// * `ErrorKind::InvalidData` is returned when the data within the file
-///   isn't valid FLAC data.
+/// * `ErrorKind::IO(io::ErrorKind::NotFound)` is returned when the given
+///   filename isn't found.
+/// * `ErrorKind::IO(io::ErrorKind::InvalidData)` is returned when the data
+///   within the file isn't valid FLAC data.
 ///
 /// # Examples
 ///
@@ -203,11 +204,10 @@ pub fn get_cue_sheet(filename: &str) -> Result<CueSheet, ErrorKind> {
 ///
 /// # Failures
 ///
-/// * `ErrorKind::NotFound` is returned when the given filename isn't found,
-///   there is no `Picture` within the file, or no `Picture` that fits the
-///   given constraints.
-/// * `ErrorKind::InvalidData` is returned when the data within the file
-///   isn't valid FLAC data.
+/// * `ErrorKind::IO(io::ErrorKind::NotFound)` is returned when the given
+///   filename isn't found.
+/// * `ErrorKind::IO(io::ErrorKind::InvalidData)` is returned when the data
+///   within the file isn't valid FLAC data.
 ///
 /// # Examples
 ///
