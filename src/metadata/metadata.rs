@@ -28,6 +28,8 @@ pub fn optional_eq<T: Eq>(option: Option<T>, other: T) -> bool {
 //   filename isn't found.
 // * `ErrorKind::IO(io::ErrorKind::InvalidData)` is returned when the data
 //   within the file isn't valid FLAC data.
+// * Several different parser specific errors that are structured as
+//   `ErrorKind::<parser_name>Parser`.
 pub fn get_metadata(filename: &str) -> Result<Vec<Metadata>, ErrorKind> {
   File::open(filename).map_err(|e| ErrorKind::IO(e.kind()))
                       .and_then(|file| {
@@ -60,6 +62,8 @@ pub fn get_metadata(filename: &str) -> Result<Vec<Metadata>, ErrorKind> {
 ///   filename isn't found.
 /// * `ErrorKind::IO(io::ErrorKind::InvalidData)` is returned when the data
 ///   within the file isn't valid FLAC data.
+/// * Several different parser specific errors that are structured as
+///   `ErrorKind::<parser_name>Parser`.
 ///
 /// # Examples
 ///
@@ -109,6 +113,8 @@ pub fn get_stream_info(filename: &str) -> Result<StreamInfo, ErrorKind> {
 ///   filename isn't found.
 /// * `ErrorKind::IO(io::ErrorKind::InvalidData)` is returned when the data
 ///   within the file isn't valid FLAC data.
+/// * Several different parser specific errors that are structured as
+///   `ErrorKind::<parser_name>Parser`.
 ///
 /// # Examples
 ///
@@ -159,6 +165,8 @@ pub fn get_vorbis_comment(filename: &str)
 ///   filename isn't found.
 /// * `ErrorKind::IO(io::ErrorKind::InvalidData)` is returned when the data
 ///   within the file isn't valid FLAC data.
+/// * Several different parser specific errors that are structured as
+///   `ErrorKind::<parser_name>Parser`.
 ///
 /// # Examples
 ///
@@ -216,6 +224,8 @@ pub fn get_cue_sheet(filename: &str) -> Result<CueSheet, ErrorKind> {
 ///   filename isn't found.
 /// * `ErrorKind::IO(io::ErrorKind::InvalidData)` is returned when the data
 ///   within the file isn't valid FLAC data.
+/// * Several different parser specific errors that are structured as
+///   `ErrorKind::<parser_name>Parser`.
 ///
 /// # Examples
 ///
