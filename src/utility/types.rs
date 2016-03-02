@@ -6,7 +6,7 @@ use std::cmp;
 
 use super::StreamProducer;
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum ErrorKind {
   IO(io::ErrorKind),
   Incomplete(usize),

@@ -341,22 +341,24 @@ mod tests {
   fn test_blocking_strategy() {
     let inputs = [b"\xff\xf8", b"\xff\xf9", b"\xfe\xf8", b"\xff\xfa"];
     let slice  = &[][..];
+    let kind   = ErrorKind::InvalidSyncCode;
 
     assert_eq!(blocking_strategy(inputs[0]), IResult::Done(slice, false));
     assert_eq!(blocking_strategy(inputs[1]), IResult::Done(slice, true));
-    assert_eq!(blocking_strategy(inputs[2]), error(inputs[2]));
-    assert_eq!(blocking_strategy(inputs[3]), error(inputs[3]));
+    assert_eq!(blocking_strategy(inputs[2]), error(inputs[2], kind));
+    assert_eq!(blocking_strategy(inputs[3]), error(inputs[3], kind));
   }
 
   #[test]
   fn test_block_sample() {
     let inputs = [b"\xf9", b"\x1a", b"\x0b", b"\x4f"];
     let slice  = &[][..];
+    let kind   = ErrorKind::InvalidBlockSample;
 
     assert_eq!(block_sample(inputs[0]), IResult::Done(slice, (0x0f, 0x09)));
     assert_eq!(block_sample(inputs[1]), IResult::Done(slice, (0x01, 0x0a)));
-    assert_eq!(block_sample(inputs[2]), error(inputs[2]));
-    assert_eq!(block_sample(inputs[3]), error(inputs[3]));
+    assert_eq!(block_sample(inputs[2]), error(inputs[2], kind));
+    assert_eq!(block_sample(inputs[3]), error(inputs[3], kind));
   }
 
   #[test]
@@ -370,12 +372,14 @@ mod tests {
                                           2, 6))
                   ];
 
+    let kind = ErrorKind::InvalidChannelBits;
+
     assert_eq!(channel_bits(inputs[0]), results[0]);
     assert_eq!(channel_bits(inputs[1]), results[1]);
     assert_eq!(channel_bits(inputs[2]), results[2]);
-    assert_eq!(channel_bits(inputs[3]), error(inputs[3]));
-    assert_eq!(channel_bits(inputs[4]), error(inputs[4]));
-    assert_eq!(channel_bits(inputs[5]), error(inputs[5]));
+    assert_eq!(channel_bits(inputs[3]), error(inputs[3], kind));
+    assert_eq!(channel_bits(inputs[4]), error(inputs[4], kind));
+    assert_eq!(channel_bits(inputs[5]), error(inputs[5], kind));
   }
 
   #[test]
