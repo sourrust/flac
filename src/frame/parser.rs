@@ -99,8 +99,10 @@ pub fn blocking_strategy(input: &[u8]) -> IResult<&[u8], bool, ErrorKind> {
 // that can't be a certain value. For block size bits, it can't be zero
 // because that value is reserved. And sample rate bits can't be 0b1111 to
 // prevent sync code fooling.
-pub fn block_sample(input: &[u8]) -> IResult<&[u8], (u8, u8)> {
-  let (i, byte) = try_parse!(input, be_u8);
+pub fn block_sample(input: &[u8]) -> IResult<&[u8], (u8, u8), ErrorKind> {
+  let (i, byte) = try_parser! {
+    be_u8(input).map_err(to_custom_error!(BlockingStrategyParser))
+  };
 
   let block_byte  = byte >> 4;
   let sample_byte = byte & 0b1111;
@@ -109,7 +111,8 @@ pub fn block_sample(input: &[u8]) -> IResult<&[u8], (u8, u8)> {
   if is_valid {
     IResult::Done(i, (block_byte, sample_byte))
   } else {
-    IResult::Error(Err::Position(nom::ErrorKind::Digit, input))
+    IResult::Error(Err::Position(
+      nom::ErrorKind::Custom(ErrorKind::InvalidBlockSample), input))
   }
 }
 
