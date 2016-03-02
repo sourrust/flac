@@ -207,20 +207,25 @@ pub fn number_type(input: &[u8], is_sample: bool,
   }
 }
 
+#[inline]
+fn take_u32(input: &[u8], count: usize) -> IResult<&[u8], u32, ErrorKind> {
+  map!(input, take!(count), to_u32).map_err(to_custom_error!(Unknown))
+}
+
 pub fn secondary_block_size(input: &[u8], block_byte: u8)
-                            -> IResult<&[u8], Option<u32>> {
+                            -> IResult<&[u8], Option<u32>, ErrorKind> {
   match block_byte {
-    0b0110 => opt!(input, map!(take!(1), to_u32)),
-    0b0111 => opt!(input, map!(take!(2), to_u32)),
+    0b0110 => opt!(input, apply!(take_u32, 1)),
+    0b0111 => opt!(input, apply!(take_u32, 2)),
     _      => IResult::Done(input, None)
   }
 }
 
 pub fn secondary_sample_rate(input: &[u8], sample_byte: u8)
-                             -> IResult<&[u8], Option<u32>> {
+                             -> IResult<&[u8], Option<u32>, ErrorKind> {
   match sample_byte {
-    0b1100          => opt!(input, map!(take!(1), to_u32)),
-    0b1101 | 0b1110 => opt!(input, map!(take!(2), to_u32)),
+    0b1100          => opt!(input, apply!(take_u32, 1)),
+    0b1101 | 0b1110 => opt!(input, apply!(take_u32, 2)),
     _               => IResult::Done(input, None)
   }
 }
