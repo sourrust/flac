@@ -75,8 +75,10 @@ pub fn frame_parser<'a>(input: &'a [u8],
 // need to be valid inside these two bytes, the 14 bit sync code and the
 // following bit must be zero. The last bit is whether or not the block size
 // is fixed or varied.
-pub fn blocking_strategy(input: &[u8]) -> IResult<&[u8], bool> {
-  let (i, bytes) = try_parse!(input, take!(2));
+pub fn blocking_strategy(input: &[u8]) -> IResult<&[u8], bool, ErrorKind> {
+  let (i, bytes) = try_parser! {
+    take!(input, 2).map_err(to_custom_error!(BlockingStrategyParser))
+  };
 
   let sync_code = ((bytes[0] as u16) << 6) +
                   ((bytes[1] as u16) >> 2);
@@ -88,7 +90,8 @@ pub fn blocking_strategy(input: &[u8]) -> IResult<&[u8], bool> {
 
     IResult::Done(i, is_variable_block_size)
   } else {
-    IResult::Error(Err::Position(nom::ErrorKind::Digit, input))
+    IResult::Error(Err::Position(
+      nom::ErrorKind::Custom(ErrorKind::InvalidSyncCode), input))
   }
 }
 
