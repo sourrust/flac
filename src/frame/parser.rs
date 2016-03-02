@@ -122,8 +122,11 @@ pub fn block_sample(input: &[u8]) -> IResult<&[u8], (u8, u8), ErrorKind> {
 // two values it can not equal, 0b011 and 0b111. Last is the final bit must
 // be a zero.
 pub fn channel_bits(input: &[u8])
-                    -> IResult<&[u8], (ChannelAssignment, u8, u8)> {
-  let (i, byte) = try_parse!(input, be_u8);
+                    -> IResult<&[u8], (ChannelAssignment, u8, u8),
+                               ErrorKind> {
+  let (i, byte) = try_parser! {
+    be_u8(input).map_err(to_custom_error!(ChannelBitsParser))
+  };
 
   let mut channels       = 2;
   let channel_byte       = byte >> 4;
@@ -146,7 +149,8 @@ pub fn channel_bits(input: &[u8])
   if is_valid {
     IResult::Done(i, (channel_assignment, channels, size_byte))
   } else {
-    IResult::Error(Err::Position(nom::ErrorKind::Digit, input))
+    IResult::Error(Err::Position(
+      nom::ErrorKind::Custom(ErrorKind::InvalidChannelBits), input))
   }
 }
 
