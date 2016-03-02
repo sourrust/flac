@@ -90,3 +90,15 @@ macro_rules! to_custom_error (
           ::utility::ErrorKind::$error_type))
   );
 );
+
+macro_rules! try_parser (
+  ($iresult: expr) => (
+    match $iresult {
+      $crate::nom::IResult::Done(i, o)    => (i, o),
+      $crate::nom::IResult::Error(e)      =>
+        return $crate::nom::IResult::Error(e),
+      $crate::nom::IResult::Incomplete(i) =>
+        return $crate::nom::IResult::Incomplete(i),
+    }
+  )
+);

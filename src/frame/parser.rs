@@ -75,8 +75,10 @@ pub fn frame_parser<'a>(input: &'a [u8],
 // need to be valid inside these two bytes, the 14 bit sync code and the
 // following bit must be zero. The last bit is whether or not the block size
 // is fixed or varied.
-pub fn blocking_strategy(input: &[u8]) -> IResult<&[u8], bool> {
-  let (i, bytes) = try_parse!(input, take!(2));
+pub fn blocking_strategy(input: &[u8]) -> IResult<&[u8], bool, ErrorKind> {
+  let (i, bytes) = try_parser! {
+    take!(input, 2).map_err(to_custom_error!(BlockingStrategyParser))
+  };
 
   let sync_code = ((bytes[0] as u16) << 6) +
                   ((bytes[1] as u16) >> 2);
@@ -88,7 +90,8 @@ pub fn blocking_strategy(input: &[u8]) -> IResult<&[u8], bool> {
 
     IResult::Done(i, is_variable_block_size)
   } else {
-    IResult::Error(Err::Position(nom::ErrorKind::Digit, input))
+    IResult::Error(Err::Position(
+      nom::ErrorKind::Custom(ErrorKind::InvalidSyncCode), input))
   }
 }
 
@@ -96,8 +99,10 @@ pub fn blocking_strategy(input: &[u8]) -> IResult<&[u8], bool> {
 // that can't be a certain value. For block size bits, it can't be zero
 // because that value is reserved. And sample rate bits can't be 0b1111 to
 // prevent sync code fooling.
-pub fn block_sample(input: &[u8]) -> IResult<&[u8], (u8, u8)> {
-  let (i, byte) = try_parse!(input, be_u8);
+pub fn block_sample(input: &[u8]) -> IResult<&[u8], (u8, u8), ErrorKind> {
+  let (i, byte) = try_parser! {
+    be_u8(input).map_err(to_custom_error!(BlockingStrategyParser))
+  };
 
   let block_byte  = byte >> 4;
   let sample_byte = byte & 0b1111;
@@ -106,7 +111,8 @@ pub fn block_sample(input: &[u8]) -> IResult<&[u8], (u8, u8)> {
   if is_valid {
     IResult::Done(i, (block_byte, sample_byte))
   } else {
-    IResult::Error(Err::Position(nom::ErrorKind::Digit, input))
+    IResult::Error(Err::Position(
+      nom::ErrorKind::Custom(ErrorKind::InvalidBlockSample), input))
   }
 }
 
@@ -116,8 +122,11 @@ pub fn block_sample(input: &[u8]) -> IResult<&[u8], (u8, u8)> {
 // two values it can not equal, 0b011 and 0b111. Last is the final bit must
 // be a zero.
 pub fn channel_bits(input: &[u8])
-                    -> IResult<&[u8], (ChannelAssignment, u8, u8)> {
-  let (i, byte) = try_parse!(input, be_u8);
+                    -> IResult<&[u8], (ChannelAssignment, u8, u8),
+                               ErrorKind> {
+  let (i, byte) = try_parser! {
+    be_u8(input).map_err(to_custom_error!(ChannelBitsParser))
+  };
 
   let mut channels       = 2;
   let channel_byte       = byte >> 4;
@@ -140,7 +149,8 @@ pub fn channel_bits(input: &[u8])
   if is_valid {
     IResult::Done(i, (channel_assignment, channels, size_byte))
   } else {
-    IResult::Error(Err::Position(nom::ErrorKind::Digit, input))
+    IResult::Error(Err::Position(
+      nom::ErrorKind::Custom(ErrorKind::InvalidChannelBits), input))
   }
 }
 
@@ -149,7 +159,7 @@ pub fn channel_bits(input: &[u8])
 // boolean `is_u64` is when the UCS-2 extension happens and all other
 // branches are valid UTF-8 headers.
 pub fn utf8_header(input: &[u8], is_u64: bool)
-                   -> IResult<&[u8], Option<(usize, u8)>> {
+                   -> IResult<&[u8], Option<(usize, u8)>, ErrorKind> {
   map!(input, be_u8, |byte| {
     match byte {
       0b00000000...0b01111111 => Some((0, byte)),
@@ -161,15 +171,17 @@ pub fn utf8_header(input: &[u8], is_u64: bool)
       0b11111110              => if is_u64 { Some((6, 0)) } else { None },
       _                       => None,
     }
-  })
+  }).map_err(to_custom_error!(UTF8HeaderParser))
 }
 
 // Calculates the value of UTF-8 the next bytes after it's header. The
 // header holds both the size and part of this parsers returning value.
 pub fn number_type(input: &[u8], is_sample: bool,
                    (size, value): (usize, u8))
-                   -> IResult<&[u8], NumberType> {
-  let (i, bytes) = try_parse!(input, take!(size));
+                   -> IResult<&[u8], NumberType, ErrorKind> {
+  let (i, bytes) = try_parser! {
+    take!(input, size).map_err(to_custom_error!(UTF8BodyParser))
+  };
 
   let mut result   = value as u64;
   let mut is_error = false;
@@ -186,7 +198,8 @@ pub fn number_type(input: &[u8], is_sample: bool,
   }
 
   if is_error {
-    IResult::Error(Err::Position(nom::ErrorKind::Digit, input))
+    IResult::Error(Err::Position(
+      nom::ErrorKind::Custom(ErrorKind::InvalidUTF8), input))
   } else if is_sample {
     IResult::Done(i, NumberType::Sample(result))
   } else {
@@ -194,22 +207,32 @@ pub fn number_type(input: &[u8], is_sample: bool,
   }
 }
 
+#[inline]
+fn take_u32(input: &[u8], count: usize) -> IResult<&[u8], u32, ErrorKind> {
+  map!(input, take!(count), to_u32).map_err(to_custom_error!(Unknown))
+}
+
 pub fn secondary_block_size(input: &[u8], block_byte: u8)
-                            -> IResult<&[u8], Option<u32>> {
+                            -> IResult<&[u8], Option<u32>, ErrorKind> {
   match block_byte {
-    0b0110 => opt!(input, map!(take!(1), to_u32)),
-    0b0111 => opt!(input, map!(take!(2), to_u32)),
+    0b0110 => opt!(input, apply!(take_u32, 1)),
+    0b0111 => opt!(input, apply!(take_u32, 2)),
     _      => IResult::Done(input, None)
   }
 }
 
 pub fn secondary_sample_rate(input: &[u8], sample_byte: u8)
-                             -> IResult<&[u8], Option<u32>> {
+                             -> IResult<&[u8], Option<u32>, ErrorKind> {
   match sample_byte {
-    0b1100          => opt!(input, map!(take!(1), to_u32)),
-    0b1101 | 0b1110 => opt!(input, map!(take!(2), to_u32)),
+    0b1100          => opt!(input, apply!(take_u32, 1)),
+    0b1101 | 0b1110 => opt!(input, apply!(take_u32, 2)),
     _               => IResult::Done(input, None)
   }
+}
+
+#[inline]
+fn crc_parser(input: &[u8]) -> IResult<&[u8], u8, ErrorKind> {
+  be_u8(input).map_err(to_custom_error!(CRC8Parser))
 }
 
 pub fn header<'a>(input: &'a [u8], stream_info: &StreamInfo)
@@ -223,7 +246,7 @@ pub fn header<'a>(input: &'a [u8], stream_info: &StreamInfo)
     number: apply!(number_type, is_variable_block_size, utf8_header_val) ~
     alt_block_size: apply!(secondary_block_size, tuple0.0) ~
     alt_sample_rate: apply!(secondary_sample_rate, tuple0.1) ~
-    crc: be_u8,
+    crc: crc_parser,
     || {
       let (block_byte, sample_byte)                 = tuple0;
       let (channel_assignment, channels, size_byte) = tuple1;
@@ -275,7 +298,7 @@ pub fn header<'a>(input: &'a [u8], stream_info: &StreamInfo)
         crc: crc,
       }
     }
-  ).map_err(to_custom_error!(Unknown));
+  );
 
   match result {
     IResult::Done(i, frame_header) => {
@@ -306,32 +329,36 @@ mod tests {
     ChannelAssignment, NumberType,
   };
   use metadata::StreamInfo;
-  use nom::{IResult, Err, ErrorKind};
+  use utility::ErrorKind;
 
-  fn error<O>(input: &[u8]) -> IResult<&[u8], O> {
-    IResult::Error(Err::Position(ErrorKind::Digit, input))
+  use nom::{self, IResult, Err};
+
+  fn error<O>(input: &[u8], kind: ErrorKind) -> IResult<&[u8], O, ErrorKind> {
+    IResult::Error(Err::Position(nom::ErrorKind::Custom(kind), input))
   }
 
   #[test]
   fn test_blocking_strategy() {
     let inputs = [b"\xff\xf8", b"\xff\xf9", b"\xfe\xf8", b"\xff\xfa"];
     let slice  = &[][..];
+    let kind   = ErrorKind::InvalidSyncCode;
 
     assert_eq!(blocking_strategy(inputs[0]), IResult::Done(slice, false));
     assert_eq!(blocking_strategy(inputs[1]), IResult::Done(slice, true));
-    assert_eq!(blocking_strategy(inputs[2]), error(inputs[2]));
-    assert_eq!(blocking_strategy(inputs[3]), error(inputs[3]));
+    assert_eq!(blocking_strategy(inputs[2]), error(inputs[2], kind));
+    assert_eq!(blocking_strategy(inputs[3]), error(inputs[3], kind));
   }
 
   #[test]
   fn test_block_sample() {
     let inputs = [b"\xf9", b"\x1a", b"\x0b", b"\x4f"];
     let slice  = &[][..];
+    let kind   = ErrorKind::InvalidBlockSample;
 
     assert_eq!(block_sample(inputs[0]), IResult::Done(slice, (0x0f, 0x09)));
     assert_eq!(block_sample(inputs[1]), IResult::Done(slice, (0x01, 0x0a)));
-    assert_eq!(block_sample(inputs[2]), error(inputs[2]));
-    assert_eq!(block_sample(inputs[3]), error(inputs[3]));
+    assert_eq!(block_sample(inputs[2]), error(inputs[2], kind));
+    assert_eq!(block_sample(inputs[3]), error(inputs[3], kind));
   }
 
   #[test]
@@ -345,12 +372,14 @@ mod tests {
                                           2, 6))
                   ];
 
+    let kind = ErrorKind::InvalidChannelBits;
+
     assert_eq!(channel_bits(inputs[0]), results[0]);
     assert_eq!(channel_bits(inputs[1]), results[1]);
     assert_eq!(channel_bits(inputs[2]), results[2]);
-    assert_eq!(channel_bits(inputs[3]), error(inputs[3]));
-    assert_eq!(channel_bits(inputs[4]), error(inputs[4]));
-    assert_eq!(channel_bits(inputs[5]), error(inputs[5]));
+    assert_eq!(channel_bits(inputs[3]), error(inputs[3], kind));
+    assert_eq!(channel_bits(inputs[4]), error(inputs[4], kind));
+    assert_eq!(channel_bits(inputs[5]), error(inputs[5], kind));
   }
 
   #[test]

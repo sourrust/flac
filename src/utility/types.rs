@@ -6,7 +6,7 @@ use std::cmp;
 
 use super::StreamProducer;
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum ErrorKind {
   IO(io::ErrorKind),
   Incomplete(usize),
@@ -24,9 +24,19 @@ pub enum ErrorKind {
   CueSheetParser,
   PictureParser,
   UnknownParser,
+  BlockingStrategyParser,
+  BlockingSampleParser,
+  ChannelBitsParser,
+  UTF8HeaderParser,
+  UTF8BodyParser,
+  CRC8Parser,
   FrameFooterParser,
   // Invalid Error
   InvalidBlockType,
+  InvalidSyncCode,
+  InvalidBlockSample,
+  InvalidChannelBits,
+  InvalidUTF8,
   InvalidCRC8,
   InvalidCRC16,
   // Not Found
