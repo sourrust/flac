@@ -329,10 +329,12 @@ mod tests {
     ChannelAssignment, NumberType,
   };
   use metadata::StreamInfo;
-  use nom::{IResult, Err, ErrorKind};
+  use utility::ErrorKind;
 
-  fn error<O>(input: &[u8]) -> IResult<&[u8], O> {
-    IResult::Error(Err::Position(ErrorKind::Digit, input))
+  use nom::{self, IResult, Err};
+
+  fn error<O>(input: &[u8], kind: ErrorKind) -> IResult<&[u8], O, ErrorKind> {
+    IResult::Error(Err::Position(nom::ErrorKind::Custom(kind), input))
   }
 
   #[test]
