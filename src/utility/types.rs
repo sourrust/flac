@@ -6,6 +6,7 @@ use std::cmp;
 
 use super::StreamProducer;
 
+/// Represent the different kinds of errors.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum ErrorKind {
   IO(io::ErrorKind),
