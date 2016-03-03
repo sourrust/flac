@@ -9,10 +9,15 @@ use super::StreamProducer;
 /// Represent the different kinds of errors.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum ErrorKind {
+  /// Error from I/O.
   IO(io::ErrorKind),
+  /// A parser stopped midway and need more bytes to consume.
   Incomplete(usize),
+  /// A parser has completes and there is still more bytes to consume.
   Continue,
+  /// A parser has completes and there is no more bytes to consume.
   EndOfInput,
+  /// A non-specified error.
   Unknown,
   // Parser Error
   HeaderParser,
