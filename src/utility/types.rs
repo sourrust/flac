@@ -48,6 +48,7 @@ pub enum ErrorKind {
   CRC8Parser,
   FrameFooterParser,
   // Invalid Error
+  /// A block type, base on the number, that is outside the range (0-126).
   InvalidBlockType,
   InvalidSyncCode,
   InvalidBlockSample,
