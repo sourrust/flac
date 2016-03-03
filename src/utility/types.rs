@@ -20,15 +20,25 @@ pub enum ErrorKind {
   /// A non-specified error.
   Unknown,
   // Parser Error
+  /// Failed parsing the "fLaC" header token.
   HeaderParser,
+  /// Failed parsing a metadata header.
   MetadataHeaderParser,
+  /// Failed parsing the metadata block `StreamInfo`.
   StreamInfoParser,
+  /// Failed parsing the metadata block `Padding`.
   PaddingParser,
+  /// Failed parsing the metadata block `Application`.
   ApplicationParser,
+  /// Failed parsing the metadata block `SeekTable`.
   SeekTableParser,
+  /// Failed parsing the metadata block `VorbisComment`.
   VorbisCommentParser,
+  /// Failed parsing the metadata block `CueSheet`.
   CueSheetParser,
+  /// Failed parsing the metadata block `Picture`.
   PictureParser,
+  /// Failed parsing the metadata block `Unknown`.
   UnknownParser,
   BlockingStrategyParser,
   BlockingSampleParser,
