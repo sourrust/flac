@@ -6,23 +6,39 @@ use std::cmp;
 
 use super::StreamProducer;
 
+/// Represent the different kinds of errors.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum ErrorKind {
+  /// Error from I/O.
   IO(io::ErrorKind),
+  /// A parser stopped midway and need more bytes to consume.
   Incomplete(usize),
+  /// A parser has completes and there is still more bytes to consume.
   Continue,
+  /// A parser has completes and there is no more bytes to consume.
   EndOfInput,
+  /// A non-specified error.
   Unknown,
   // Parser Error
+  /// Failed parsing the "fLaC" header token.
   HeaderParser,
+  /// Failed parsing a metadata header.
   MetadataHeaderParser,
+  /// Failed parsing the metadata block `StreamInfo`.
   StreamInfoParser,
+  /// Failed parsing the metadata block `Padding`.
   PaddingParser,
+  /// Failed parsing the metadata block `Application`.
   ApplicationParser,
+  /// Failed parsing the metadata block `SeekTable`.
   SeekTableParser,
+  /// Failed parsing the metadata block `VorbisComment`.
   VorbisCommentParser,
+  /// Failed parsing the metadata block `CueSheet`.
   CueSheetParser,
+  /// Failed parsing the metadata block `Picture`.
   PictureParser,
+  /// Failed parsing the metadata block `Unknown`.
   UnknownParser,
   BlockingStrategyParser,
   BlockingSampleParser,
@@ -32,6 +48,7 @@ pub enum ErrorKind {
   CRC8Parser,
   FrameFooterParser,
   // Invalid Error
+  /// A block type, base on the number, that is outside the range (0-126).
   InvalidBlockType,
   InvalidSyncCode,
   InvalidBlockSample,
@@ -40,6 +57,7 @@ pub enum ErrorKind {
   InvalidCRC8,
   InvalidCRC16,
   // Not Found
+  /// Some metadata block was not found with a specific filter.
   NotFound,
 }
 
