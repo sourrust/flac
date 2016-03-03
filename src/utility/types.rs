@@ -57,6 +57,7 @@ pub enum ErrorKind {
   InvalidCRC8,
   InvalidCRC16,
   // Not Found
+  /// Some metadata block was not found with a specific filter.
   NotFound,
 }
 
