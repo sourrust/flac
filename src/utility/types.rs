@@ -47,6 +47,12 @@ pub enum ErrorKind {
   UTF8BodyParser,
   CRC8Parser,
   FrameFooterParser,
+  SubframeParser,
+  LeadingZerosParser,
+  ConstantParser,
+  VerbatimParser,
+  FixedParser,
+  LPCParser,
   // Invalid Error
   /// A block type, base on the number, that is outside the range (0-126).
   InvalidBlockType,
@@ -56,6 +62,7 @@ pub enum ErrorKind {
   InvalidUTF8,
   InvalidCRC8,
   InvalidCRC16,
+  InvalidSubframeHeader,
   // Not Found
   /// Some metadata block was not found with a specific filter.
   NotFound,
