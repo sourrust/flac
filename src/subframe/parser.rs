@@ -145,16 +145,21 @@ fn data<'a>(input: (&'a [u8], usize),
             block_size: usize,
             subframe_type: usize,
             buffer: &mut [i32])
-            -> IResult<(&'a [u8], usize), subframe::Data> {
+            -> IResult<(&'a [u8], usize), subframe::Data, ErrorKind> {
   match subframe_type {
-    0b000000            => constant(input, bits_per_sample),
-    0b000001            => verbatim(input, bits_per_sample, block_size),
+    0b000000            => constant(input, bits_per_sample)
+                             .map_err(to_custom_error!(ConstantParser)),
+    0b000001            => verbatim(input, bits_per_sample, block_size)
+                             .map_err(to_custom_error!(VerbatimParser)),
     0b001000...0b001100 => fixed(input, subframe_type & 0b0111,
-                                 bits_per_sample, block_size, buffer),
+                                 bits_per_sample, block_size, buffer)
+                             .map_err(to_custom_error!(FixedParser)),
     0b100000...0b111111 => lpc(input, (subframe_type & 0b011111) + 1,
-                               bits_per_sample, block_size, buffer),
+                               bits_per_sample, block_size, buffer)
+                             .map_err(to_custom_error!(LPCParser)),
     _                   => IResult::Error(Err::Position(
-                             nom::ErrorKind::Alt, input))
+                             nom::ErrorKind::Custom(ErrorKind::Unknown),
+                             input))
   }
 }
 
