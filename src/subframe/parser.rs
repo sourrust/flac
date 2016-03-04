@@ -77,6 +77,12 @@ pub fn adjust_bits_per_sample(frame_header: &frame::Header,
   }
 }
 
+#[inline]
+fn _leading_zeros(input: (&[u8], usize))
+                  -> IResult<(&[u8], usize), u32, ErrorKind> {
+  leading_zeros(input).map_err(to_custom_error!(LeadingZerosParser))
+}
+
 /// Parse a single channel of audio data.
 pub fn subframe_parser<'a>(input: (&'a [u8], usize),
                            frame_header: &frame::Header,
@@ -93,7 +99,7 @@ pub fn subframe_parser<'a>(input: (&'a [u8], usize),
   chain!(input,
     subframe_header: header ~
     wasted_bits: map!(
-      cond!(subframe_header.1, leading_zeros),
+      cond!(subframe_header.1, _leading_zeros),
       |option: Option<u32>| option.map_or(0, |zeros| zeros + 1)
     ) ~
     subframe_data: apply!(data,
@@ -110,15 +116,17 @@ pub fn subframe_parser<'a>(input: (&'a [u8], usize),
         wasted_bits: wasted_bits,
       }
     }
-  ).map_err(to_custom_error!(Unknown))
+  )
 }
 
 // Parses the first byte of the subframe. The first bit must be zero to
 // prevent sync-fooling, next six bits determines the subframe data type.
 // Last bit is is there is wasted bits per sample, value one being true.
 pub fn header(input: (&[u8], usize))
-              -> IResult<(&[u8], usize), (usize, bool)> {
-  let (i, byte) = try_parse!(input, take_bits!(u8, 8));
+              -> IResult<(&[u8], usize), (usize, bool), ErrorKind> {
+  let (i, byte) = try_parser! {
+    take_bits!(input, u8, 8).map_err(to_custom_error!(SubframeParser))
+  };
 
   let is_valid        = (byte >> 7) == 0;
   let subframe_type   = (byte >> 1) & 0b111111;
@@ -127,7 +135,8 @@ pub fn header(input: (&[u8], usize))
   if is_valid {
     IResult::Done(i, (subframe_type as usize, has_wasted_bits))
   } else {
-    IResult::Error(Err::Position(nom::ErrorKind::Digit, input))
+    IResult::Error(Err::Position(
+      nom::ErrorKind::Custom(ErrorKind::InvalidSubframeHeader), input))
   }
 }
 
@@ -136,16 +145,21 @@ fn data<'a>(input: (&'a [u8], usize),
             block_size: usize,
             subframe_type: usize,
             buffer: &mut [i32])
-            -> IResult<(&'a [u8], usize), subframe::Data> {
+            -> IResult<(&'a [u8], usize), subframe::Data, ErrorKind> {
   match subframe_type {
-    0b000000            => constant(input, bits_per_sample),
-    0b000001            => verbatim(input, bits_per_sample, block_size),
+    0b000000            => constant(input, bits_per_sample)
+                             .map_err(to_custom_error!(ConstantParser)),
+    0b000001            => verbatim(input, bits_per_sample, block_size)
+                             .map_err(to_custom_error!(VerbatimParser)),
     0b001000...0b001100 => fixed(input, subframe_type & 0b0111,
-                                 bits_per_sample, block_size, buffer),
+                                 bits_per_sample, block_size, buffer)
+                             .map_err(to_custom_error!(FixedParser)),
     0b100000...0b111111 => lpc(input, (subframe_type & 0b011111) + 1,
-                               bits_per_sample, block_size, buffer),
+                               bits_per_sample, block_size, buffer)
+                             .map_err(to_custom_error!(LPCParser)),
     _                   => IResult::Error(Err::Position(
-                             nom::ErrorKind::Alt, input))
+                             nom::ErrorKind::Custom(ErrorKind::Unknown),
+                             input))
   }
 }
 
@@ -397,14 +411,11 @@ fn encoded_residuals<'a>(input: (&'a [u8], usize),
 #[cfg(test)]
 mod tests {
   use super::*;
-  use nom::{
-    IResult,
-    Err, ErrorKind,
-    Needed,
-  };
+  use nom::{self, IResult, Err, Needed};
 
-  use frame;
-  use frame::{ChannelAssignment, NumberType};
+  use frame::{self, ChannelAssignment, NumberType};
+  use utility::ErrorKind;
+
   use subframe::{
     Data,
     Fixed, LPC,
@@ -456,7 +467,9 @@ mod tests {
     let results = [ IResult::Done((&[][..], 0), (0b101010, false))
                   , IResult::Done((&[][..], 0), (0b001111, true))
                   , IResult::Done((&[][..], 0), (0b000000, false))
-                  , IResult::Error(Err::Position(ErrorKind::Digit, inputs[3]))
+                  , IResult::Error(Err::Position(
+                      nom::ErrorKind::Custom(
+                        ErrorKind::InvalidSubframeHeader), inputs[3]))
                   ];
 
     assert_eq!(header(inputs[0]), results[0]);
