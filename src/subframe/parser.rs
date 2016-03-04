@@ -116,7 +116,7 @@ pub fn subframe_parser<'a>(input: (&'a [u8], usize),
         wasted_bits: wasted_bits,
       }
     }
-  ).map_err(to_custom_error!(Unknown))
+  )
 }
 
 // Parses the first byte of the subframe. The first bit must be zero to
@@ -411,14 +411,11 @@ fn encoded_residuals<'a>(input: (&'a [u8], usize),
 #[cfg(test)]
 mod tests {
   use super::*;
-  use nom::{
-    IResult,
-    Err, ErrorKind,
-    Needed,
-  };
+  use nom::{self, IResult, Err, Needed};
 
-  use frame;
-  use frame::{ChannelAssignment, NumberType};
+  use frame::{self, ChannelAssignment, NumberType};
+  use utility::ErrorKind;
+
   use subframe::{
     Data,
     Fixed, LPC,
@@ -470,7 +467,9 @@ mod tests {
     let results = [ IResult::Done((&[][..], 0), (0b101010, false))
                   , IResult::Done((&[][..], 0), (0b001111, true))
                   , IResult::Done((&[][..], 0), (0b000000, false))
-                  , IResult::Error(Err::Position(ErrorKind::Digit, inputs[3]))
+                  , IResult::Error(Err::Position(
+                      nom::ErrorKind::Custom(
+                        ErrorKind::InvalidSubframeHeader), inputs[3]))
                   ];
 
     assert_eq!(header(inputs[0]), results[0]);
