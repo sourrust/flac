@@ -40,12 +40,19 @@ pub enum ErrorKind {
   PictureParser,
   /// Failed parsing the metadata block `Unknown`.
   UnknownParser,
+  /// Failed parsing the blocking strategy inside the frame header.
   BlockingStrategyParser,
+  /// Failed parsing the blocking sample inside the frame header.
   BlockingSampleParser,
+  /// Failed parsing the channel bits inside the frame header.
   ChannelBitsParser,
+  /// Failed parsing the UTF-8 header inside the frame header.
   UTF8HeaderParser,
+  /// Failed parsing the UTF-8 body inside the frame header.
   UTF8BodyParser,
+  /// Failed parsing the CRC-8 inside the frame header.
   CRC8Parser,
+  /// Failed parsing the frame footer, also known as the CRC-16.
   FrameFooterParser,
   SubframeParser,
   LeadingZerosParser,
