@@ -40,12 +40,19 @@ pub enum ErrorKind {
   PictureParser,
   /// Failed parsing the metadata block `Unknown`.
   UnknownParser,
+  /// Failed parsing the blocking strategy inside the frame header.
   BlockingStrategyParser,
+  /// Failed parsing the blocking sample inside the frame header.
   BlockingSampleParser,
+  /// Failed parsing the channel bits inside the frame header.
   ChannelBitsParser,
+  /// Failed parsing the UTF-8 header inside the frame header.
   UTF8HeaderParser,
+  /// Failed parsing the UTF-8 body inside the frame header.
   UTF8BodyParser,
+  /// Failed parsing the CRC-8 inside the frame header.
   CRC8Parser,
+  /// Failed parsing the frame footer, also known as the CRC-16.
   FrameFooterParser,
   SubframeParser,
   LeadingZerosParser,
@@ -56,11 +63,19 @@ pub enum ErrorKind {
   // Invalid Error
   /// A block type, base on the number, that is outside the range (0-126).
   InvalidBlockType,
+  /// An incorrect sync code with the frame header.
   InvalidSyncCode,
+  /// A block sample that could cause sync-fooling.
   InvalidBlockSample,
+  /// One or more bits are reserved values.
   InvalidChannelBits,
+  /// An error accured in building the UTF-8 value.
   InvalidUTF8,
+  /// The stored CRC-8 doesn't match the one generated from the bytes within
+  /// the frame header.
   InvalidCRC8,
+  /// The stored CRC-16 doesn't match the one generated from the bytes
+  /// within the entire frame.
   InvalidCRC16,
   InvalidSubframeHeader,
   // Not Found
