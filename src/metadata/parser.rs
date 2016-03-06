@@ -39,7 +39,7 @@ named!(pub stream_info <&[u8], metadata::Data>,
                             ((bytes[2] as u32) >> 4);
       let channels        = (bytes[2] >> 1) & 0b0111;
       let bits_per_sample = ((bytes[2] & 0b01) << 4) +
-                            bytes[3] >> 4;
+                            (bytes[3] >> 4);
       let total_samples   = (((bytes[3] as u64) & 0x0f) << 32) +
                             ((bytes[4] as u64) << 24) +
                             ((bytes[5] as u64) << 16) +
