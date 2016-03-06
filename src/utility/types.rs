@@ -54,11 +54,17 @@ pub enum ErrorKind {
   CRC8Parser,
   /// Failed parsing the frame footer, also known as the CRC-16.
   FrameFooterParser,
+  /// Failed parsing the subframe header.
   SubframeHeaderParser,
+  /// Failed parsing the leading zero for a unary value.
   LeadingZerosParser,
+  /// Failed parsing a Constant subframe data.
   ConstantParser,
+  /// Failed parsing a Verbatim subframe data.
   VerbatimParser,
+  /// Failed parsing a Fixed subframe data.
   FixedParser,
+  /// Failed parsing a LPC subframe data.
   LPCParser,
   // Invalid Error
   /// A block type, base on the number, that is outside the range (0-126).
