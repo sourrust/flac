@@ -83,6 +83,7 @@ pub enum ErrorKind {
   /// The stored CRC-16 doesn't match the one generated from the bytes
   /// within the entire frame.
   InvalidCRC16,
+  /// A subframe header that could cause sync-fooling.
   InvalidSubframeHeader,
   // Not Found
   /// Some metadata block was not found with a specific filter.
