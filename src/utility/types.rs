@@ -54,11 +54,17 @@ pub enum ErrorKind {
   CRC8Parser,
   /// Failed parsing the frame footer, also known as the CRC-16.
   FrameFooterParser,
-  SubframeParser,
+  /// Failed parsing the subframe header.
+  SubframeHeaderParser,
+  /// Failed parsing the leading zero for a unary value.
   LeadingZerosParser,
+  /// Failed parsing a Constant subframe data.
   ConstantParser,
+  /// Failed parsing a Verbatim subframe data.
   VerbatimParser,
+  /// Failed parsing a Fixed subframe data.
   FixedParser,
+  /// Failed parsing a LPC subframe data.
   LPCParser,
   // Invalid Error
   /// A block type, base on the number, that is outside the range (0-126).
@@ -69,7 +75,7 @@ pub enum ErrorKind {
   InvalidBlockSample,
   /// One or more bits are reserved values.
   InvalidChannelBits,
-  /// An error accured in building the UTF-8 value.
+  /// An error occurred in building the UTF-8 value.
   InvalidUTF8,
   /// The stored CRC-8 doesn't match the one generated from the bytes within
   /// the frame header.
@@ -77,6 +83,7 @@ pub enum ErrorKind {
   /// The stored CRC-16 doesn't match the one generated from the bytes
   /// within the entire frame.
   InvalidCRC16,
+  /// A subframe header that could cause sync-fooling.
   InvalidSubframeHeader,
   // Not Found
   /// Some metadata block was not found with a specific filter.

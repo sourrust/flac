@@ -16,6 +16,7 @@
   - `is_cue_sheet`
   - `is_picture`
   - `is_unknown`
+* `ErrorKind` to public exports
 
 ### Changed
 
@@ -24,6 +25,8 @@
   `Method::is_last`
 * Variant `PictureType::DuringPerformace` to
   `PictureType::DuringPerformance`, there was a missing "n"
+* `get_stream_info`, `get_vorbis_comment`, `get_cue_sheet`, and
+  `get_picture` to return an `flac::ErrorKind` on errors.
 
 ## [0.2.0] - 2016-02-06
 
