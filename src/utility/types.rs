@@ -69,7 +69,7 @@ pub enum ErrorKind {
   InvalidBlockSample,
   /// One or more bits are reserved values.
   InvalidChannelBits,
-  /// An error accured in building the UTF-8 value.
+  /// An error occurred in building the UTF-8 value.
   InvalidUTF8,
   /// The stored CRC-8 doesn't match the one generated from the bytes within
   /// the frame header.
