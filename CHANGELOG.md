@@ -28,6 +28,10 @@
 * `get_stream_info`, `get_vorbis_comment`, `get_cue_sheet`, and
   `get_picture` to return an `flac::ErrorKind` on errors.
 
+### Fixed
+
+* Calculating of bits per sample for anything higher than 16.
+
 ## [0.2.0] - 2016-02-06
 
 ### Added
