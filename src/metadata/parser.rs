@@ -324,24 +324,47 @@ mod tests {
 
   #[test]
   fn test_stream_info() {
-    let input  = b"\x12\0\x12\0\0\0\x0e\0\0\x10\x01\xf4\x02\x70\0\x01\x38\x80\
-                   \xa0\x42\x23\x7c\x54\x93\xfd\xb9\x65\x6b\x94\xa8\x36\x08\
-                   \xd1\x1a";
-    let result = metadata::Data::StreamInfo(StreamInfo {
-      min_block_size: 4608,
-      max_block_size: 4608,
-      min_frame_size: 14,
-      max_frame_size: 16,
-      sample_rate: 8000,
-      channels: 2,
-      bits_per_sample: 8,
-      total_samples: 80000,
-      md5_sum: [ 0xa0, 0x42, 0x23, 0x7c, 0x54, 0x93, 0xfd, 0xb9, 0x65, 0x6b
-               , 0x94, 0xa8, 0x36, 0x08, 0xd1, 0x1a
-               ],
-    });
+    {
+      let input  = b"\x12\0\x12\0\0\0\x0e\0\0\x10\x01\xf4\x02\x70\0\x01\x38\
+                     \x80\xa0\x42\x23\x7c\x54\x93\xfd\xb9\x65\x6b\x94\xa8\x36\
+                     \x08\xd1\x1a";
+      let result = metadata::Data::StreamInfo(StreamInfo {
+        min_block_size: 4608,
+        max_block_size: 4608,
+        min_frame_size: 14,
+        max_frame_size: 16,
+        sample_rate: 8000,
+        channels: 2,
+        bits_per_sample: 8,
+        total_samples: 80000,
+        md5_sum: [ 0xa0, 0x42, 0x23, 0x7c, 0x54, 0x93, 0xfd, 0xb9, 0x65, 0x6b
+                 , 0x94, 0xa8, 0x36, 0x08, 0xd1, 0x1a
+                 ],
+      });
 
-    assert_eq!(stream_info(input), IResult::Done(&[][..], result));
+      assert_eq!(stream_info(input), IResult::Done(&[][..], result));
+    }
+
+    {
+      let input  = b"\x10\0\x10\0\0\x0a\xab\0\x53\x05\x0b\xb8\x03\x70\0\x9b\
+                     \x8f\x4a\xc6\x16\x1b\x2b\xb3\xf8\x1c\xa6\x72\x79\x1d\x96\
+                     \xf0\x9d\x0b\x0c";
+      let result = metadata::Data::StreamInfo(StreamInfo {
+        min_block_size: 4096,
+        max_block_size: 4096,
+        min_frame_size: 2731,
+        max_frame_size: 21253,
+        sample_rate: 48000,
+        channels: 2,
+        bits_per_sample: 24,
+        total_samples: 10194762,
+        md5_sum: [ 0xc6, 0x16, 0x1b, 0x2b, 0xb3, 0xf8, 0x1c, 0xa6, 0x72, 0x79
+                 , 0x1d, 0x96, 0xf0, 0x9d, 0x0b, 0x0c
+                 ],
+      });
+
+      assert_eq!(stream_info(input), IResult::Done(&[][..], result));
+    }
   }
 
   #[test]
