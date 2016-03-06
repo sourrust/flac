@@ -54,7 +54,7 @@ pub enum ErrorKind {
   CRC8Parser,
   /// Failed parsing the frame footer, also known as the CRC-16.
   FrameFooterParser,
-  SubframeParser,
+  SubframeHeaderParser,
   LeadingZerosParser,
   ConstantParser,
   VerbatimParser,

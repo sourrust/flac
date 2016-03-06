@@ -125,7 +125,7 @@ pub fn subframe_parser<'a>(input: (&'a [u8], usize),
 pub fn header(input: (&[u8], usize))
               -> IResult<(&[u8], usize), (usize, bool), ErrorKind> {
   let (i, byte) = try_parser! {
-    take_bits!(input, u8, 8).map_err(to_custom_error!(SubframeParser))
+    take_bits!(input, u8, 8).map_err(to_custom_error!(SubframeHeaderParser))
   };
 
   let is_valid        = (byte >> 7) == 0;
