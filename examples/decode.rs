@@ -4,7 +4,7 @@ extern crate hound;
 extern crate rustc_serialize;
 
 use docopt::Docopt;
-use flac::StreamReader;
+use flac::{ErrorKind, StreamReader};
 
 use std::env;
 use std::fs;
@@ -27,11 +27,22 @@ struct Arguments {
   arg_dir: Option<String>,
 }
 
+fn to_io_error(kind: ErrorKind) -> hound::Error {
+  match kind {
+    ErrorKind::IO(e) => {
+      let io_error = io::Error::new(e, "io error");
+
+      hound::Error::IoError(io_error)
+    }
+    _                => hound::Error::Unsupported,
+  }
+}
+
 fn decode_file(input_file: &str, output_file: &str)
                -> Result<(), hound::Error> {
   let mut stream = try! {
     StreamReader::<fs::File>::from_file(input_file)
-      .map_err(hound::Error::IoError)
+      .map_err(to_io_error)
   };
 
   let info = stream.info();

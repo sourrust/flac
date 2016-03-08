@@ -26,7 +26,9 @@
 * Variant `PictureType::DuringPerformace` to
   `PictureType::DuringPerformance`, there was a missing "n"
 * `get_stream_info`, `get_vorbis_comment`, `get_cue_sheet`, and
-  `get_picture` to return an `flac::ErrorKind` on errors.
+  `get_picture` to return a `flac::ErrorKind` on errors.
+* `Stream::new`, `Stream::from_file`, and `Stream::from_buffer` to
+  return a `flac::ErrorKind` on errors.
 
 ### Fixed
 
