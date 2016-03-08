@@ -20,7 +20,7 @@
 //!       // Iterate over each decoded sample
 //!     }
 //!   }
-//!   Err(error)     => println!("{}", error),
+//!   Err(error)     => println!("{:?}", error),
 //! }
 //! ```
 
