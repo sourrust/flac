@@ -86,29 +86,24 @@ impl<P> Stream<P> where P: StreamProducer {
     Stream::from_stream_producer(producer, error_str)
   }
 
-  fn from_stream_producer(mut producer: P, error_str: &str)
-                          -> io::Result<Self> {
+  fn from_stream_producer(mut producer: P) -> Result<Self, ErrorKind> {
     let mut stream_info = StreamInfo::new();
     let mut metadata    = Vec::new();
 
-    let result = many_metadata(&mut producer, |block| {
+    many_metadata(&mut producer, |block| {
       if let metadata::Data::StreamInfo(info) = block.data {
         stream_info = info;
       } else {
         metadata.push(block);
       }
-    });
-
-    if result.is_ok() {
-      Ok(Stream {
+    }).map(|_| {
+      Stream {
         info: stream_info,
         metadata: metadata,
         producer: producer,
         output: Vec::new(),
-      })
-    } else {
-      Err(io::Error::new(io::ErrorKind::InvalidData, error_str))
-    }
+      }
+    })
   }
 
   /// Returns an iterator over the decoded samples.
