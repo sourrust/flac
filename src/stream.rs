@@ -29,11 +29,10 @@ pub type StreamBuffer<'a> = Stream<ByteStream<'a>>;
 impl<P> Stream<P> where P: StreamProducer {
   /// Constructor for the default state of a FLAC stream.
   #[inline]
-  pub fn new<R: io::Read>(reader: R) -> io::Result<StreamReader<R>> {
-    let producer  = ReadStream::new(reader);
-    let error_str = "parser: couldn't parse the reader";
+  pub fn new<R: io::Read>(reader: R) -> Result<StreamReader<R>, ErrorKind> {
+    let producer = ReadStream::new(reader);
 
-    Stream::from_stream_producer(producer, error_str)
+    Stream::from_stream_producer(producer)
   }
 
   /// Returns information for the current stream.
@@ -60,13 +59,12 @@ impl<P> Stream<P> where P: StreamProducer {
   /// * `ErrorKind::InvalidData` is returned when the data within the file
   ///   isn't valid FLAC data.
   #[inline]
-  pub fn from_file(filename: &str) -> io::Result<StreamReader<File>> {
-    File::open(filename).and_then(|file| {
-      let producer  = ReadStream::new(file);
-      let error_str = format!("parser: couldn't parse the given file {}",
-                              filename);
+  pub fn from_file(filename: &str) -> Result<StreamReader<File>, ErrorKind> {
+    File::open(filename).map_err(|e| ErrorKind::IO(e.kind()))
+                        .and_then(|file| {
+      let producer = ReadStream::new(file);
 
-      Stream::from_stream_producer(producer, &error_str)
+      Stream::from_stream_producer(producer)
     })
   }
 
@@ -79,11 +77,10 @@ impl<P> Stream<P> where P: StreamProducer {
   /// * `ErrorKind::InvalidData` is returned when the data within the buffer
   ///   isn't valid FLAC data.
   #[inline]
-  pub fn from_buffer(buffer: &[u8]) -> io::Result<StreamBuffer> {
-    let producer  = ByteStream::new(buffer);
-    let error_str = "parser: couldn't parse the buffer";
+  pub fn from_buffer(buffer: &[u8]) -> Result<StreamBuffer, ErrorKind> {
+    let producer = ByteStream::new(buffer);
 
-    Stream::from_stream_producer(producer, error_str)
+    Stream::from_stream_producer(producer)
   }
 
   fn from_stream_producer(mut producer: P) -> Result<Self, ErrorKind> {
