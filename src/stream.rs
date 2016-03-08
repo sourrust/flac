@@ -127,7 +127,7 @@ impl<P> Stream<P> where P: StreamProducer {
     }
   }
 
-  fn next_frame<'a>(&'a mut self) -> Option<usize> {
+  fn next_frame(&mut self) -> Option<usize> {
     let stream_info = &self.info;
     let buffer      = &mut self.output;
 
