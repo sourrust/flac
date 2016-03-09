@@ -55,9 +55,14 @@ impl<P> Stream<P> where P: StreamProducer {
   ///
   /// # Failures
   ///
-  /// * `ErrorKind::NotFound` is returned when the given filename isn't found.
-  /// * `ErrorKind::InvalidData` is returned when the data within the file
-  ///   isn't valid FLAC data.
+  /// * `ErrorKind::IO(io::ErrorKind::NotFound)` is returned when the given
+  ///   filename isn't found.
+  /// * `ErrorKind::IO(io::ErrorKind::InvalidData)` is returned when the data
+  ///   within the file isn't valid FLAC data.
+  /// * Several different parser specific errors that are structured as
+  ///   `ErrorKind::<parser_name>Parser`.
+  /// * Several different invalidation specific errors that are
+  ///   structured as `ErrorKind::Invalid<invalidation_name>`.
   #[inline]
   pub fn from_file(filename: &str) -> Result<StreamReader<File>, ErrorKind> {
     File::open(filename).map_err(|e| ErrorKind::IO(e.kind()))
@@ -74,8 +79,12 @@ impl<P> Stream<P> where P: StreamProducer {
   ///
   /// # Failures
   ///
-  /// * `ErrorKind::InvalidData` is returned when the data within the buffer
-  ///   isn't valid FLAC data.
+  /// * `ErrorKind::IO(io::ErrorKind::InvalidData)` is returned when the data
+  ///   within the file isn't valid FLAC data.
+  /// * Several different parser specific errors that are structured as
+  ///   `ErrorKind::<parser_name>Parser`.
+  /// * Several different invalidation specific errors that are
+  ///   structured as `ErrorKind::Invalid<invalidation_name>`.
   #[inline]
   pub fn from_buffer(buffer: &[u8]) -> Result<StreamBuffer, ErrorKind> {
     let producer = ByteStream::new(buffer);
