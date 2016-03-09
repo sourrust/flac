@@ -25,6 +25,7 @@
   `Method::is_last`
 * Variant `PictureType::DuringPerformace` to
   `PictureType::DuringPerformance`, there was a missing "n"
+* Around a 5% improvement on decode performance
 * `get_stream_info`, `get_vorbis_comment`, `get_cue_sheet`, and
   `get_picture` to return a `flac::ErrorKind` on errors.
 * `Stream::new`, `Stream::from_file`, and `Stream::from_buffer` to
