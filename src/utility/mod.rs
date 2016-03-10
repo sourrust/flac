@@ -48,6 +48,8 @@ pub fn extend_sign(value: u32, bit_count: usize) -> i32 {
 // Bit shifted version for two to the power of a given exponent.
 #[inline]
 pub fn power_of_two(exponent: u32) -> u32 {
+  debug_assert!(exponent <= 31);
+
   1 << exponent
 }
 
