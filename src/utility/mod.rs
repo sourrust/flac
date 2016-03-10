@@ -162,6 +162,12 @@ mod tests {
   }
 
   #[test]
+  #[should_panic]
+  fn test_panic_power_of_two() {
+    power_of_two(32);
+  }
+
+  #[test]
   fn test_power_of_two() {
     assert_eq!(power_of_two(0), 1);
     assert_eq!(power_of_two(1), 2);
