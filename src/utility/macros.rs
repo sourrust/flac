@@ -84,6 +84,8 @@ macro_rules! take_signed_bits (
   );
 );
 
+// Convert the error returned from parsers to a `utility::ErrorKind` given
+// to the macro.
 macro_rules! to_custom_error (
   ($error_type: ident) => (
     |_| $crate::nom::Err::Code($crate::nom::ErrorKind::Custom(
@@ -91,6 +93,9 @@ macro_rules! to_custom_error (
   );
 );
 
+// Similar to `try_parse!` macro but not require it to be like a nom parser.
+// Essentually a parser that returns `IResult` will only need to return and
+// the macro will do what `try!` does.
 macro_rules! try_parser (
   ($iresult: expr) => (
     match $iresult {
