@@ -304,15 +304,14 @@ pub fn block_data(input: &[u8], block_type: u8, length: u32)
 #[cfg(test)]
 mod tests {
   use super::*;
-  use metadata;
   use metadata::{
+    self,
     StreamInfo, Application, VorbisComment, CueSheet, Picture,
     SeekPoint, CueSheetTrack, CueSheetTrackIndex, PictureType,
   };
-  use nom::{
-    IResult,
-    ErrorKind, Err,
-  };
+  use utility::ErrorKind;
+
+  use nom::{self, IResult, Err};
 
   use std::collections::HashMap;
 
@@ -376,8 +375,8 @@ mod tests {
     let inputs = [b"\0\0\0\0\0\0\0\0\0\0", b"\0\0\0\0\x01\0\0\0\0\0"];
 
     let result_valid   = IResult::Done(&[][..], metadata::Data::Padding(0));
-    let result_invalid = IResult::Error(Err::Position(
-                           ErrorKind::Digit, &inputs[1][..]));
+    let result_invalid = IResult::Error(Err::Code(nom::ErrorKind::Custom(
+                           ErrorKind::PaddingParser)));
 
     assert_eq!(padding(inputs[0], 10), result_valid);
     assert_eq!(padding(inputs[1], 10), result_invalid);
