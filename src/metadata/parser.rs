@@ -61,8 +61,11 @@ named!(pub stream_info <&[u8], metadata::Data>,
   )
 );
 
-pub fn padding(input: &[u8], length: u32) -> IResult<&[u8], metadata::Data> {
-  map!(input, skip_bytes!(length), |_| metadata::Data::Padding(0))
+pub fn padding(input: &[u8], length: u32)
+               -> IResult<&[u8], metadata::Data, ErrorKind> {
+  to_custom_error!(input,
+    map!(skip_bytes!(length), |_| metadata::Data::Padding(0)),
+    PaddingParser)
 }
 
 pub fn application(input: &[u8], length: u32)
@@ -250,9 +253,12 @@ named!(pub picture <&[u8], metadata::Data>,
 // As of FLAC v1.3.1, there is support for up to 127 different metadata
 // `Metadata`s but actually 7 that are implemented. When the `Metadata` type
 // isn't recognised, this block gets skipped over with this parser.
-pub fn unknown(input: &[u8], length: u32) -> IResult<&[u8], metadata::Data> {
-  map!(input, take!(length), |data: &[u8]|
-    metadata::Data::Unknown(data.to_owned()))
+pub fn unknown(input: &[u8], length: u32)
+               -> IResult<&[u8], metadata::Data, ErrorKind> {
+  to_custom_error!(input,
+    map!(take!(length), |data: &[u8]|
+      metadata::Data::Unknown(data.to_owned())),
+    UnknownParser)
 }
 
 pub fn header(input: &[u8]) -> IResult<&[u8], (bool, u8, u32), ErrorKind> {
@@ -280,8 +286,7 @@ pub fn block_data(input: &[u8], block_type: u8, length: u32)
 
   match block_type {
     0       => stream_info(input).map_err(to_custom_error!(StreamInfoParser)),
-    1       => padding(input, length).map_err(
-                 to_custom_error!(PaddingParser)),
+    1       => padding(input, length),
     2       => application(input, length).map_err(
                  to_custom_error!(ApplicationParser)),
     3       => seek_table(input, length).map_err(
@@ -290,8 +295,7 @@ pub fn block_data(input: &[u8], block_type: u8, length: u32)
                  to_custom_error!(VorbisCommentParser)),
     5       => cue_sheet(input).map_err(to_custom_error!(CueSheetParser)),
     6       => picture(input).map_err(to_custom_error!(PictureParser)),
-    7...126 => unknown(input, length).map_err(
-                 to_custom_error!(UnknownParser)),
+    7...126 => unknown(input, length),
     _       => IResult::Error(Err::Code(
                  nom::ErrorKind::Custom(ErrorKind::InvalidBlockType))),
   }
@@ -300,15 +304,14 @@ pub fn block_data(input: &[u8], block_type: u8, length: u32)
 #[cfg(test)]
 mod tests {
   use super::*;
-  use metadata;
   use metadata::{
+    self,
     StreamInfo, Application, VorbisComment, CueSheet, Picture,
     SeekPoint, CueSheetTrack, CueSheetTrackIndex, PictureType,
   };
-  use nom::{
-    IResult,
-    ErrorKind, Err,
-  };
+  use utility::ErrorKind;
+
+  use nom::{self, IResult, Err};
 
   use std::collections::HashMap;
 
@@ -372,8 +375,8 @@ mod tests {
     let inputs = [b"\0\0\0\0\0\0\0\0\0\0", b"\0\0\0\0\x01\0\0\0\0\0"];
 
     let result_valid   = IResult::Done(&[][..], metadata::Data::Padding(0));
-    let result_invalid = IResult::Error(Err::Position(
-                           ErrorKind::Digit, &inputs[1][..]));
+    let result_invalid = IResult::Error(Err::Code(nom::ErrorKind::Custom(
+                           ErrorKind::PaddingParser)));
 
     assert_eq!(padding(inputs[0], 10), result_valid);
     assert_eq!(padding(inputs[1], 10), result_invalid);
