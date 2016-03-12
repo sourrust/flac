@@ -61,8 +61,11 @@ named!(pub stream_info <&[u8], metadata::Data>,
   )
 );
 
-pub fn padding(input: &[u8], length: u32) -> IResult<&[u8], metadata::Data> {
-  map!(input, skip_bytes!(length), |_| metadata::Data::Padding(0))
+pub fn padding(input: &[u8], length: u32)
+               -> IResult<&[u8], metadata::Data, ErrorKind> {
+  to_custom_error!(input,
+    map!(skip_bytes!(length), |_| metadata::Data::Padding(0)),
+    PaddingParser)
 }
 
 pub fn application(input: &[u8], length: u32)
@@ -280,8 +283,7 @@ pub fn block_data(input: &[u8], block_type: u8, length: u32)
 
   match block_type {
     0       => stream_info(input).map_err(to_custom_error!(StreamInfoParser)),
-    1       => padding(input, length).map_err(
-                 to_custom_error!(PaddingParser)),
+    1       => padding(input, length),
     2       => application(input, length).map_err(
                  to_custom_error!(ApplicationParser)),
     3       => seek_table(input, length).map_err(
