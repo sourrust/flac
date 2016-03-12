@@ -87,6 +87,13 @@ macro_rules! take_signed_bits (
 // Convert the error returned from parsers to a `utility::ErrorKind` given
 // to the macro.
 macro_rules! to_custom_error (
+  ($input: expr, $submac: ident!( $($args:tt)* ), $error_type: ident) => (
+    $submac!($input, $($args)*).map_err(|_| $crate::nom::Err::Code(
+      $crate::nom::ErrorKind::Custom(::utility::ErrorKind::$error_type)))
+  );
+  ($input: expr, $f: expr, $error_type: ident) => (
+    to_custom_error!($input, call!($f), $error_type);
+  );
   ($error_type: ident) => (
     |_| $crate::nom::Err::Code($crate::nom::ErrorKind::Custom(
           ::utility::ErrorKind::$error_type))
