@@ -253,9 +253,12 @@ named!(pub picture <&[u8], metadata::Data>,
 // As of FLAC v1.3.1, there is support for up to 127 different metadata
 // `Metadata`s but actually 7 that are implemented. When the `Metadata` type
 // isn't recognised, this block gets skipped over with this parser.
-pub fn unknown(input: &[u8], length: u32) -> IResult<&[u8], metadata::Data> {
-  map!(input, take!(length), |data: &[u8]|
-    metadata::Data::Unknown(data.to_owned()))
+pub fn unknown(input: &[u8], length: u32)
+               -> IResult<&[u8], metadata::Data, ErrorKind> {
+  to_custom_error!(input,
+    map!(take!(length), |data: &[u8]|
+      metadata::Data::Unknown(data.to_owned())),
+    UnknownParser)
 }
 
 pub fn header(input: &[u8]) -> IResult<&[u8], (bool, u8, u32), ErrorKind> {
@@ -292,8 +295,7 @@ pub fn block_data(input: &[u8], block_type: u8, length: u32)
                  to_custom_error!(VorbisCommentParser)),
     5       => cue_sheet(input).map_err(to_custom_error!(CueSheetParser)),
     6       => picture(input).map_err(to_custom_error!(PictureParser)),
-    7...126 => unknown(input, length).map_err(
-                 to_custom_error!(UnknownParser)),
+    7...126 => unknown(input, length),
     _       => IResult::Error(Err::Code(
                  nom::ErrorKind::Custom(ErrorKind::InvalidBlockType))),
   }
