@@ -109,28 +109,31 @@ pub fn seek_table(input: &[u8], length: u32)
   map!(input, count!(seek_point, seek_count), metadata::Data::SeekTable)
 }
 
-named!(pub vorbis_comment <&[u8], metadata::Data>,
-  chain!(
-    vendor_string_length: le_u32 ~
-    vendor_string: take_str!(vendor_string_length)  ~
-    number_of_comments: le_u32 ~
-    comment_lines: count!(comment_field, number_of_comments as usize),
-    || {
-      let mut comments = HashMap::with_capacity(comment_lines.len());
+pub fn vorbis_comment(input: &[u8])
+                      -> IResult<&[u8], metadata::Data, ErrorKind> {
+  to_custom_error!(input,
+    chain!(
+      vendor_string_length: le_u32 ~
+      vendor_string: take_str!(vendor_string_length)  ~
+      number_of_comments: le_u32 ~
+      comment_lines: count!(comment_field, number_of_comments as usize),
+      || {
+        let mut comments = HashMap::with_capacity(comment_lines.len());
 
-      for line in comment_lines {
-        let comment: Vec<&str> = line.splitn(2, '=').collect();
+        for line in comment_lines {
+          let comment: Vec<&str> = line.splitn(2, '=').collect();
 
-        comments.insert(comment[0].to_owned(), comment[1].to_owned());
+          comments.insert(comment[0].to_owned(), comment[1].to_owned());
+        }
+
+        metadata::Data::VorbisComment(VorbisComment {
+          vendor_string: vendor_string.to_owned(),
+          comments: comments,
+        })
       }
-
-      metadata::Data::VorbisComment(VorbisComment {
-        vendor_string: vendor_string.to_owned(),
-        comments: comments,
-      })
-    }
-  )
-);
+    ),
+    VorbisCommentParser)
+}
 
 named!(comment_field <&[u8], String>,
   chain!(
@@ -295,8 +298,7 @@ pub fn block_data(input: &[u8], block_type: u8, length: u32)
     2       => application(input, length),
     3       => seek_table(input, length).map_err(
                  to_custom_error!(SeekTableParser)),
-    4       => vorbis_comment(input).map_err(
-                 to_custom_error!(VorbisCommentParser)),
+    4       => vorbis_comment(input),
     5       => cue_sheet(input).map_err(to_custom_error!(CueSheetParser)),
     6       => picture(input).map_err(to_custom_error!(PictureParser)),
     7...126 => unknown(input, length),
