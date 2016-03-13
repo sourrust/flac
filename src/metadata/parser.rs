@@ -143,27 +143,29 @@ named!(comment_field <&[u8], String>,
   )
 );
 
-named!(pub cue_sheet <&[u8], metadata::Data>,
-  chain!(
-    media_catalog_number: take_str!(128) ~
-    lead_in: be_u64 ~
-    // First bit is a flag to check if the cue sheet information is from a
-    // Compact Disc. Rest of the bits should be all zeros.
-    bytes: skip_bytes!(259, 1) ~
-    num_tracks: be_u8 ~
-    tracks: count!(cue_sheet_track, num_tracks as usize),
-    || {
-      let is_cd = (bytes[0] >> 7) == 1;
+pub fn cue_sheet(input: &[u8]) -> IResult<&[u8], metadata::Data, ErrorKind> {
+  to_custom_error!(input,
+    chain!(
+      media_catalog_number: take_str!(128) ~
+      lead_in: be_u64 ~
+      // First bit is a flag to check if the cue sheet information is from a
+      // Compact Disc. Rest of the bits should be all zeros.
+      bytes: skip_bytes!(259, 1) ~
+      num_tracks: be_u8 ~
+      tracks: count!(cue_sheet_track, num_tracks as usize),
+      || {
+        let is_cd = (bytes[0] >> 7) == 1;
 
-      metadata::Data::CueSheet(CueSheet {
-        media_catalog_number: media_catalog_number.to_owned(),
-        lead_in: lead_in,
-        is_cd: is_cd,
-        tracks: tracks,
-      })
-    }
-  )
-);
+        metadata::Data::CueSheet(CueSheet {
+          media_catalog_number: media_catalog_number.to_owned(),
+          lead_in: lead_in,
+          is_cd: is_cd,
+          tracks: tracks,
+        })
+      }
+    ),
+    CueSheetParser)
+}
 
 named!(cue_sheet_track <&[u8], CueSheetTrack>,
   chain!(
@@ -299,7 +301,7 @@ pub fn block_data(input: &[u8], block_type: u8, length: u32)
     3       => seek_table(input, length).map_err(
                  to_custom_error!(SeekTableParser)),
     4       => vorbis_comment(input),
-    5       => cue_sheet(input).map_err(to_custom_error!(CueSheetParser)),
+    5       => cue_sheet(input),
     6       => picture(input).map_err(to_custom_error!(PictureParser)),
     7...126 => unknown(input, length),
     _       => IResult::Error(Err::Code(
