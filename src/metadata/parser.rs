@@ -25,41 +25,44 @@ pub fn metadata_parser(input: &[u8]) -> IResult<&[u8], Metadata, ErrorKind> {
   )
 }
 
-named!(pub stream_info <&[u8], metadata::Data>,
-  chain!(
-    min_block_size: be_u16 ~
-    max_block_size: be_u16 ~
-    min_frame_size: map!(take!(3), to_u32) ~
-    max_frame_size: map!(take!(3), to_u32) ~
-    bytes: take!(8) ~
-    md5_sum: count_fixed!(u8, be_u8, 16),
-    || {
-      let sample_rate     = ((bytes[0] as u32) << 12) +
-                            ((bytes[1] as u32) << 4)  +
-                            ((bytes[2] as u32) >> 4);
-      let channels        = (bytes[2] >> 1) & 0b0111;
-      let bits_per_sample = ((bytes[2] & 0b01) << 4) +
-                            (bytes[3] >> 4);
-      let total_samples   = (((bytes[3] as u64) & 0x0f) << 32) +
-                            ((bytes[4] as u64) << 24) +
-                            ((bytes[5] as u64) << 16) +
-                            ((bytes[6] as u64) << 8) +
-                            (bytes[7] as u64);
+pub fn stream_info(input: &[u8])
+                   -> IResult<&[u8], metadata::Data, ErrorKind> {
+  to_custom_error!(input,
+    chain!(
+      min_block_size: be_u16 ~
+      max_block_size: be_u16 ~
+      min_frame_size: map!(take!(3), to_u32) ~
+      max_frame_size: map!(take!(3), to_u32) ~
+      bytes: take!(8) ~
+      md5_sum: count_fixed!(u8, be_u8, 16),
+      || {
+        let sample_rate     = ((bytes[0] as u32) << 12) +
+                              ((bytes[1] as u32) << 4)  +
+                              ((bytes[2] as u32) >> 4);
+        let channels        = (bytes[2] >> 1) & 0b0111;
+        let bits_per_sample = ((bytes[2] & 0b01) << 4) +
+                              (bytes[3] >> 4);
+        let total_samples   = (((bytes[3] as u64) & 0x0f) << 32) +
+                              ((bytes[4] as u64) << 24) +
+                              ((bytes[5] as u64) << 16) +
+                              ((bytes[6] as u64) << 8) +
+                              (bytes[7] as u64);
 
-      metadata::Data::StreamInfo(StreamInfo {
-        min_block_size: min_block_size,
-        max_block_size: max_block_size,
-        min_frame_size: min_frame_size,
-        max_frame_size: max_frame_size,
-        sample_rate: sample_rate,
-        channels: channels + 1,
-        bits_per_sample: bits_per_sample + 1,
-        total_samples: total_samples,
-        md5_sum: md5_sum,
-      })
-    }
-  )
-);
+        metadata::Data::StreamInfo(StreamInfo {
+          min_block_size: min_block_size,
+          max_block_size: max_block_size,
+          min_frame_size: min_frame_size,
+          max_frame_size: max_frame_size,
+          sample_rate: sample_rate,
+          channels: channels + 1,
+          bits_per_sample: bits_per_sample + 1,
+          total_samples: total_samples,
+          md5_sum: md5_sum,
+        })
+      }
+    ),
+    StreamInfoParser)
+}
 
 pub fn padding(input: &[u8], length: u32)
                -> IResult<&[u8], metadata::Data, ErrorKind> {
@@ -69,17 +72,19 @@ pub fn padding(input: &[u8], length: u32)
 }
 
 pub fn application(input: &[u8], length: u32)
-                   -> IResult<&[u8], metadata::Data> {
-  chain!(input,
-    id: take_str!(4) ~
-    data: take!(length - 4),
-    || {
-      metadata::Data::Application(Application {
-        id: id.to_owned(),
-        data: data.to_owned(),
-      })
-    }
-  )
+                   -> IResult<&[u8], metadata::Data, ErrorKind> {
+  to_custom_error!(input,
+    chain!(
+      id: take_str!(4) ~
+      data: take!(length - 4),
+      || {
+        metadata::Data::Application(Application {
+          id: id.to_owned(),
+          data: data.to_owned(),
+        })
+      }
+    ),
+    ApplicationParser)
 }
 
 named!(seek_point <&[u8], SeekPoint>,
@@ -104,28 +109,31 @@ pub fn seek_table(input: &[u8], length: u32)
   map!(input, count!(seek_point, seek_count), metadata::Data::SeekTable)
 }
 
-named!(pub vorbis_comment <&[u8], metadata::Data>,
-  chain!(
-    vendor_string_length: le_u32 ~
-    vendor_string: take_str!(vendor_string_length)  ~
-    number_of_comments: le_u32 ~
-    comment_lines: count!(comment_field, number_of_comments as usize),
-    || {
-      let mut comments = HashMap::with_capacity(comment_lines.len());
+pub fn vorbis_comment(input: &[u8])
+                      -> IResult<&[u8], metadata::Data, ErrorKind> {
+  to_custom_error!(input,
+    chain!(
+      vendor_string_length: le_u32 ~
+      vendor_string: take_str!(vendor_string_length)  ~
+      number_of_comments: le_u32 ~
+      comment_lines: count!(comment_field, number_of_comments as usize),
+      || {
+        let mut comments = HashMap::with_capacity(comment_lines.len());
 
-      for line in comment_lines {
-        let comment: Vec<&str> = line.splitn(2, '=').collect();
+        for line in comment_lines {
+          let comment: Vec<&str> = line.splitn(2, '=').collect();
 
-        comments.insert(comment[0].to_owned(), comment[1].to_owned());
+          comments.insert(comment[0].to_owned(), comment[1].to_owned());
+        }
+
+        metadata::Data::VorbisComment(VorbisComment {
+          vendor_string: vendor_string.to_owned(),
+          comments: comments,
+        })
       }
-
-      metadata::Data::VorbisComment(VorbisComment {
-        vendor_string: vendor_string.to_owned(),
-        comments: comments,
-      })
-    }
-  )
-);
+    ),
+    VorbisCommentParser)
+}
 
 named!(comment_field <&[u8], String>,
   chain!(
@@ -135,27 +143,29 @@ named!(comment_field <&[u8], String>,
   )
 );
 
-named!(pub cue_sheet <&[u8], metadata::Data>,
-  chain!(
-    media_catalog_number: take_str!(128) ~
-    lead_in: be_u64 ~
-    // First bit is a flag to check if the cue sheet information is from a
-    // Compact Disc. Rest of the bits should be all zeros.
-    bytes: skip_bytes!(259, 1) ~
-    num_tracks: be_u8 ~
-    tracks: count!(cue_sheet_track, num_tracks as usize),
-    || {
-      let is_cd = (bytes[0] >> 7) == 1;
+pub fn cue_sheet(input: &[u8]) -> IResult<&[u8], metadata::Data, ErrorKind> {
+  to_custom_error!(input,
+    chain!(
+      media_catalog_number: take_str!(128) ~
+      lead_in: be_u64 ~
+      // First bit is a flag to check if the cue sheet information is from a
+      // Compact Disc. Rest of the bits should be all zeros.
+      bytes: skip_bytes!(259, 1) ~
+      num_tracks: be_u8 ~
+      tracks: count!(cue_sheet_track, num_tracks as usize),
+      || {
+        let is_cd = (bytes[0] >> 7) == 1;
 
-      metadata::Data::CueSheet(CueSheet {
-        media_catalog_number: media_catalog_number.to_owned(),
-        lead_in: lead_in,
-        is_cd: is_cd,
-        tracks: tracks,
-      })
-    }
-  )
-);
+        metadata::Data::CueSheet(CueSheet {
+          media_catalog_number: media_catalog_number.to_owned(),
+          lead_in: lead_in,
+          is_cd: is_cd,
+          tracks: tracks,
+        })
+      }
+    ),
+    CueSheetParser)
+}
 
 named!(cue_sheet_track <&[u8], CueSheetTrack>,
   chain!(
@@ -198,57 +208,59 @@ named!(cue_sheet_track_index <&[u8], CueSheetTrackIndex>,
   )
 );
 
-named!(pub picture <&[u8], metadata::Data>,
-  chain!(
-    picture_type_num: be_u32 ~
-    mime_type_length:  be_u32 ~
-    mime_type: take_str!(mime_type_length) ~
-    description_length: be_u32 ~
-    description: take_str!(description_length) ~
-    width: be_u32 ~
-    height: be_u32 ~
-    depth: be_u32 ~
-    colors: be_u32 ~
-    data_length: be_u32 ~
-    data: take!(data_length),
-    || {
-      let picture_type = match picture_type_num {
-        1  => PictureType::FileIconStandard,
-        2  => PictureType::FileIcon,
-        3  => PictureType::FrontCover,
-        4  => PictureType::BackCover,
-        5  => PictureType::LeafletPage,
-        6  => PictureType::Media,
-        7  => PictureType::LeadArtist,
-        8  => PictureType::Artist,
-        9  => PictureType::Conductor,
-        10 => PictureType::Band,
-        11 => PictureType::Composer,
-        12 => PictureType::Lyricist,
-        13 => PictureType::RecordingLocation,
-        14 => PictureType::DuringRecording,
-        15 => PictureType::DuringPerformance,
-        16 => PictureType::VideoScreenCapture,
-        17 => PictureType::Fish,
-        18 => PictureType::Illustration,
-        19 => PictureType::BandLogo,
-        20 => PictureType::PublisherLogo,
-        _  => PictureType::Other,
-      };
+pub fn picture(input: &[u8]) -> IResult<&[u8], metadata::Data, ErrorKind> {
+  to_custom_error!(input,
+    chain!(
+      picture_type_num: be_u32 ~
+      mime_type_length:  be_u32 ~
+      mime_type: take_str!(mime_type_length) ~
+      description_length: be_u32 ~
+      description: take_str!(description_length) ~
+      width: be_u32 ~
+      height: be_u32 ~
+      depth: be_u32 ~
+      colors: be_u32 ~
+      data_length: be_u32 ~
+      data: take!(data_length),
+      || {
+        let picture_type = match picture_type_num {
+          1  => PictureType::FileIconStandard,
+          2  => PictureType::FileIcon,
+          3  => PictureType::FrontCover,
+          4  => PictureType::BackCover,
+          5  => PictureType::LeafletPage,
+          6  => PictureType::Media,
+          7  => PictureType::LeadArtist,
+          8  => PictureType::Artist,
+          9  => PictureType::Conductor,
+          10 => PictureType::Band,
+          11 => PictureType::Composer,
+          12 => PictureType::Lyricist,
+          13 => PictureType::RecordingLocation,
+          14 => PictureType::DuringRecording,
+          15 => PictureType::DuringPerformance,
+          16 => PictureType::VideoScreenCapture,
+          17 => PictureType::Fish,
+          18 => PictureType::Illustration,
+          19 => PictureType::BandLogo,
+          20 => PictureType::PublisherLogo,
+          _  => PictureType::Other,
+        };
 
-      metadata::Data::Picture(Picture {
-        picture_type: picture_type,
-        mime_type: mime_type.to_owned(),
-        description: description.to_owned(),
-        width: width,
-        height: height,
-        depth: depth,
-        colors: colors,
-        data: data.to_owned(),
-      })
-    }
-  )
-);
+        metadata::Data::Picture(Picture {
+          picture_type: picture_type,
+          mime_type: mime_type.to_owned(),
+          description: description.to_owned(),
+          width: width,
+          height: height,
+          depth: depth,
+          colors: colors,
+          data: data.to_owned(),
+        })
+      }
+    ),
+    PictureParser)
+}
 
 // As of FLAC v1.3.1, there is support for up to 127 different metadata
 // `Metadata`s but actually 7 that are implemented. When the `Metadata` type
@@ -285,16 +297,14 @@ pub fn block_data(input: &[u8], block_type: u8, length: u32)
   }
 
   match block_type {
-    0       => stream_info(input).map_err(to_custom_error!(StreamInfoParser)),
+    0       => stream_info(input),
     1       => padding(input, length),
-    2       => application(input, length).map_err(
-                 to_custom_error!(ApplicationParser)),
+    2       => application(input, length),
     3       => seek_table(input, length).map_err(
                  to_custom_error!(SeekTableParser)),
-    4       => vorbis_comment(input).map_err(
-                 to_custom_error!(VorbisCommentParser)),
-    5       => cue_sheet(input).map_err(to_custom_error!(CueSheetParser)),
-    6       => picture(input).map_err(to_custom_error!(PictureParser)),
+    4       => vorbis_comment(input),
+    5       => cue_sheet(input),
+    6       => picture(input),
     7...126 => unknown(input, length),
     _       => IResult::Error(Err::Code(
                  nom::ErrorKind::Custom(ErrorKind::InvalidBlockType))),
