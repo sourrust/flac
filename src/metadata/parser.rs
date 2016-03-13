@@ -25,41 +25,44 @@ pub fn metadata_parser(input: &[u8]) -> IResult<&[u8], Metadata, ErrorKind> {
   )
 }
 
-named!(pub stream_info <&[u8], metadata::Data>,
-  chain!(
-    min_block_size: be_u16 ~
-    max_block_size: be_u16 ~
-    min_frame_size: map!(take!(3), to_u32) ~
-    max_frame_size: map!(take!(3), to_u32) ~
-    bytes: take!(8) ~
-    md5_sum: count_fixed!(u8, be_u8, 16),
-    || {
-      let sample_rate     = ((bytes[0] as u32) << 12) +
-                            ((bytes[1] as u32) << 4)  +
-                            ((bytes[2] as u32) >> 4);
-      let channels        = (bytes[2] >> 1) & 0b0111;
-      let bits_per_sample = ((bytes[2] & 0b01) << 4) +
-                            (bytes[3] >> 4);
-      let total_samples   = (((bytes[3] as u64) & 0x0f) << 32) +
-                            ((bytes[4] as u64) << 24) +
-                            ((bytes[5] as u64) << 16) +
-                            ((bytes[6] as u64) << 8) +
-                            (bytes[7] as u64);
+pub fn stream_info(input: &[u8])
+                   -> IResult<&[u8], metadata::Data, ErrorKind> {
+  to_custom_error!(input,
+    chain!(
+      min_block_size: be_u16 ~
+      max_block_size: be_u16 ~
+      min_frame_size: map!(take!(3), to_u32) ~
+      max_frame_size: map!(take!(3), to_u32) ~
+      bytes: take!(8) ~
+      md5_sum: count_fixed!(u8, be_u8, 16),
+      || {
+        let sample_rate     = ((bytes[0] as u32) << 12) +
+                              ((bytes[1] as u32) << 4)  +
+                              ((bytes[2] as u32) >> 4);
+        let channels        = (bytes[2] >> 1) & 0b0111;
+        let bits_per_sample = ((bytes[2] & 0b01) << 4) +
+                              (bytes[3] >> 4);
+        let total_samples   = (((bytes[3] as u64) & 0x0f) << 32) +
+                              ((bytes[4] as u64) << 24) +
+                              ((bytes[5] as u64) << 16) +
+                              ((bytes[6] as u64) << 8) +
+                              (bytes[7] as u64);
 
-      metadata::Data::StreamInfo(StreamInfo {
-        min_block_size: min_block_size,
-        max_block_size: max_block_size,
-        min_frame_size: min_frame_size,
-        max_frame_size: max_frame_size,
-        sample_rate: sample_rate,
-        channels: channels + 1,
-        bits_per_sample: bits_per_sample + 1,
-        total_samples: total_samples,
-        md5_sum: md5_sum,
-      })
-    }
-  )
-);
+        metadata::Data::StreamInfo(StreamInfo {
+          min_block_size: min_block_size,
+          max_block_size: max_block_size,
+          min_frame_size: min_frame_size,
+          max_frame_size: max_frame_size,
+          sample_rate: sample_rate,
+          channels: channels + 1,
+          bits_per_sample: bits_per_sample + 1,
+          total_samples: total_samples,
+          md5_sum: md5_sum,
+        })
+      }
+    ),
+    StreamInfoParser)
+}
 
 pub fn padding(input: &[u8], length: u32)
                -> IResult<&[u8], metadata::Data, ErrorKind> {
@@ -285,7 +288,7 @@ pub fn block_data(input: &[u8], block_type: u8, length: u32)
   }
 
   match block_type {
-    0       => stream_info(input).map_err(to_custom_error!(StreamInfoParser)),
+    0       => stream_info(input),
     1       => padding(input, length),
     2       => application(input, length).map_err(
                  to_custom_error!(ApplicationParser)),
