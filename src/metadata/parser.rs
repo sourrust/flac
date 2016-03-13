@@ -208,57 +208,59 @@ named!(cue_sheet_track_index <&[u8], CueSheetTrackIndex>,
   )
 );
 
-named!(pub picture <&[u8], metadata::Data>,
-  chain!(
-    picture_type_num: be_u32 ~
-    mime_type_length:  be_u32 ~
-    mime_type: take_str!(mime_type_length) ~
-    description_length: be_u32 ~
-    description: take_str!(description_length) ~
-    width: be_u32 ~
-    height: be_u32 ~
-    depth: be_u32 ~
-    colors: be_u32 ~
-    data_length: be_u32 ~
-    data: take!(data_length),
-    || {
-      let picture_type = match picture_type_num {
-        1  => PictureType::FileIconStandard,
-        2  => PictureType::FileIcon,
-        3  => PictureType::FrontCover,
-        4  => PictureType::BackCover,
-        5  => PictureType::LeafletPage,
-        6  => PictureType::Media,
-        7  => PictureType::LeadArtist,
-        8  => PictureType::Artist,
-        9  => PictureType::Conductor,
-        10 => PictureType::Band,
-        11 => PictureType::Composer,
-        12 => PictureType::Lyricist,
-        13 => PictureType::RecordingLocation,
-        14 => PictureType::DuringRecording,
-        15 => PictureType::DuringPerformance,
-        16 => PictureType::VideoScreenCapture,
-        17 => PictureType::Fish,
-        18 => PictureType::Illustration,
-        19 => PictureType::BandLogo,
-        20 => PictureType::PublisherLogo,
-        _  => PictureType::Other,
-      };
+pub fn picture(input: &[u8]) -> IResult<&[u8], metadata::Data, ErrorKind> {
+  to_custom_error!(input,
+    chain!(
+      picture_type_num: be_u32 ~
+      mime_type_length:  be_u32 ~
+      mime_type: take_str!(mime_type_length) ~
+      description_length: be_u32 ~
+      description: take_str!(description_length) ~
+      width: be_u32 ~
+      height: be_u32 ~
+      depth: be_u32 ~
+      colors: be_u32 ~
+      data_length: be_u32 ~
+      data: take!(data_length),
+      || {
+        let picture_type = match picture_type_num {
+          1  => PictureType::FileIconStandard,
+          2  => PictureType::FileIcon,
+          3  => PictureType::FrontCover,
+          4  => PictureType::BackCover,
+          5  => PictureType::LeafletPage,
+          6  => PictureType::Media,
+          7  => PictureType::LeadArtist,
+          8  => PictureType::Artist,
+          9  => PictureType::Conductor,
+          10 => PictureType::Band,
+          11 => PictureType::Composer,
+          12 => PictureType::Lyricist,
+          13 => PictureType::RecordingLocation,
+          14 => PictureType::DuringRecording,
+          15 => PictureType::DuringPerformance,
+          16 => PictureType::VideoScreenCapture,
+          17 => PictureType::Fish,
+          18 => PictureType::Illustration,
+          19 => PictureType::BandLogo,
+          20 => PictureType::PublisherLogo,
+          _  => PictureType::Other,
+        };
 
-      metadata::Data::Picture(Picture {
-        picture_type: picture_type,
-        mime_type: mime_type.to_owned(),
-        description: description.to_owned(),
-        width: width,
-        height: height,
-        depth: depth,
-        colors: colors,
-        data: data.to_owned(),
-      })
-    }
-  )
-);
+        metadata::Data::Picture(Picture {
+          picture_type: picture_type,
+          mime_type: mime_type.to_owned(),
+          description: description.to_owned(),
+          width: width,
+          height: height,
+          depth: depth,
+          colors: colors,
+          data: data.to_owned(),
+        })
+      }
+    ),
+    PictureParser)
+}
 
 // As of FLAC v1.3.1, there is support for up to 127 different metadata
 // `Metadata`s but actually 7 that are implemented. When the `Metadata` type
@@ -302,7 +304,7 @@ pub fn block_data(input: &[u8], block_type: u8, length: u32)
                  to_custom_error!(SeekTableParser)),
     4       => vorbis_comment(input),
     5       => cue_sheet(input),
-    6       => picture(input).map_err(to_custom_error!(PictureParser)),
+    6       => picture(input),
     7...126 => unknown(input, length),
     _       => IResult::Error(Err::Code(
                  nom::ErrorKind::Custom(ErrorKind::InvalidBlockType))),
