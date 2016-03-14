@@ -180,7 +180,7 @@ pub fn number_type(input: &[u8], is_sample: bool,
                    (size, value): (usize, u8))
                    -> IResult<&[u8], NumberType, ErrorKind> {
   let (i, bytes) = try_parser! {
-    take!(input, size).map_err(to_custom_error!(UTF8BodyParser))
+    to_custom_error!(input, take!(size), UTF8BodyParser)
   };
 
   let mut result   = value as u64;
