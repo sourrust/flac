@@ -77,7 +77,7 @@ pub fn frame_parser<'a>(input: &'a [u8],
 // is fixed or varied.
 pub fn blocking_strategy(input: &[u8]) -> IResult<&[u8], bool, ErrorKind> {
   let (i, bytes) = try_parser! {
-    take!(input, 2).map_err(to_custom_error!(BlockingStrategyParser))
+    to_custom_error!(input, take!(2), BlockingStrategyParser)
   };
 
   let sync_code = ((bytes[0] as u16) << 6) +
