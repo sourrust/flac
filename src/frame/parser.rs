@@ -101,7 +101,7 @@ pub fn blocking_strategy(input: &[u8]) -> IResult<&[u8], bool, ErrorKind> {
 // prevent sync code fooling.
 pub fn block_sample(input: &[u8]) -> IResult<&[u8], (u8, u8), ErrorKind> {
   let (i, byte) = try_parser! {
-    be_u8(input).map_err(to_custom_error!(BlockingStrategyParser))
+    to_custom_error!(input, be_u8, BlockingStrategyParser)
   };
 
   let block_byte  = byte >> 4;
