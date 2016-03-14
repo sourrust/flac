@@ -125,7 +125,7 @@ pub fn channel_bits(input: &[u8])
                     -> IResult<&[u8], (ChannelAssignment, u8, u8),
                                ErrorKind> {
   let (i, byte) = try_parser! {
-    be_u8(input).map_err(to_custom_error!(ChannelBitsParser))
+    to_custom_error!(input, be_u8, ChannelBitsParser)
   };
 
   let mut channels       = 2;
