@@ -77,7 +77,7 @@ pub fn frame_parser<'a>(input: &'a [u8],
 // is fixed or varied.
 pub fn blocking_strategy(input: &[u8]) -> IResult<&[u8], bool, ErrorKind> {
   let (i, bytes) = try_parser! {
-    take!(input, 2).map_err(to_custom_error!(BlockingStrategyParser))
+    to_custom_error!(input, take!(2), BlockingStrategyParser)
   };
 
   let sync_code = ((bytes[0] as u16) << 6) +
@@ -101,7 +101,7 @@ pub fn blocking_strategy(input: &[u8]) -> IResult<&[u8], bool, ErrorKind> {
 // prevent sync code fooling.
 pub fn block_sample(input: &[u8]) -> IResult<&[u8], (u8, u8), ErrorKind> {
   let (i, byte) = try_parser! {
-    be_u8(input).map_err(to_custom_error!(BlockingStrategyParser))
+    to_custom_error!(input, be_u8, BlockingStrategyParser)
   };
 
   let block_byte  = byte >> 4;
@@ -125,7 +125,7 @@ pub fn channel_bits(input: &[u8])
                     -> IResult<&[u8], (ChannelAssignment, u8, u8),
                                ErrorKind> {
   let (i, byte) = try_parser! {
-    be_u8(input).map_err(to_custom_error!(ChannelBitsParser))
+    to_custom_error!(input, be_u8, ChannelBitsParser)
   };
 
   let mut channels       = 2;
@@ -180,7 +180,7 @@ pub fn number_type(input: &[u8], is_sample: bool,
                    (size, value): (usize, u8))
                    -> IResult<&[u8], NumberType, ErrorKind> {
   let (i, bytes) = try_parser! {
-    take!(input, size).map_err(to_custom_error!(UTF8BodyParser))
+    to_custom_error!(input, take!(size), UTF8BodyParser)
   };
 
   let mut result   = value as u64;
