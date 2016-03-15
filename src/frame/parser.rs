@@ -208,8 +208,8 @@ pub fn number_type(input: &[u8], is_sample: bool,
 }
 
 #[inline]
-fn take_u32(input: &[u8], count: usize) -> IResult<&[u8], u32, ErrorKind> {
-  map!(input, take!(count), to_u32).map_err(to_custom_error!(Unknown))
+fn opt_take_u32(input: &[u8], count: usize) -> IResult<&[u8], Option<u32>> {
+  opt!(input, map!(take!(count), to_u32))
 }
 
 pub fn secondary_block_size(input: &[u8], block_byte: u8)
