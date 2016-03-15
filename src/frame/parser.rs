@@ -231,10 +231,6 @@ pub fn secondary_sample_rate(input: &[u8], sample_byte: u8)
 }
 
 #[inline]
-fn crc_parser(input: &[u8]) -> IResult<&[u8], u8, ErrorKind> {
-  be_u8(input).map_err(to_custom_error!(CRC8Parser))
-}
-
 pub fn header<'a>(input: &'a [u8], stream_info: &StreamInfo)
                   -> IResult<&'a [u8], Header, ErrorKind> {
   let result = chain!(input,
@@ -246,7 +242,7 @@ pub fn header<'a>(input: &'a [u8], stream_info: &StreamInfo)
     number: apply!(number_type, is_variable_block_size, utf8_header_val) ~
     alt_block_size: apply!(secondary_block_size, tuple0.0) ~
     alt_sample_rate: apply!(secondary_sample_rate, tuple0.1) ~
-    crc: crc_parser,
+    crc: to_custom_error!(be_u8, CRC8Parser),
     || {
       let (block_byte, sample_byte)                 = tuple0;
       let (channel_assignment, channels, size_byte) = tuple1;
