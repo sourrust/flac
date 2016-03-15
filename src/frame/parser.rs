@@ -208,15 +208,15 @@ pub fn number_type(input: &[u8], is_sample: bool,
 }
 
 #[inline]
-fn take_u32(input: &[u8], count: usize) -> IResult<&[u8], u32, ErrorKind> {
-  map!(input, take!(count), to_u32).map_err(to_custom_error!(Unknown))
+fn opt_take_u32(input: &[u8], count: usize) -> IResult<&[u8], Option<u32>> {
+  opt!(input, map!(take!(count), to_u32))
 }
 
 pub fn secondary_block_size(input: &[u8], block_byte: u8)
                             -> IResult<&[u8], Option<u32>, ErrorKind> {
   match block_byte {
-    0b0110 => opt!(input, apply!(take_u32, 1)),
-    0b0111 => opt!(input, apply!(take_u32, 2)),
+    0b0110 => to_custom_error!(input, apply!(opt_take_u32, 1), Unknown),
+    0b0111 => to_custom_error!(input, apply!(opt_take_u32, 2), Unknown),
     _      => IResult::Done(input, None)
   }
 }
@@ -224,17 +224,15 @@ pub fn secondary_block_size(input: &[u8], block_byte: u8)
 pub fn secondary_sample_rate(input: &[u8], sample_byte: u8)
                              -> IResult<&[u8], Option<u32>, ErrorKind> {
   match sample_byte {
-    0b1100          => opt!(input, apply!(take_u32, 1)),
-    0b1101 | 0b1110 => opt!(input, apply!(take_u32, 2)),
+    0b1100          => to_custom_error!(input, apply!(opt_take_u32, 1),
+                                        Unknown),
+    0b1101 | 0b1110 => to_custom_error!(input, apply!(opt_take_u32, 2),
+                                        Unknown),
     _               => IResult::Done(input, None)
   }
 }
 
 #[inline]
-fn crc_parser(input: &[u8]) -> IResult<&[u8], u8, ErrorKind> {
-  be_u8(input).map_err(to_custom_error!(CRC8Parser))
-}
-
 pub fn header<'a>(input: &'a [u8], stream_info: &StreamInfo)
                   -> IResult<&'a [u8], Header, ErrorKind> {
   let result = chain!(input,
@@ -246,7 +244,7 @@ pub fn header<'a>(input: &'a [u8], stream_info: &StreamInfo)
     number: apply!(number_type, is_variable_block_size, utf8_header_val) ~
     alt_block_size: apply!(secondary_block_size, tuple0.0) ~
     alt_sample_rate: apply!(secondary_sample_rate, tuple0.1) ~
-    crc: crc_parser,
+    crc: to_custom_error!(be_u8, CRC8Parser),
     || {
       let (block_byte, sample_byte)                 = tuple0;
       let (channel_assignment, channels, size_byte) = tuple1;
@@ -318,7 +316,7 @@ pub fn header<'a>(input: &'a [u8], stream_info: &StreamInfo)
 }
 
 pub fn footer(input: &[u8]) -> IResult<&[u8], Footer, ErrorKind> {
-  map!(input, be_u16, Footer).map_err(to_custom_error!(FrameFooterParser))
+  to_custom_error!(input, map!(be_u16, Footer), FrameFooterParser)
 }
 
 #[cfg(test)]
