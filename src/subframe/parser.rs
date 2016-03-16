@@ -146,8 +146,7 @@ fn data<'a>(input: (&'a [u8], usize),
     0b000001            => verbatim(input, bits_per_sample, block_size)
                              .map_err(to_custom_error!(VerbatimParser)),
     0b001000...0b001100 => fixed(input, subframe_type & 0b0111,
-                                 bits_per_sample, block_size, buffer)
-                             .map_err(to_custom_error!(FixedParser)),
+                                 bits_per_sample, block_size, buffer),
     0b100000...0b111111 => lpc(input, (subframe_type & 0b011111) + 1,
                                bits_per_sample, block_size, buffer)
                              .map_err(to_custom_error!(LPCParser)),
@@ -169,21 +168,24 @@ pub fn fixed<'a>(input: (&'a [u8], usize),
                  bits_per_sample: usize,
                  block_size: usize,
                  buffer: &mut [i32])
-                 -> IResult<(&'a [u8], usize), subframe::Data> {
+                 -> IResult<(&'a [u8], usize), subframe::Data, ErrorKind> {
   let mut warmup = [0; subframe::MAX_FIXED_ORDER];
 
-  chain!(input,
-    count_slice!(take_signed_bits!(bits_per_sample), &mut warmup[0..order]) ~
-    entropy_coding_method: apply!(residual, order, block_size, buffer),
-    || {
-      subframe::Data::Fixed(subframe::Fixed {
-        entropy_coding_method: entropy_coding_method,
-        order: order as u8,
-        warmup: warmup,
-        residual: Vec::new(),
-      })
-    }
-  )
+  to_custom_error!(input,
+    chain!(
+      count_slice!(take_signed_bits!(bits_per_sample),
+                   &mut warmup[0..order]) ~
+      entropy_coding_method: apply!(residual, order, block_size, buffer),
+      || {
+        subframe::Data::Fixed(subframe::Fixed {
+          entropy_coding_method: entropy_coding_method,
+          order: order as u8,
+          warmup: warmup,
+          residual: Vec::new(),
+        })
+      }
+    ),
+    FixedParser)
 }
 
 // This parser finds the bit length for each quantized linear predictor
