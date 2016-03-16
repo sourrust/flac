@@ -77,12 +77,6 @@ pub fn adjust_bits_per_sample(frame_header: &frame::Header,
   }
 }
 
-#[inline]
-fn _leading_zeros(input: (&[u8], usize))
-                  -> IResult<(&[u8], usize), u32, ErrorKind> {
-  leading_zeros(input).map_err(to_custom_error!(LeadingZerosParser))
-}
-
 /// Parse a single channel of audio data.
 pub fn subframe_parser<'a>(input: (&'a [u8], usize),
                            frame_header: &frame::Header,
@@ -99,7 +93,8 @@ pub fn subframe_parser<'a>(input: (&'a [u8], usize),
   chain!(input,
     subframe_header: header ~
     wasted_bits: map!(
-      cond!(subframe_header.1, _leading_zeros),
+      cond!(subframe_header.1,
+      to_custom_error!(leading_zeros, LeadingZerosParser)),
       |option: Option<u32>| option.map_or(0, |zeros| zeros + 1)
     ) ~
     subframe_data: apply!(data,
@@ -125,7 +120,7 @@ pub fn subframe_parser<'a>(input: (&'a [u8], usize),
 pub fn header(input: (&[u8], usize))
               -> IResult<(&[u8], usize), (usize, bool), ErrorKind> {
   let (i, byte) = try_parser! {
-    take_bits!(input, u8, 8).map_err(to_custom_error!(SubframeHeaderParser))
+    to_custom_error!(input, take_bits!(u8, 8), SubframeHeaderParser)
   };
 
   let is_valid        = (byte >> 7) == 0;
@@ -147,16 +142,13 @@ fn data<'a>(input: (&'a [u8], usize),
             buffer: &mut [i32])
             -> IResult<(&'a [u8], usize), subframe::Data, ErrorKind> {
   match subframe_type {
-    0b000000            => constant(input, bits_per_sample)
-                             .map_err(to_custom_error!(ConstantParser)),
+    0b000000            => constant(input, bits_per_sample),
     0b000001            => verbatim(input, bits_per_sample, block_size)
                              .map_err(to_custom_error!(VerbatimParser)),
     0b001000...0b001100 => fixed(input, subframe_type & 0b0111,
-                                 bits_per_sample, block_size, buffer)
-                             .map_err(to_custom_error!(FixedParser)),
+                                 bits_per_sample, block_size, buffer),
     0b100000...0b111111 => lpc(input, (subframe_type & 0b011111) + 1,
-                               bits_per_sample, block_size, buffer)
-                             .map_err(to_custom_error!(LPCParser)),
+                               bits_per_sample, block_size, buffer),
     _                   => IResult::Error(Err::Position(
                              nom::ErrorKind::Custom(ErrorKind::Unknown),
                              input))
@@ -164,8 +156,10 @@ fn data<'a>(input: (&'a [u8], usize),
 }
 
 pub fn constant(input: (&[u8], usize), bits_per_sample: usize)
-                -> IResult<(&[u8], usize), subframe::Data> {
-  map!(input, take_signed_bits!(bits_per_sample), subframe::Data::Constant)
+                -> IResult<(&[u8], usize), subframe::Data, ErrorKind> {
+  to_custom_error!(input,
+    map!(take_signed_bits!(bits_per_sample), subframe::Data::Constant),
+    ConstantParser)
 }
 
 pub fn fixed<'a>(input: (&'a [u8], usize),
@@ -173,21 +167,24 @@ pub fn fixed<'a>(input: (&'a [u8], usize),
                  bits_per_sample: usize,
                  block_size: usize,
                  buffer: &mut [i32])
-                 -> IResult<(&'a [u8], usize), subframe::Data> {
+                 -> IResult<(&'a [u8], usize), subframe::Data, ErrorKind> {
   let mut warmup = [0; subframe::MAX_FIXED_ORDER];
 
-  chain!(input,
-    count_slice!(take_signed_bits!(bits_per_sample), &mut warmup[0..order]) ~
-    entropy_coding_method: apply!(residual, order, block_size, buffer),
-    || {
-      subframe::Data::Fixed(subframe::Fixed {
-        entropy_coding_method: entropy_coding_method,
-        order: order as u8,
-        warmup: warmup,
-        residual: Vec::new(),
-      })
-    }
-  )
+  to_custom_error!(input,
+    chain!(
+      count_slice!(take_signed_bits!(bits_per_sample),
+                   &mut warmup[0..order]) ~
+      entropy_coding_method: apply!(residual, order, block_size, buffer),
+      || {
+        subframe::Data::Fixed(subframe::Fixed {
+          entropy_coding_method: entropy_coding_method,
+          order: order as u8,
+          warmup: warmup,
+          residual: Vec::new(),
+        })
+      }
+    ),
+    FixedParser)
 }
 
 // This parser finds the bit length for each quantized linear predictor
@@ -208,31 +205,34 @@ pub fn lpc<'a>(input: (&'a [u8], usize),
                bits_per_sample: usize,
                block_size: usize,
                buffer: &mut [i32])
-               -> IResult<(&'a [u8], usize), subframe::Data> {
+               -> IResult<(&'a [u8], usize), subframe::Data, ErrorKind> {
   let mut warmup           = [0; subframe::MAX_LPC_ORDER];
   let mut qlp_coefficients = [0; subframe::MAX_LPC_ORDER];
 
-  chain!(input,
-    count_slice!(take_signed_bits!(bits_per_sample), &mut warmup[0..order]) ~
-    qlp_coeff_precision: qlp_coefficient_precision ~
-    quantization_level: take_signed_bits!(i8, 5) ~
-    count_slice!(
-      take_signed_bits!(qlp_coeff_precision as usize),
-      &mut qlp_coefficients[0..order]
-    ) ~
-    entropy_coding_method: apply!(residual, order, block_size, buffer),
-    || {
-      subframe::Data::LPC(subframe::LPC {
-        entropy_coding_method: entropy_coding_method,
-        order: order as u8,
-        qlp_coeff_precision: qlp_coeff_precision,
-        quantization_level: quantization_level,
-        qlp_coefficients: qlp_coefficients,
-        warmup: warmup,
-        residual: Vec::new(),
-      })
-    }
-  )
+  to_custom_error!(input,
+    chain!(
+      count_slice!(take_signed_bits!(bits_per_sample),
+                   &mut warmup[0..order]) ~
+      qlp_coeff_precision: qlp_coefficient_precision ~
+      quantization_level: take_signed_bits!(i8, 5) ~
+      count_slice!(
+        take_signed_bits!(qlp_coeff_precision as usize),
+        &mut qlp_coefficients[0..order]
+      ) ~
+      entropy_coding_method: apply!(residual, order, block_size, buffer),
+      || {
+        subframe::Data::LPC(subframe::LPC {
+          entropy_coding_method: entropy_coding_method,
+          order: order as u8,
+          qlp_coeff_precision: qlp_coeff_precision,
+          quantization_level: quantization_level,
+          qlp_coefficients: qlp_coefficients,
+          warmup: warmup,
+          residual: Vec::new(),
+        })
+      }
+    ),
+    LPCParser)
 }
 
 pub fn verbatim(input: (&[u8], usize),
