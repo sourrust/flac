@@ -148,8 +148,7 @@ fn data<'a>(input: (&'a [u8], usize),
     0b001000...0b001100 => fixed(input, subframe_type & 0b0111,
                                  bits_per_sample, block_size, buffer),
     0b100000...0b111111 => lpc(input, (subframe_type & 0b011111) + 1,
-                               bits_per_sample, block_size, buffer)
-                             .map_err(to_custom_error!(LPCParser)),
+                               bits_per_sample, block_size, buffer),
     _                   => IResult::Error(Err::Position(
                              nom::ErrorKind::Custom(ErrorKind::Unknown),
                              input))
@@ -206,31 +205,34 @@ pub fn lpc<'a>(input: (&'a [u8], usize),
                bits_per_sample: usize,
                block_size: usize,
                buffer: &mut [i32])
-               -> IResult<(&'a [u8], usize), subframe::Data> {
+               -> IResult<(&'a [u8], usize), subframe::Data, ErrorKind> {
   let mut warmup           = [0; subframe::MAX_LPC_ORDER];
   let mut qlp_coefficients = [0; subframe::MAX_LPC_ORDER];
 
-  chain!(input,
-    count_slice!(take_signed_bits!(bits_per_sample), &mut warmup[0..order]) ~
-    qlp_coeff_precision: qlp_coefficient_precision ~
-    quantization_level: take_signed_bits!(i8, 5) ~
-    count_slice!(
-      take_signed_bits!(qlp_coeff_precision as usize),
-      &mut qlp_coefficients[0..order]
-    ) ~
-    entropy_coding_method: apply!(residual, order, block_size, buffer),
-    || {
-      subframe::Data::LPC(subframe::LPC {
-        entropy_coding_method: entropy_coding_method,
-        order: order as u8,
-        qlp_coeff_precision: qlp_coeff_precision,
-        quantization_level: quantization_level,
-        qlp_coefficients: qlp_coefficients,
-        warmup: warmup,
-        residual: Vec::new(),
-      })
-    }
-  )
+  to_custom_error!(input,
+    chain!(
+      count_slice!(take_signed_bits!(bits_per_sample),
+                   &mut warmup[0..order]) ~
+      qlp_coeff_precision: qlp_coefficient_precision ~
+      quantization_level: take_signed_bits!(i8, 5) ~
+      count_slice!(
+        take_signed_bits!(qlp_coeff_precision as usize),
+        &mut qlp_coefficients[0..order]
+      ) ~
+      entropy_coding_method: apply!(residual, order, block_size, buffer),
+      || {
+        subframe::Data::LPC(subframe::LPC {
+          entropy_coding_method: entropy_coding_method,
+          order: order as u8,
+          qlp_coeff_precision: qlp_coeff_precision,
+          quantization_level: quantization_level,
+          qlp_coefficients: qlp_coefficients,
+          warmup: warmup,
+          residual: Vec::new(),
+        })
+      }
+    ),
+    LPCParser)
 }
 
 pub fn verbatim(input: (&[u8], usize),
