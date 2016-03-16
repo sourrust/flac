@@ -142,8 +142,7 @@ fn data<'a>(input: (&'a [u8], usize),
             buffer: &mut [i32])
             -> IResult<(&'a [u8], usize), subframe::Data, ErrorKind> {
   match subframe_type {
-    0b000000            => constant(input, bits_per_sample)
-                             .map_err(to_custom_error!(ConstantParser)),
+    0b000000            => constant(input, bits_per_sample),
     0b000001            => verbatim(input, bits_per_sample, block_size)
                              .map_err(to_custom_error!(VerbatimParser)),
     0b001000...0b001100 => fixed(input, subframe_type & 0b0111,
@@ -159,8 +158,10 @@ fn data<'a>(input: (&'a [u8], usize),
 }
 
 pub fn constant(input: (&[u8], usize), bits_per_sample: usize)
-                -> IResult<(&[u8], usize), subframe::Data> {
-  map!(input, take_signed_bits!(bits_per_sample), subframe::Data::Constant)
+                -> IResult<(&[u8], usize), subframe::Data, ErrorKind> {
+  to_custom_error!(input,
+    map!(take_signed_bits!(bits_per_sample), subframe::Data::Constant),
+    ConstantParser)
 }
 
 pub fn fixed<'a>(input: (&'a [u8], usize),
