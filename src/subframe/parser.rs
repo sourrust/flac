@@ -77,12 +77,6 @@ pub fn adjust_bits_per_sample(frame_header: &frame::Header,
   }
 }
 
-#[inline]
-fn _leading_zeros(input: (&[u8], usize))
-                  -> IResult<(&[u8], usize), u32, ErrorKind> {
-  leading_zeros(input).map_err(to_custom_error!(LeadingZerosParser))
-}
-
 /// Parse a single channel of audio data.
 pub fn subframe_parser<'a>(input: (&'a [u8], usize),
                            frame_header: &frame::Header,
@@ -99,7 +93,8 @@ pub fn subframe_parser<'a>(input: (&'a [u8], usize),
   chain!(input,
     subframe_header: header ~
     wasted_bits: map!(
-      cond!(subframe_header.1, _leading_zeros),
+      cond!(subframe_header.1,
+      to_custom_error!(leading_zeros, LeadingZerosParser)),
       |option: Option<u32>| option.map_or(0, |zeros| zeros + 1)
     ) ~
     subframe_data: apply!(data,
