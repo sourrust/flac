@@ -227,9 +227,9 @@ pub fn secondary_sample_rate(input: &[u8], sample_byte: u8)
                              -> IResult<&[u8], Option<u32>, ErrorKind> {
   match sample_byte {
     0b1100          => to_custom_error!(input, apply!(opt_take_u32, 1),
-                                        Unknown),
+                                        SampleRateParser),
     0b1101 | 0b1110 => to_custom_error!(input, apply!(opt_take_u32, 2),
-                                        Unknown),
+                                        SampleRateParser),
     _               => IResult::Done(input, None)
   }
 }
