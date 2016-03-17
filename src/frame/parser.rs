@@ -215,8 +215,10 @@ fn opt_take_u32(input: &[u8], count: usize) -> IResult<&[u8], Option<u32>> {
 pub fn secondary_block_size(input: &[u8], block_byte: u8)
                             -> IResult<&[u8], Option<u32>, ErrorKind> {
   match block_byte {
-    0b0110 => to_custom_error!(input, apply!(opt_take_u32, 1), Unknown),
-    0b0111 => to_custom_error!(input, apply!(opt_take_u32, 2), Unknown),
+    0b0110 => to_custom_error!(input, apply!(opt_take_u32, 1),
+                               BlockSizeParser),
+    0b0111 => to_custom_error!(input, apply!(opt_take_u32, 2),
+                               BlockSizeParser),
     _      => IResult::Done(input, None)
   }
 }
