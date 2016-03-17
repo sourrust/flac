@@ -52,6 +52,8 @@ pub enum ErrorKind {
   UTF8BodyParser,
   /// Failed parsing the secondary block size inside the frame header.
   BlockSizeParser,
+  /// Failed parsing the secondary sample rate inside the frame header.
+  SampleRateParser,
   /// Failed parsing the CRC-8 inside the frame header.
   CRC8Parser,
   /// Failed parsing the frame footer, also known as the CRC-16.
