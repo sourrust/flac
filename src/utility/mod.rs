@@ -60,18 +60,15 @@ enum ParserState {
   Metadata
 }
 
-#[inline]
-fn header_parser(input: &[u8]) -> IResult<&[u8], &[u8], ErrorKind> {
-  tag!(input, "fLaC").map_err(to_custom_error!(HeaderParser))
-}
-
 fn parser<'a>(input: &'a [u8], state: &mut ParserState)
               -> IResult<&'a [u8], Metadata, ErrorKind> {
   let mut slice = input;
   let error     = nom::Err::Code(nom::ErrorKind::Custom(ErrorKind::Unknown));
 
   if *state == ParserState::Header {
-    let (i, _) = try_parse!(slice, header_parser);
+    let (i, _) = try_parser! {
+      to_custom_error!(slice, tag!("fLaC"), HeaderParser)
+    };
 
     slice  = i;
     *state = ParserState::StreamInfo;
