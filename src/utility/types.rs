@@ -400,7 +400,7 @@ mod tests {
 
   #[inline]
   fn be_u32(input: &[u8]) -> IResult<&[u8], u32, ErrorKind> {
-    nom::be_u32(input).map_err(to_custom_error!(Unknown))
+    to_custom_error!(input, nom::be_u32, Unknown)
   }
 
   #[test]
