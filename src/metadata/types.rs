@@ -35,7 +35,8 @@ pub enum Type {
 }
 
 macro_rules! is_block_type (
-  ($name: ident, $block_type: ident) => (
+  ($(#[$attr: meta])* ($name: ident) -> $block_type: ident) => (
+    $(#[$attr])*
     #[inline]
     pub fn $name(&self) -> bool {
       self.data_type() == Type::$block_type
@@ -73,14 +74,38 @@ impl Metadata {
     }
   }
 
-  is_block_type!(is_stream_info, StreamInfo);
-  is_block_type!(is_padding, Padding);
-  is_block_type!(is_application, Application);
-  is_block_type!(is_seek_table, SeekTable);
-  is_block_type!(is_vorbis_comment, VorbisComment);
-  is_block_type!(is_cue_sheet, CueSheet);
-  is_block_type!(is_picture, Picture);
-  is_block_type!(is_unknown, Unknown);
+  is_block_type! {
+    /// Returns true when the current `Metadata` is `StreamInfo`.
+    (is_stream_info) -> StreamInfo
+  }
+  is_block_type! {
+    /// Returns true when the current `Metadata` is `Padding`.
+    (is_padding) -> Padding
+  }
+  is_block_type! {
+    /// Returns true when the current `Metadata` is `Application`.
+    (is_application) -> Application
+  }
+  is_block_type! {
+    /// Returns true when the current `Metadata` is `SeekTable`.
+    (is_seek_table) -> SeekTable
+  }
+  is_block_type! {
+    /// Returns true when the current `Metadata` is `VorbisComment`.
+    (is_vorbis_comment) -> VorbisComment
+  }
+  is_block_type! {
+    /// Returns true when the current `Metadata` is `CueSheet`.
+    (is_cue_sheet) -> CueSheet
+  }
+  is_block_type! {
+    /// Returns true when the current `Metadata` is `Picture`.
+    (is_picture) -> Picture
+  }
+  is_block_type! {
+    /// Returns true when the current `Metadata` is `Unknown`.
+    (is_unknown) -> Unknown
+  }
 }
 
 /// General enum that hold all the different metadata block data.
