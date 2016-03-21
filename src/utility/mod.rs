@@ -18,6 +18,13 @@ pub trait StreamProducer {
    where F: FnOnce(&[u8]) -> IResult<&[u8], T, ErrorKind>;
 }
 
+pub trait Sample {
+  type Normal;
+
+  fn size() -> usize;
+  fn to_normal(sample: Self) -> Option<Self::Normal>;
+}
+
 // Convert one to four byte slices into an unsigned 32-bit number.
 //
 // NOTE: This assumes big-endian since most numbers in the FLAC binary are
