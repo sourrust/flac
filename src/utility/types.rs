@@ -4,7 +4,7 @@ use std::io::{self, Read};
 use std::ptr;
 use std::cmp;
 
-use super::StreamProducer;
+use super::{Sample, StreamProducer};
 
 /// Represent the different kinds of errors.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -391,6 +391,30 @@ impl<R> StreamProducer for ReadStream<R> where R: Read {
     }
   }
 }
+
+macro_rules! sample (
+  ($normal: ident, $extended: ident, $bits_per_sample: expr) => (
+    impl Sample for $extended {
+      type Normal = $normal;
+
+      #[inline]
+      fn size() -> usize { $bits_per_sample }
+
+      fn to_normal(sample: Self) -> Option<Self::Normal> {
+        use std::$normal;
+
+        let min = $normal::min_value() as $extended;
+        let max = $normal::max_value() as $extended;
+
+        if sample > min && sample < max {
+          Some(sample as $normal)
+        } else {
+          None
+        }
+      }
+    }
+  )
+);
 
 #[cfg(test)]
 mod tests {
