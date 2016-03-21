@@ -416,6 +416,10 @@ macro_rules! sample (
   )
 );
 
+sample!(i8, i16, 8);
+sample!(i16, i32, 16);
+sample!(i32, i64, 32);
+
 #[cfg(test)]
 mod tests {
   use super::*;
