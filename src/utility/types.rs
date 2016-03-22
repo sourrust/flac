@@ -423,8 +423,10 @@ sample!(i32, i64, 32);
 #[cfg(test)]
 mod tests {
   use super::*;
-  use utility::StreamProducer;
+  use utility::{Sample, StreamProducer};
   use nom::{self, IResult};
+
+  use std::i8;
 
   #[inline]
   fn be_u32(input: &[u8]) -> IResult<&[u8], u32, ErrorKind> {
@@ -472,5 +474,18 @@ mod tests {
     let result = stream.parse(be_u32).unwrap_or(0);
 
     assert_eq!(result, 1214606444)
+  }
+
+  #[test]
+  fn test_sample_to_normal_i8() {
+    let min = i8::min_value();
+    let max = i8::max_value();
+
+    assert_eq!(Sample::to_normal(min as i16), Some(min));
+    assert_eq!(Sample::to_normal(0 as i16), Some(0));
+    assert_eq!(Sample::to_normal(max as i16), Some(max));
+
+    assert_eq!(Sample::to_normal((min as i16) - 1), None);
+    assert_eq!(Sample::to_normal((max as i16) + 1), None);
   }
 }
