@@ -18,7 +18,7 @@ pub trait StreamProducer {
    where F: FnOnce(&[u8]) -> IResult<&[u8], T, ErrorKind>;
 }
 
-pub trait Sample {
+pub trait Sample: PartialEq + Eq {
   type Normal;
 
   fn size() -> usize;
