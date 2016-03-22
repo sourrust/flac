@@ -406,7 +406,7 @@ macro_rules! sample (
         let min = $normal::min_value() as $extended;
         let max = $normal::max_value() as $extended;
 
-        if sample > min && sample < max {
+        if sample >= min && sample <= max {
           Some(sample as $normal)
         } else {
           None
