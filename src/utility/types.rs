@@ -426,7 +426,7 @@ mod tests {
   use utility::{Sample, StreamProducer};
   use nom::{self, IResult};
 
-  use std::{i8, i16};
+  use std::{i8, i16, i32};
 
   #[inline]
   fn be_u32(input: &[u8]) -> IResult<&[u8], u32, ErrorKind> {
@@ -500,5 +500,18 @@ mod tests {
 
     assert_eq!(Sample::to_normal((min as i32) - 1), None);
     assert_eq!(Sample::to_normal((max as i32) + 1), None);
+  }
+
+  #[test]
+  fn test_sample_to_normal_i32() {
+    let min = i32::min_value();
+    let max = i32::max_value();
+
+    assert_eq!(Sample::to_normal(min as i64), Some(min));
+    assert_eq!(Sample::to_normal(0 as i64), Some(0));
+    assert_eq!(Sample::to_normal(max as i64), Some(max));
+
+    assert_eq!(Sample::to_normal((min as i64) - 1), None);
+    assert_eq!(Sample::to_normal((max as i64) + 1), None);
   }
 }
