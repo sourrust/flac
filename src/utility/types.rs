@@ -400,6 +400,9 @@ macro_rules! sample (
       #[inline]
       fn size() -> usize { $bits_per_sample }
 
+      #[inline]
+      fn size_wide() -> usize { $bits_per_sample * 2 }
+
       fn to_normal(sample: Self) -> Option<Self::Normal> {
         use std::$normal;
 

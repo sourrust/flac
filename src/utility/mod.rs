@@ -22,6 +22,7 @@ pub trait Sample: PartialEq + Eq {
   type Normal;
 
   fn size() -> usize;
+  fn size_wide() -> usize;
   fn to_normal(sample: Self) -> Option<Self::Normal>;
 }
 
