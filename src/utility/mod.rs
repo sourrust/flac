@@ -18,10 +18,17 @@ pub trait StreamProducer {
    where F: FnOnce(&[u8]) -> IResult<&[u8], T, ErrorKind>;
 }
 
+/// An abstraction trait for keeping different sized integers.
 pub trait Sample: PartialEq + Eq {
   type Normal;
 
+  /// The size, in bits, for the `Sample::Normal`.
   fn size() -> usize;
+
+  /// The size, in bits, for the `Sample`.
+  fn size_wide() -> usize;
+
+  /// Convert the extended `Sample` to the normal.
   fn to_normal(sample: Self) -> Option<Self::Normal>;
 }
 
