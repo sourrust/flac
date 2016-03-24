@@ -517,4 +517,10 @@ mod tests {
     assert_eq!(Sample::to_normal((min as i64) - 1), None);
     assert_eq!(Sample::to_normal((max as i64) + 1), None);
   }
+
+  #[test]
+  fn test_samole_size_i8() {
+    assert_eq!(<i16 as Sample>::size(), 8);
+    assert_eq!(<i16 as Sample>::size_wide(), 16);
+  }
 }
