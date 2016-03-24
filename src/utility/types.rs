@@ -529,4 +529,10 @@ mod tests {
     assert_eq!(<i32 as Sample>::size(), 16);
     assert_eq!(<i32 as Sample>::size_wide(), 32);
   }
+
+  #[test]
+  fn test_samole_size_i32() {
+    assert_eq!(<i64 as Sample>::size(), 32);
+    assert_eq!(<i64 as Sample>::size_wide(), 64);
+  }
 }
