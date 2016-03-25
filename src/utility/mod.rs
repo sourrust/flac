@@ -20,13 +20,14 @@ pub trait StreamProducer {
 
 /// An abstraction trait for keeping different sized integers.
 pub trait Sample: PartialEq + Eq {
+  /// The normal size for the current a `Sample`.
   type Normal;
 
   /// The size, in bits, for the `Sample::Normal`.
   fn size() -> usize;
 
   /// The size, in bits, for the `Sample`.
-  fn size_wide() -> usize;
+  fn size_extended() -> usize;
 
   /// Convert the extended `Sample` to the normal.
   fn to_normal(sample: Self) -> Option<Self::Normal>;

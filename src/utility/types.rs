@@ -401,7 +401,7 @@ macro_rules! sample (
       fn size() -> usize { $bits_per_sample }
 
       #[inline]
-      fn size_wide() -> usize { $bits_per_sample * 2 }
+      fn size_extended() -> usize { $bits_per_sample * 2 }
 
       fn to_normal(sample: Self) -> Option<Self::Normal> {
         use std::$normal;
@@ -521,18 +521,18 @@ mod tests {
   #[test]
   fn test_samole_size_i8() {
     assert_eq!(<i16 as Sample>::size(), 8);
-    assert_eq!(<i16 as Sample>::size_wide(), 16);
+    assert_eq!(<i16 as Sample>::size_extended(), 16);
   }
 
   #[test]
   fn test_samole_size_i16() {
     assert_eq!(<i32 as Sample>::size(), 16);
-    assert_eq!(<i32 as Sample>::size_wide(), 32);
+    assert_eq!(<i32 as Sample>::size_extended(), 32);
   }
 
   #[test]
   fn test_samole_size_i32() {
     assert_eq!(<i64 as Sample>::size(), 32);
-    assert_eq!(<i64 as Sample>::size_wide(), 64);
+    assert_eq!(<i64 as Sample>::size_extended(), 64);
   }
 }
