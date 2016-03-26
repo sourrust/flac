@@ -415,6 +415,30 @@ macro_rules! sample (
           None
         }
       }
+
+      #[inline]
+      fn from_i8(sample: i8) -> Self {
+        sample as Self
+      }
+
+      #[inline]
+      fn from_i16(sample: i16) -> Self {
+        sample as Self
+      }
+
+      #[inline]
+      fn from_i32(sample: i32) -> Option<Self> {
+        use std::$extended;
+
+        let min = $extended::min_value() as i32;
+        let max = $extended::max_value() as i32;
+
+        if sample >= min && sample <= max {
+          Some(sample as $extended)
+        } else {
+          None
+        }
+      }
     }
   )
 );

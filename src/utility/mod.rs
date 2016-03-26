@@ -19,7 +19,7 @@ pub trait StreamProducer {
 }
 
 /// An abstraction trait for keeping different sized integers.
-pub trait Sample: PartialEq + Eq {
+pub trait Sample: PartialEq + Eq + Sized {
   /// The normal size for the current a `Sample`.
   type Normal;
 
@@ -31,6 +31,10 @@ pub trait Sample: PartialEq + Eq {
 
   /// Convert the extended `Sample` to the normal.
   fn to_normal(sample: Self) -> Option<Self::Normal>;
+
+  fn from_i8(sample: i8) -> Self;
+  fn from_i16(sample: i16) -> Self;
+  fn from_i32(sample: i32) -> Option<Self>;
 }
 
 // Convert one to four byte slices into an unsigned 32-bit number.
