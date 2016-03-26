@@ -587,4 +587,21 @@ mod tests {
     assert_eq!(<i64 as Sample>::from_i16(zero), zero as i64);
     assert_eq!(<i64 as Sample>::from_i16(max), max as i64);
   }
+
+  #[test]
+  fn test_from_i32() {
+    let min  = i32::min_value();
+    let zero = 0 as i32;
+    let max  = i32::max_value();
+
+    assert_eq!(<i16 as Sample>::from_i32(min), None);
+    assert_eq!(<i16 as Sample>::from_i32(zero), Some(zero as i16));
+    assert_eq!(<i16 as Sample>::from_i32(max), None);
+    assert_eq!(<i32 as Sample>::from_i32(min), Some(min as i32));
+    assert_eq!(<i32 as Sample>::from_i32(zero), Some(zero as i32));
+    assert_eq!(<i32 as Sample>::from_i32(max), Some(max as i32));
+    assert_eq!(<i64 as Sample>::from_i32(min), Some(min as i64));
+    assert_eq!(<i64 as Sample>::from_i32(zero), Some(zero as i64));
+    assert_eq!(<i64 as Sample>::from_i32(max), Some(max as i64));
+  }
 }
