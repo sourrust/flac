@@ -553,4 +553,21 @@ mod tests {
     assert_eq!(<i64 as Sample>::size(), 32);
     assert_eq!(<i64 as Sample>::size_extended(), 64);
   }
+
+  #[test]
+  fn test_from_i8() {
+    let min  = i8::min_value();
+    let zero = 0 as i8;
+    let max  = i8::max_value();
+
+    assert_eq!(<i16 as Sample>::from_i8(min), min as i16);
+    assert_eq!(<i16 as Sample>::from_i8(zero), zero as i16);
+    assert_eq!(<i16 as Sample>::from_i8(max), max as i16);
+    assert_eq!(<i32 as Sample>::from_i8(min), min as i32);
+    assert_eq!(<i32 as Sample>::from_i8(zero), zero as i32);
+    assert_eq!(<i32 as Sample>::from_i8(max), max as i32);
+    assert_eq!(<i64 as Sample>::from_i8(min), min as i64);
+    assert_eq!(<i64 as Sample>::from_i8(zero), zero as i64);
+    assert_eq!(<i64 as Sample>::from_i8(max), max as i64);
+  }
 }
