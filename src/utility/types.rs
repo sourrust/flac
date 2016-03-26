@@ -430,10 +430,12 @@ macro_rules! sample (
       fn from_i32(sample: i32) -> Option<Self> {
         use std::$extended;
 
-        let min = $extended::min_value() as i32;
-        let max = $extended::max_value() as i32;
+        let min = $extended::min_value() as i64;
+        let max = $extended::max_value() as i64;
 
-        if sample >= min && sample <= max {
+        let _sample = sample as i64;
+
+        if _sample >= min && _sample <= max {
           Some(sample as $extended)
         } else {
           None
