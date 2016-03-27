@@ -37,6 +37,13 @@ pub trait Sample: PartialEq + Eq + Sized {
 
   /// Convert an i16 into a `Sample`.
   fn from_i16(sample: i16) -> Self;
+
+  /// Convert an i32 into a `Sample`.
+  ///
+  /// With `Sample` sometimes being smaller than a i32, there is a chance
+  /// for this function to return an incorrect number. So when the number is
+  /// larger of smaller than the current `Sample`, it returns `None`
+  /// otherwise `Some(sample)`.
   fn from_i32(sample: i32) -> Option<Self>;
 }
 
