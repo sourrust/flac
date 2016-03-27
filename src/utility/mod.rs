@@ -34,6 +34,8 @@ pub trait Sample: PartialEq + Eq + Sized {
 
   /// Convert an i8 into a `Sample`.
   fn from_i8(sample: i8) -> Self;
+
+  /// Convert an i16 into a `Sample`.
   fn from_i16(sample: i16) -> Self;
   fn from_i32(sample: i32) -> Option<Self>;
 }
