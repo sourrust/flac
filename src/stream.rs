@@ -124,6 +124,7 @@ impl<P> Stream<P> where P: StreamProducer {
       block_size: 0,
       sample_index: 0,
       samples_left: samples_left,
+      buffer: vec![0; buffer_size]
     }
   }
 
@@ -167,6 +168,7 @@ pub struct Iter<'a, P> where P: 'a + StreamProducer {
   block_size: usize,
   sample_index: usize,
   samples_left: u64,
+  buffer: Vec<i32>,
 }
 
 impl<'a, P> Iterator for Iter<'a, P> where P: StreamProducer {
