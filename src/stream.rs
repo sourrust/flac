@@ -128,9 +128,8 @@ impl<P> Stream<P> where P: StreamProducer {
     }
   }
 
-  fn next_frame(&mut self) -> Option<usize> {
+  fn next_frame(&mut self, buffer: &mut [i32]) -> Option<usize> {
     let stream_info = &self.info;
-    let buffer      = &mut self.output;
 
     loop {
       match self.producer.parse(|i| frame_parser(i, stream_info, buffer)) {
@@ -176,7 +175,9 @@ impl<'a, P> Iterator for Iter<'a, P> where P: StreamProducer {
 
   fn next(&mut self) -> Option<Self::Item> {
     if self.sample_index == self.block_size {
-      if let Some(block_size) = self.stream.next_frame() {
+      let buffer = &mut self.buffer;
+
+      if let Some(block_size) = self.stream.next_frame(buffer) {
         self.sample_index = 0;
         self.block_size   = block_size;
       } else {
@@ -186,7 +187,7 @@ impl<'a, P> Iterator for Iter<'a, P> where P: StreamProducer {
 
     let channels = self.stream.info.channels as usize;
     let index    = self.sample_index + (self.channel * self.block_size);
-    let sample   = self.stream.output[index];
+    let sample   = self.buffer[index];
 
     self.channel += 1;
 
