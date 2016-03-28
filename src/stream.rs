@@ -17,7 +17,6 @@ pub struct Stream<P: StreamProducer> {
   info: StreamInfo,
   metadata: Vec<Metadata>,
   producer: P,
-  output: Vec<i32>,
 }
 
 /// Alias for a FLAC stream produced from `Read`.
@@ -107,7 +106,6 @@ impl<P> Stream<P> where P: StreamProducer {
         info: stream_info,
         metadata: metadata,
         producer: producer,
-        output: Vec::new(),
       }
     })
   }
@@ -116,16 +114,9 @@ impl<P> Stream<P> where P: StreamProducer {
   #[inline]
   pub fn iter(&mut self) -> Iter<P> {
     let samples_left = self.info.total_samples;
-
-    if self.output.is_empty() {
-      let channels    = self.info.channels as usize;
-      let block_size  = self.info.max_block_size as usize;
-      let output_size = block_size * channels;
-
-      self.output.reserve_exact(output_size);
-
-      unsafe { self.output.set_len(output_size) }
-    }
+    let channels     = self.info.channels as usize;
+    let block_size   = self.info.max_block_size as usize;
+    let buffer_size  = block_size * channels;
 
     Iter {
       stream: self,
