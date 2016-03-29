@@ -21,7 +21,7 @@ use utility::{ErrorKind, crc8, crc16, to_u32, power_of_two};
 /// Parses an audio frame
 pub fn frame_parser<'a>(input: &'a [u8],
                         stream_info: &StreamInfo,
-                        buffer: &mut [i32])
+                        buffer: &mut [i64])
                         -> IResult<&'a [u8], Frame, ErrorKind> {
   // Unsafe way to initialize subframe data, but I would rather do this
   // than have `Subframe` derive `Copy` to do something like:
