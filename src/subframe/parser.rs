@@ -81,7 +81,7 @@ pub fn adjust_bits_per_sample(frame_header: &frame::Header,
 pub fn subframe_parser<'a>(input: (&'a [u8], usize),
                            frame_header: &frame::Header,
                            channel: &mut usize,
-                           buffer: &mut [i32])
+                           buffer: &mut [i64])
                            -> IResult<(&'a [u8], usize), Subframe,
                                       ErrorKind> {
   let block_size      = frame_header.block_size as usize;
@@ -139,7 +139,7 @@ fn data<'a>(input: (&'a [u8], usize),
             bits_per_sample: usize,
             block_size: usize,
             subframe_type: usize,
-            buffer: &mut [i32])
+            buffer: &mut [i64])
             -> IResult<(&'a [u8], usize), subframe::Data, ErrorKind> {
   match subframe_type {
     0b000000            => constant(input, bits_per_sample),
@@ -166,7 +166,7 @@ pub fn fixed<'a>(input: (&'a [u8], usize),
                  order: usize,
                  bits_per_sample: usize,
                  block_size: usize,
-                 buffer: &mut [i32])
+                 buffer: &mut [i64])
                  -> IResult<(&'a [u8], usize), subframe::Data, ErrorKind> {
   let mut warmup = [0; subframe::MAX_FIXED_ORDER];
 
@@ -204,7 +204,7 @@ pub fn lpc<'a>(input: (&'a [u8], usize),
                order: usize,
                bits_per_sample: usize,
                block_size: usize,
-               buffer: &mut [i32])
+               buffer: &mut [i64])
                -> IResult<(&'a [u8], usize), subframe::Data, ErrorKind> {
   let mut warmup           = [0; subframe::MAX_LPC_ORDER];
   let mut qlp_coefficients = [0; subframe::MAX_LPC_ORDER];
@@ -259,7 +259,7 @@ fn coding_method(input: (&[u8], usize))
 fn residual<'a>(input: (&'a [u8], usize),
                 predictor_order: usize,
                 block_size: usize,
-                buffer: &mut [i32])
+                buffer: &mut [i64])
                 -> IResult<(&'a [u8], usize), subframe::EntropyCodingMethod> {
   let (i, data) = try_parse!(input,
                     pair!(coding_method, take_bits!(u32, 4)));
@@ -274,7 +274,7 @@ fn rice_partition<'a>(input: (&'a [u8], usize),
                       predictor_order: usize,
                       block_size: usize,
                       method: CodingMethod,
-                      buffer: &mut [i32])
+                      buffer: &mut [i64])
                       -> IResult<(&'a [u8], usize),
                                  subframe::EntropyCodingMethod> {
   let (param_size, escape_code) = match method {
@@ -339,7 +339,7 @@ fn residual_data<'a>(input: (&'a [u8], usize),
                      option: Option<usize>,
                      rice_parameter: u32,
                      raw_bit: &mut u32,
-                     samples: &mut [i32])
+                     samples: &mut [i64])
                      -> IResult<(&'a [u8], usize), ()> {
   if let Some(size) = option {
     unencoded_residuals(input, size, raw_bit, samples)
@@ -351,7 +351,7 @@ fn residual_data<'a>(input: (&'a [u8], usize),
 fn unencoded_residuals<'a>(input: (&'a [u8], usize),
                            bits_per_sample: usize,
                            raw_bit: &mut u32,
-                           samples: &mut [i32])
+                           samples: &mut [i64])
                            -> IResult<(&'a [u8], usize), ()> {
   *raw_bit = bits_per_sample as u32;
 
@@ -361,7 +361,7 @@ fn unencoded_residuals<'a>(input: (&'a [u8], usize),
 fn encoded_residuals<'a>(input: (&'a [u8], usize),
                          parameter: u32,
                          raw_bit: &mut u32,
-                         samples: &mut [i32])
+                         samples: &mut [i64])
                          -> IResult<(&'a [u8], usize), ()> {
   let length  = samples.len();
   let modulus = power_of_two(parameter);
@@ -380,7 +380,7 @@ fn encoded_residuals<'a>(input: (&'a [u8], usize),
       || {
         let value = quotient * modulus + remainder;
 
-        ((value as i32) >> 1) ^ -((value as i32) & 1)
+        ((value as i64) >> 1) ^ -((value as i64) & 1)
       });
 
     match result {

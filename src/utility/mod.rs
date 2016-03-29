@@ -32,8 +32,18 @@ pub trait Sample: PartialEq + Eq + Sized {
   /// Convert the extended `Sample` to the normal.
   fn to_normal(sample: Self) -> Option<Self::Normal>;
 
+  /// Convert an i8 into a `Sample`.
   fn from_i8(sample: i8) -> Self;
+
+  /// Convert an i16 into a `Sample`.
   fn from_i16(sample: i16) -> Self;
+
+  /// Convert an i32 into a `Sample`.
+  ///
+  /// With `Sample` sometimes being smaller than a i32, there is a chance
+  /// for this function to return an incorrect number. So when the number is
+  /// larger of smaller than the current `Sample`, it returns `None`
+  /// otherwise `Some(sample)`.
   fn from_i32(sample: i32) -> Option<Self>;
 }
 
@@ -56,11 +66,11 @@ pub fn to_u32(bytes: &[u8]) -> u32 {
 //
 // NOTE: This assumes that the larger bit size will be 32 bit since that is
 // the largest sample size supported in FLAC.
-pub fn extend_sign(value: u32, bit_count: usize) -> i32 {
-  if bit_count >= 32 || value < (1 << (bit_count - 1)) {
-    value as i32
+pub fn extend_sign(value: u64, bit_count: usize) -> i64 {
+  if bit_count >= 64 || value < (1 << (bit_count - 1)) {
+    value as i64
   } else {
-    (value as i32).wrapping_sub(1 << bit_count)
+    (value as i64).wrapping_sub(1 << bit_count)
   }
 }
 

@@ -13,7 +13,7 @@ use std::ptr;
 // from the `Fixed` subframe in it.
 pub fn fixed_restore_signal(order: usize,
                             block_size: usize,
-                            output: &mut [i32]) {
+                            output: &mut [i64]) {
   debug_assert!(order <= MAX_FIXED_ORDER);
 
   let polynomial = [ &[][..]
@@ -55,8 +55,8 @@ pub fn fixed_restore_signal(order: usize,
 // already has the warm up values from the `LPC` subframe in it.
 pub fn lpc_restore_signal(quantization_level: i8,
                           block_size: usize,
-                          coefficients: &[i32],
-                          output: &mut [i32]) {
+                          coefficients: &[i64],
+                          output: &mut [i64]) {
   let order  = coefficients.len();
   let length = block_size - order;
 
@@ -83,7 +83,7 @@ pub fn lpc_restore_signal(quantization_level: i8,
 ///   the result into `output`.
 /// * `LPC` - restore the signal of the finite impulse response linear
 ///   prediction and put the result into `output`.
-pub fn decode(subframe: &Subframe, block_size: usize, output: &mut [i32]) {
+pub fn decode(subframe: &Subframe, block_size: usize, output: &mut [i64]) {
   match subframe.data {
     subframe::Data::Constant(constant)     => {
       for i in 0..output.len() {
