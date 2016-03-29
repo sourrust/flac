@@ -128,7 +128,7 @@ impl<P> Stream<P> where P: StreamProducer {
     }
   }
 
-  fn next_frame(&mut self, buffer: &mut [i32]) -> Option<usize> {
+  fn next_frame(&mut self, buffer: &mut [i64]) -> Option<usize> {
     let stream_info = &self.info;
 
     loop {
@@ -167,7 +167,7 @@ pub struct Iter<'a, P> where P: 'a + StreamProducer {
   block_size: usize,
   sample_index: usize,
   samples_left: u64,
-  buffer: Vec<i32>,
+  buffer: Vec<i64>,
 }
 
 impl<'a, P> Iterator for Iter<'a, P> where P: StreamProducer {
@@ -198,7 +198,7 @@ impl<'a, P> Iterator for Iter<'a, P> where P: StreamProducer {
       self.samples_left -= 1;
     }
 
-    Some(sample)
+    Some(sample as i32)
   }
 
   fn size_hint(&self) -> (usize, Option<usize>) {
