@@ -45,6 +45,9 @@ pub trait Sample: PartialEq + Eq + Sized {
   /// larger of smaller than the current `Sample`, it returns `None`
   /// otherwise `Some(sample)`.
   fn from_i32(sample: i32) -> Option<Self>;
+
+  /// Convert an i32 into a `Sample`.
+  fn from_i32_lossy(sample: i32) -> Self;
 }
 
 // Convert one to four byte slices into an unsigned 32-bit number.
