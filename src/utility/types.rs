@@ -441,6 +441,11 @@ macro_rules! sample (
           None
         }
       }
+
+      #[inline]
+      fn from_i32_lossy(sample: i32) -> Self {
+        sample as Self
+      }
     }
   )
 );
