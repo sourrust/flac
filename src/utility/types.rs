@@ -604,9 +604,9 @@ mod tests {
     assert_eq!(<i16 as Sample>::from_i32(min), None);
     assert_eq!(<i16 as Sample>::from_i32(zero), Some(zero as i16));
     assert_eq!(<i16 as Sample>::from_i32(max), None);
-    assert_eq!(<i32 as Sample>::from_i32(min), Some(min as i32));
-    assert_eq!(<i32 as Sample>::from_i32(zero), Some(zero as i32));
-    assert_eq!(<i32 as Sample>::from_i32(max), Some(max as i32));
+    assert_eq!(<i32 as Sample>::from_i32(min), Some(min));
+    assert_eq!(<i32 as Sample>::from_i32(zero), Some(zero));
+    assert_eq!(<i32 as Sample>::from_i32(max), Some(max));
     assert_eq!(<i64 as Sample>::from_i32(min), Some(min as i64));
     assert_eq!(<i64 as Sample>::from_i32(zero), Some(zero as i64));
     assert_eq!(<i64 as Sample>::from_i32(max), Some(max as i64));
@@ -621,9 +621,9 @@ mod tests {
     assert_eq!(<i16 as Sample>::from_i32_lossy(min), 0);
     assert_eq!(<i16 as Sample>::from_i32_lossy(zero), zero as i16);
     assert_eq!(<i16 as Sample>::from_i32_lossy(max), -1);
-    assert_eq!(<i32 as Sample>::from_i32_lossy(min), min as i32);
-    assert_eq!(<i32 as Sample>::from_i32_lossy(zero), zero as i32);
-    assert_eq!(<i32 as Sample>::from_i32_lossy(max), max as i32);
+    assert_eq!(<i32 as Sample>::from_i32_lossy(min), min);
+    assert_eq!(<i32 as Sample>::from_i32_lossy(zero), zero);
+    assert_eq!(<i32 as Sample>::from_i32_lossy(max), max);
     assert_eq!(<i64 as Sample>::from_i32_lossy(min), min as i64);
     assert_eq!(<i64 as Sample>::from_i32_lossy(zero), zero as i64);
     assert_eq!(<i64 as Sample>::from_i32_lossy(max), max as i64);
