@@ -46,6 +46,7 @@ pub trait Sample: PartialEq + Eq + Sized {
   /// otherwise `Some(sample)`.
   fn from_i32(sample: i32) -> Option<Self>;
 
+  /// Convert an i32 into a `Sample`.
   fn from_i32_lossy(sample: i32) -> Self;
 }
 
