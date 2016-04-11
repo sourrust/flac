@@ -1,5 +1,15 @@
 ## [Unreleased]
 
+### Added
+
+* Documentation for the `Metadata::is_<block_type>`
+* The trait `Sample` for varied sample sizes
+
+### Changed
+
+* Custom error being returned from frame parser
+* Custom error being returned from subframe parser
+
 ## [0.3.0] - 2016-03-08
 
 ### Added
