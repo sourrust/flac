@@ -28,35 +28,6 @@ extern crate flac;
 
 The status of this FLAC implementation:
 
-- [x] Parser
-  - [x] metadata
-    - [x] header
-    - [x] data
-      - [x] stream info
-      - [x] padding
-      - [x] application
-      - [x] seek table
-      - [x] vorbis comment
-      - [x] cuesheet
-      - [x] picture
-      - [x] unknown
-  - [x] frame
-    - [x] header
-    - [x] footer
-    - [x] sub-frame
-      - [x] header
-      - [x] constant
-      - [x] fixed
-      - [x] LPC
-      - [x] verbatim
-- [x] decoder
-  - [x] frame
-    - [x] left side
-    - [x] right side
-    - [x] middle side
-  - [x] sub-frame
-    - [x] fixed restoration
-    - [x] LPC restoration
 - [ ] encoder
 
 [flac]: https://xiph.org/flac
