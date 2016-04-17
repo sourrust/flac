@@ -1,6 +1,5 @@
 use subframe::{self, Subframe, MAX_FIXED_ORDER, MAX_LPC_ORDER};
-
-use std::ptr;
+use utility::Sample;
 
 // Restore the original signal from a fixed linear prediction.
 //
@@ -11,9 +10,9 @@ use std::ptr;
 //
 // This function also assumes that `output` already has the warm up values
 // from the `Fixed` subframe in it.
-pub fn fixed_restore_signal(order: usize,
-                            block_size: usize,
-                            output: &mut [i64]) {
+pub fn fixed_restore_signal<S: Sample>(order: usize,
+                                       block_size: usize,
+                                       output: &mut [S]) {
   debug_assert!(order <= MAX_FIXED_ORDER);
 
   let polynomial = [ &[][..]
@@ -27,14 +26,15 @@ pub fn fixed_restore_signal(order: usize,
   let length       = block_size - order;
 
   for i in 0..length {
+    let zero       = S::from_i8(0);
     let offset     = i + order;
     let prediction = coefficients.iter()
                       .zip(&output[i..offset])
-                      .fold(0, |result, (coefficient, signal)|
-                            result + coefficient * signal);
+                      .fold(zero, |result, (coefficient, signal)|
+                         result + S::from_i32_lossy(*coefficient) * *signal);
 
 
-    output[offset] += prediction;
+    output[offset] = output[offset] + prediction;
   }
 }
 
@@ -53,23 +53,24 @@ pub fn fixed_restore_signal(order: usize,
 // length is assumed to be the value of order. And the max order is
 // `MAX_LPC_ORDER`, which is 32. This function also assumes that `output`
 // already has the warm up values from the `LPC` subframe in it.
-pub fn lpc_restore_signal(quantization_level: i8,
-                          block_size: usize,
-                          coefficients: &[i64],
-                          output: &mut [i64]) {
+pub fn lpc_restore_signal<S: Sample>(quantization_level: i8,
+                                     block_size: usize,
+                                     coefficients: &[i32],
+                                     output: &mut [S]) {
   let order  = coefficients.len();
   let length = block_size - order;
 
   debug_assert!(order <= MAX_LPC_ORDER);
 
   for i in 0..length {
+    let zero       = S::from_i8(0);
     let offset     = i + order;
     let prediction = coefficients.iter().rev()
                        .zip(&output[i..offset])
-                       .fold(0, |result, (coefficient, signal)|
-                             result + coefficient * signal);
+                       .fold(zero, |result, (coefficient, signal)|
+                         result + S::from_i32_lossy(*coefficient) * *signal);
 
-    output[offset] += prediction >> quantization_level;
+    output[offset] = output[offset] + (prediction >> quantization_level);
   }
 }
 
@@ -83,25 +84,28 @@ pub fn lpc_restore_signal(quantization_level: i8,
 ///   the result into `output`.
 /// * `LPC` - restore the signal of the finite impulse response linear
 ///   prediction and put the result into `output`.
-pub fn decode(subframe: &Subframe, block_size: usize, output: &mut [i64]) {
+pub fn decode<S>(subframe: &Subframe, block_size: usize, output: &mut [S])
+ where S: Sample {
   match subframe.data {
     subframe::Data::Constant(constant)     => {
+      let _constant = S::from_i32_lossy(constant);
+
       for i in 0..output.len() {
-        output[i] = constant
+        output[i] = _constant
       }
     }
     subframe::Data::Verbatim(ref verbatim) => {
-      let length = verbatim.len();
-
-      unsafe {
-        ptr::copy(verbatim.as_ptr(), output.as_mut_ptr(), length)
+      for i in 0..verbatim.len() {
+        output[i] = S::from_i32_lossy(verbatim[i]);
       }
     }
     subframe::Data::Fixed(ref fixed)       => {
       let order = fixed.order as usize;
 
       for i in 0..order {
-        output[i] = fixed.warmup[i];
+        let warmup = S::from_i32_lossy(fixed.warmup[i]);
+
+        output[i] = warmup;
       }
 
       fixed_restore_signal(order, block_size, output);
@@ -111,7 +115,9 @@ pub fn decode(subframe: &Subframe, block_size: usize, output: &mut [i64]) {
       let coefficients = &lpc.qlp_coefficients[0..order];
 
       for i in 0..order {
-        output[i] = lpc.warmup[i];
+        let warmup = S::from_i32_lossy(lpc.warmup[i]);
+
+        output[i] = warmup;
       }
 
       lpc_restore_signal(lpc.quantization_level, block_size, coefficients,
@@ -121,7 +127,7 @@ pub fn decode(subframe: &Subframe, block_size: usize, output: &mut [i64]) {
 
   if subframe.wasted_bits > 0 {
     for value in output {
-      *value <<= subframe.wasted_bits;
+      *value = *value << subframe.wasted_bits;
     }
   }
 }
