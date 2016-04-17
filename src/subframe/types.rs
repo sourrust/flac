@@ -16,9 +16,9 @@ pub struct Subframe {
 #[derive(Debug, PartialEq, Eq)]
 pub enum Data {
   /// A single value that represents a constant subframe.
-  Constant(i64),
+  Constant(i32),
   /// An uncompressed subframe.
-  Verbatim(Vec<i64>),
+  Verbatim(Vec<i32>),
   /// Fixed linear prediction subframe.
   Fixed(Fixed),
   /// FIR linear prediction subframe.
@@ -33,9 +33,9 @@ pub struct Fixed {
   /// Polynomial order.
   pub order: u8,
   /// Samples used to warm up, or prime, the predictor.
-  pub warmup: [i64; MAX_FIXED_ORDER],
+  pub warmup: [i32; MAX_FIXED_ORDER],
   /// Remaining samples after the warm up samples.
-  pub residual: Vec<i64>,
+  pub residual: Vec<i32>,
 }
 
 /// Finite Impulse Response (FIR) linear prediction subframe.
@@ -50,11 +50,11 @@ pub struct LPC {
   /// Quantized linear predictor coefficient shift needed in bits.
   pub quantization_level: i8,
   /// FIR filter coefficients.
-  pub qlp_coefficients: [i64; MAX_LPC_ORDER],
+  pub qlp_coefficients: [i32; MAX_LPC_ORDER],
   /// Samples used to warm up, or prime, the predictor.
-  pub warmup: [i64; MAX_LPC_ORDER],
+  pub warmup: [i32; MAX_LPC_ORDER],
   /// Remaining samples after the warm up samples.
-  pub residual: Vec<i64>,
+  pub residual: Vec<i32>,
 }
 
 /// Header for the entropy coding method.
