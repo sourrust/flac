@@ -5,7 +5,7 @@ use subframe;
 use metadata::{Metadata, StreamInfo};
 use frame::frame_parser;
 use utility::{
-  ErrorKind, ByteStream, ReadStream, StreamProducer, many_metadata,
+  ErrorKind, ByteStream, ReadStream, Sample, StreamProducer, many_metadata,
 };
 
 use std::io;
@@ -112,7 +112,7 @@ impl<P> Stream<P> where P: StreamProducer {
 
   /// Returns an iterator over the decoded samples.
   #[inline]
-  pub fn iter(&mut self) -> Iter<P> {
+  pub fn iter<S: Sample>(&mut self) -> Iter<P, S> {
     let samples_left = self.info.total_samples;
     let channels     = self.info.channels as usize;
     let block_size   = self.info.max_block_size as usize;
@@ -124,11 +124,12 @@ impl<P> Stream<P> where P: StreamProducer {
       block_size: 0,
       sample_index: 0,
       samples_left: samples_left,
-      buffer: vec![0; buffer_size]
+      buffer: vec![S::from_i8(0); buffer_size]
     }
   }
 
-  fn next_frame(&mut self, buffer: &mut [i64]) -> Option<usize> {
+  fn next_frame<S>(&mut self, buffer: &mut [S]) -> Option<usize>
+   where S: Sample {
     let stream_info = &self.info;
 
     loop {
@@ -161,17 +162,21 @@ impl<P> Stream<P> where P: StreamProducer {
 }
 
 /// An iterator over a reference of the decoded FLAC stream.
-pub struct Iter<'a, P> where P: 'a + StreamProducer {
+pub struct Iter<'a, P, S>
+ where P: 'a + StreamProducer,
+       S: Sample{
   stream: &'a mut Stream<P>,
   channel: usize,
   block_size: usize,
   sample_index: usize,
   samples_left: u64,
-  buffer: Vec<i64>,
+  buffer: Vec<S>,
 }
 
-impl<'a, P> Iterator for Iter<'a, P> where P: StreamProducer {
-  type Item = i32;
+impl<'a, P, S> Iterator for Iter<'a, P, S>
+ where P: StreamProducer,
+       S: Sample {
+  type Item = S::Normal;
 
   fn next(&mut self) -> Option<Self::Item> {
     if self.sample_index == self.block_size {
@@ -198,7 +203,7 @@ impl<'a, P> Iterator for Iter<'a, P> where P: StreamProducer {
       self.samples_left -= 1;
     }
 
-    Some(sample as i32)
+    S::to_normal(sample)
   }
 
   fn size_hint(&self) -> (usize, Option<usize>) {
