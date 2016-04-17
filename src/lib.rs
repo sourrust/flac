@@ -16,7 +16,7 @@
 //!     // Copy of `StreamInfo` to help convert to a different audio format.
 //!     let info = stream.info();
 //!
-//!     for sample in stream.iter() {
+//!     for sample in stream.iter::<i32>() {
 //!       // Iterate over each decoded sample
 //!     }
 //!   }
