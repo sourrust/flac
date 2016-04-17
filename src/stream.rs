@@ -220,13 +220,14 @@ impl<'a, P, S> Iterator for Iter<'a, P, S>
   }
 }
 
-impl<'a, P> IntoIterator for &'a mut Stream<P>
- where P: StreamProducer {
-  type Item     = i32;
-  type IntoIter = Iter<'a, P>;
-
-  #[inline]
-  fn into_iter(self) -> Self::IntoIter {
-    self.iter()
-  }
-}
+//impl<'a, P, S> IntoIterator for &'a mut Stream<P>
+// where P: StreamProducer,
+//       S: Sample {
+//  type Item     = S::Normal;
+//  type IntoIter = Iter<'a, P, S>;
+//
+//  #[inline]
+//  fn into_iter(self) -> Self::IntoIter {
+//    self.iter()
+//  }
+//}
