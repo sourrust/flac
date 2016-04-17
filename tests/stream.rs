@@ -39,8 +39,8 @@ fn test_decoded_md5_sum() {
     let info   = stream.info();
     let offset = get_offset(info.bits_per_sample as usize);
 
-    for sample in stream.iter() {
-      to_bytes(sample, &mut buffer);
+    for sample in stream.iter::<i32>() {
+      to_bytes(sample as i32, &mut buffer);
 
       md5.input(&buffer[0..offset]);
     }
@@ -59,8 +59,8 @@ fn test_decoded_md5_sum() {
     let info   = stream.info();
     let offset = get_offset(info.bits_per_sample as usize);
 
-    for sample in stream.iter() {
-      to_bytes(sample, &mut buffer);
+    for sample in stream.iter::<i32>() {
+      to_bytes(sample as i32, &mut buffer);
 
       md5.input(&buffer[0..offset]);
     }
@@ -79,8 +79,8 @@ fn test_decoded_md5_sum() {
     let info   = stream.info();
     let offset = get_offset(info.bits_per_sample as usize);
 
-    for sample in stream.iter() {
-      to_bytes(sample, &mut buffer);
+    for sample in stream.iter::<i32>() {
+      to_bytes(sample as i32, &mut buffer);
 
       md5.input(&buffer[0..offset]);
     }
