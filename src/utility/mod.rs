@@ -9,6 +9,8 @@ pub use self::types::{ErrorKind, ByteStream, ReadStream};
 use nom::{self, IResult};
 use metadata::{Metadata, metadata_parser};
 
+use std::ops::{Add, BitAnd, BitOr, Mul, Sub, Shl, Shr};
+
 /// An interface for parsing through some type of producer to a byte stream.
 ///
 /// External parsers get passed in and consumes the bytes held internally
@@ -19,7 +21,12 @@ pub trait StreamProducer {
 }
 
 /// An abstraction trait for keeping different sized integers.
-pub trait Sample: PartialEq + Eq + Sized {
+pub trait Sample: PartialEq + Eq + Sized + Clone + Copy +
+                  Add<Output = Self> + BitAnd<Self, Output = Self> +
+                  BitOr<Self, Output = Self> + Mul<Output = Self> +
+                  Shl<u32, Output = Self> + Shr<u32, Output = Self> +
+                  Shr<i8, Output = Self> + Shr<i32, Output = Self> +
+                  Sub<Output = Self> {
   /// The normal size for the current a `Sample`.
   type Normal;
 
@@ -69,11 +76,11 @@ pub fn to_u32(bytes: &[u8]) -> u32 {
 //
 // NOTE: This assumes that the larger bit size will be 32 bit since that is
 // the largest sample size supported in FLAC.
-pub fn extend_sign(value: u64, bit_count: usize) -> i64 {
-  if bit_count >= 64 || value < (1 << (bit_count - 1)) {
-    value as i64
+pub fn extend_sign(value: u32, bit_count: usize) -> i32 {
+  if bit_count >= 32 || value < (1 << (bit_count - 1)) {
+    value as i32
   } else {
-    (value as i64).wrapping_sub(1 << bit_count)
+    (value as i32).wrapping_sub(1 << bit_count)
   }
 }
 

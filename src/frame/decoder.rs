@@ -1,10 +1,11 @@
 use frame::ChannelAssignment;
+use utility::Sample;
 
 // Decode left and side channels to left and right channels.
 //
 // Two channels, left and side (difference) that transforms the difference
 // into the right channel.
-pub fn decode_left_side(buffer: &mut [i64]) {
+pub fn decode_left_side<S: Sample>(buffer: &mut [S]) {
   let block_size = buffer.len() / 2;
 
   for i in 0..block_size {
@@ -20,7 +21,7 @@ pub fn decode_left_side(buffer: &mut [i64]) {
 //
 // Two channels, side (difference) and right that transforms the difference
 // into the left channel.
-pub fn decode_right_side(buffer: &mut [i64]) {
+pub fn decode_right_side<S: Sample>(buffer: &mut [S]) {
   let block_size = buffer.len() / 2;
 
   for i in 0..block_size {
@@ -36,14 +37,14 @@ pub fn decode_right_side(buffer: &mut [i64]) {
 //
 // Two channels, midpoint (average) and side (difference) that transforms
 // the average and difference into the left and right channels.
-pub fn decode_midpoint_side(buffer: &mut [i64]) {
+pub fn decode_midpoint_side<S: Sample>(buffer: &mut [S]) {
   let block_size = buffer.len() / 2;
 
   for i in 0..block_size {
     let mut midpoint = buffer[i];
     let side         = buffer[i + block_size];
 
-    midpoint = (midpoint << 1) | (side & 1);
+    midpoint = (midpoint << 1) | (side & S::from_i8(1));
 
     // left and right channel
     buffer[i]              = (midpoint + side) >> 1;
@@ -60,7 +61,8 @@ pub fn decode_midpoint_side(buffer: &mut [i64]) {
 ///   channels.
 /// * `MidpointSide` - decode midpoint and side channels to left and right
 ///   channels.
-pub fn decode(channel_assignment: ChannelAssignment, buffer: &mut [i64]) {
+pub fn decode<S>(channel_assignment: ChannelAssignment, buffer: &mut [S])
+ where S: Sample {
   match channel_assignment {
     ChannelAssignment::Independent  => return,
     ChannelAssignment::LeftSide     => decode_left_side(buffer),
