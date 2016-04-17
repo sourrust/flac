@@ -75,12 +75,12 @@ macro_rules! count_slice (
 // default return type is `i32`.
 macro_rules! take_signed_bits (
   ($input: expr, $signed_type: ty, $count: expr) => (
-    map!($input, take_bits!(u64, $count), |value| {
+    map!($input, take_bits!(u32, $count), |value| {
       ::utility::extend_sign(value, $count) as $signed_type
     });
   );
   ($input: expr, $count: expr) => (
-    take_signed_bits!($input, i64, $count);
+    take_signed_bits!($input, i32, $count);
   );
 );
 

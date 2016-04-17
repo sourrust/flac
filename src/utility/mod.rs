@@ -69,11 +69,11 @@ pub fn to_u32(bytes: &[u8]) -> u32 {
 //
 // NOTE: This assumes that the larger bit size will be 32 bit since that is
 // the largest sample size supported in FLAC.
-pub fn extend_sign(value: u64, bit_count: usize) -> i64 {
-  if bit_count >= 64 || value < (1 << (bit_count - 1)) {
-    value as i64
+pub fn extend_sign(value: u32, bit_count: usize) -> i32 {
+  if bit_count >= 32 || value < (1 << (bit_count - 1)) {
+    value as i32
   } else {
-    (value as i64).wrapping_sub(1 << bit_count)
+    (value as i32).wrapping_sub(1 << bit_count)
   }
 }
 
