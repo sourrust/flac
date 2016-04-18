@@ -34,7 +34,7 @@ pub fn fixed_restore_signal<S: Sample>(order: usize,
                          result + S::from_i32_lossy(*coefficient) * *signal);
 
 
-    output[offset] = output[offset] + prediction;
+    output[offset] += prediction;
   }
 }
 
@@ -70,7 +70,7 @@ pub fn lpc_restore_signal<S: Sample>(quantization_level: i8,
                        .fold(zero, |result, (coefficient, signal)|
                          result + S::from_i32_lossy(*coefficient) * *signal);
 
-    output[offset] = output[offset] + (prediction >> quantization_level);
+    output[offset] += prediction >> quantization_level;
   }
 }
 
@@ -127,7 +127,7 @@ pub fn decode<S>(subframe: &Subframe, block_size: usize, output: &mut [S])
 
   if subframe.wasted_bits > 0 {
     for value in output {
-      *value = *value << subframe.wasted_bits;
+      *value <<= subframe.wasted_bits;
     }
   }
 }

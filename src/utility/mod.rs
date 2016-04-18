@@ -9,7 +9,7 @@ pub use self::types::{ErrorKind, ByteStream, ReadStream};
 use nom::{self, IResult};
 use metadata::{Metadata, metadata_parser};
 
-use std::ops::{Add, BitAnd, BitOr, Mul, Sub, Shl, Shr};
+use std::ops::{Add, AddAssign, BitAnd, BitOr, Mul, Sub, Shl, ShlAssign, Shr};
 
 /// An interface for parsing through some type of producer to a byte stream.
 ///
@@ -22,11 +22,11 @@ pub trait StreamProducer {
 
 /// An abstraction trait for keeping different sized integers.
 pub trait Sample: PartialEq + Eq + Sized + Clone + Copy +
-                  Add<Output = Self> + BitAnd<Self, Output = Self> +
+                  Add<Output = Self> + AddAssign + BitAnd<Self, Output = Self> +
                   BitOr<Self, Output = Self> + Mul<Output = Self> +
-                  Shl<u32, Output = Self> + Shr<u32, Output = Self> +
-                  Shr<i8, Output = Self> + Shr<i32, Output = Self> +
-                  Sub<Output = Self> {
+                  Shl<u32, Output = Self>  + ShlAssign<u32> +
+                  Shr<u32, Output = Self> + Shr<i8, Output = Self> +
+                  Shr<i32, Output = Self> + Sub<Output = Self> {
   /// The normal size for the current a `Sample`.
   type Normal;
 
