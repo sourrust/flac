@@ -127,7 +127,7 @@ pub fn decode<S>(subframe: &Subframe, block_size: usize, output: &mut [S])
 
   if subframe.wasted_bits > 0 {
     for value in output {
-      *value = *value << subframe.wasted_bits;
+      *value <<= subframe.wasted_bits;
     }
   }
 }
