@@ -54,8 +54,10 @@ fn decode_file(input_file: &str, output_file: &str)
 
   let mut output = try!(hound::WavWriter::create(output_file, spec));
 
-  for sample in stream.iter::<i64>() {
-    try!(output.write_sample(sample));
+  if info.bits_per_sample <= 8 {
+    for sample in stream.iter::<i16>() {
+      try!(output.write_sample(sample));
+    }
   }
 
   output.finalize()
