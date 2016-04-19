@@ -58,6 +58,10 @@ fn decode_file(input_file: &str, output_file: &str)
     for sample in stream.iter::<i16>() {
       try!(output.write_sample(sample));
     }
+  } else if info.bits_per_sample <= 16 {
+    for sample in stream.iter::<i32>() {
+      try!(output.write_sample(sample));
+    }
   }
 
   output.finalize()
