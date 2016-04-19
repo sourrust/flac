@@ -62,6 +62,10 @@ fn decode_file(input_file: &str, output_file: &str)
     for sample in stream.iter::<i32>() {
       try!(output.write_sample(sample));
     }
+  } else {
+    for sample in stream.iter::<i64>() {
+      try!(output.write_sample(sample));
+    }
   }
 
   output.finalize()
