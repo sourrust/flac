@@ -9,6 +9,7 @@
 
 * Custom error being returned from frame parser
 * Custom error being returned from subframe parser
+* `Stream::iter` now requires an explicit type
 
 ## [0.3.0] - 2016-03-08
 
