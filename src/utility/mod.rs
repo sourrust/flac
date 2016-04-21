@@ -22,11 +22,12 @@ pub trait StreamProducer {
 
 /// An abstraction trait for keeping different sized integers.
 pub trait Sample: PartialEq + Eq + Sized + Clone + Copy +
-                  Add<Output = Self> + AddAssign + BitAnd<Self, Output = Self> +
-                  BitOr<Self, Output = Self> + Mul<Output = Self> +
-                  Shl<u32, Output = Self>  + ShlAssign<u32> +
-                  Shr<u32, Output = Self> + Shr<i8, Output = Self> +
-                  Shr<i32, Output = Self> + Sub<Output = Self> {
+                  Add<Output = Self> + AddAssign +
+                  BitAnd<Self, Output = Self> + BitOr<Self, Output = Self> +
+                  Mul<Output = Self> + Shl<u32, Output = Self>  +
+                  ShlAssign<u32> + Shr<u32, Output = Self> +
+                  Shr<i8, Output = Self> + Shr<i32, Output = Self> +
+                  Sub<Output = Self> {
   /// The normal size for the current a `Sample`.
   type Normal;
 
