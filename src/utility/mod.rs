@@ -58,6 +58,22 @@ pub trait Sample: PartialEq + Eq + Sized + Clone + Copy +
   fn from_i32_lossy(sample: i32) -> Self;
 }
 
+pub trait SampleSize {
+  type Extended: Sample;
+}
+
+impl SampleSize for i8 {
+  type Extended = i16;
+}
+
+impl SampleSize for i16 {
+  type Extended = i32;
+}
+
+impl SampleSize for i32 {
+  type Extended = i64;
+}
+
 // Convert one to four byte slices into an unsigned 32-bit number.
 //
 // NOTE: This assumes big-endian since most numbers in the FLAC binary are
