@@ -5,7 +5,8 @@ use subframe;
 use metadata::{Metadata, StreamInfo};
 use frame::frame_parser;
 use utility::{
-  ErrorKind, ByteStream, ReadStream, Sample, StreamProducer, many_metadata,
+  ErrorKind, ByteStream, ReadStream, Sample, SampleSize, StreamProducer,
+  many_metadata,
 };
 
 use std::io;
@@ -112,7 +113,7 @@ impl<P> Stream<P> where P: StreamProducer {
 
   /// Returns an iterator over the decoded samples.
   #[inline]
-  pub fn iter<S: Sample>(&mut self) -> Iter<P, S> {
+  pub fn iter<S: SampleSize>(&mut self) -> Iter<P, S::Extended> {
     let samples_left = self.info.total_samples;
     let channels     = self.info.channels as usize;
     let block_size   = self.info.max_block_size as usize;
@@ -124,7 +125,7 @@ impl<P> Stream<P> where P: StreamProducer {
       block_size: 0,
       sample_index: 0,
       samples_left: samples_left,
-      buffer: vec![S::from_i8(0); buffer_size]
+      buffer: vec![S::Extended::from_i8(0); buffer_size]
     }
   }
 

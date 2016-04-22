@@ -16,9 +16,7 @@
 //!     // Copy of `StreamInfo` to help convert to a different audio format.
 //!     let info = stream.info();
 //!
-//!     // The explicit type needs to be one bit size up from the goal
-//!     // size. (ie `i8` -> `i16`, `i16` -> `i32`, `i32` -> `i64`)
-//!     for sample in stream.iter::<i32>() {
+//!     for sample in stream.iter::<i16>() {
 //!       // Iterate over each decoded sample
 //!     }
 //!   }
@@ -38,4 +36,8 @@ pub mod stream;
 
 pub use metadata::Metadata;
 pub use stream::{Stream, StreamBuffer, StreamReader};
-pub use utility::{Sample, StreamProducer, ReadStream, ByteStream, ErrorKind};
+pub use utility::{
+  Sample, SampleSize,
+  StreamProducer, ReadStream, ByteStream,
+  ErrorKind
+};
