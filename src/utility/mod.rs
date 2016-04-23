@@ -58,6 +58,7 @@ pub trait Sample: PartialEq + Eq + Sized + Clone + Copy +
   fn from_i32_lossy(sample: i32) -> Self;
 }
 
+/// A trait for defining the size of a sample.
 pub trait SampleSize {
   type Extended: Sample;
 }
