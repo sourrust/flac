@@ -58,7 +58,13 @@ pub trait Sample: PartialEq + Eq + Sized + Clone + Copy +
   fn from_i32_lossy(sample: i32) -> Self;
 }
 
+/// A trait for defining the size of a sample.
 pub trait SampleSize {
+  /// The internal integer size used with `Stream::iter`.
+  ///
+  /// Rather than making the user of `Stream::iter` will remember what the
+  /// extended size of the output sample will be, this is to map to the
+  /// value based on the current integer size used.
   type Extended: Sample;
 }
 
