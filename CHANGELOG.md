@@ -4,6 +4,7 @@
 
 * Documentation for the `Metadata::is_<block_type>`
 * The trait `Sample` for varied sample sizes
+* The trait `SampleSize` for outward use in `Stream::iter`
 
 ### Changed
 
