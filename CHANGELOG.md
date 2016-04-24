@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [0.4.0] - 2016-04-23
+
 ### Added
 
 * Documentation for the `Metadata::is_<block_type>`
@@ -74,6 +76,7 @@
 * Complete decoding of FLAC files
 * Example decoder from FLAC to WAV
 
-[Unreleased]: https://github.com/sourrust/flac/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/sourrust/flac/compare/v0.4.0...HEAD
 [0.2.0]: https://github.com/sourrust/flac/compare/v0.1.0...v0.2.0
 [0.3.0]: https://github.com/sourrust/flac/compare/v0.2.0...v0.3.0
+[0.4.0]: https://github.com/sourrust/flac/compare/v0.3.0...v0.4.0

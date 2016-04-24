@@ -15,7 +15,7 @@ like so:
 ```toml
 [dependencies]
 
-flac = "^0.3.0"
+flac = "^0.4.0"
 ```
 
 Followed by including it in you code:
