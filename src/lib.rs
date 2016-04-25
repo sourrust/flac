@@ -16,6 +16,9 @@
 //!     // Copy of `StreamInfo` to help convert to a different audio format.
 //!     let info = stream.info();
 //!
+//!     // The explicit size for `Stream::iter` is the resulting decoded
+//!     // sample. You can usually find out the desired size of the
+//!     // samples with `info.bits_per_sample`.
 //!     for sample in stream.iter::<i16>() {
 //!       // Iterate over each decoded sample
 //!     }
