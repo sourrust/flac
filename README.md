@@ -33,10 +33,10 @@ and the decoder is working great for any file that has a bit sample size
 of 16 and before. This is based on the test suite I have on this project
 and the tests do fail when the bit sample size is larger than 16.
 
-Currently I'm trying to get the decoder to use varied sized integers in
-order to make the buffer allocation more efficient and afterward I want
-to start on that encoding side of FLAC. It will be a bit slower as I am
-busy with work but that is a goal of the project for sure.
+Now that I have the varied size integers, making the buffer allocation
+more efficient, I want to start on the encoding side of FLAC. It will be
+a bit slower as I am busy with work but that is a goal of the project
+for sure.
 
 - [ ] encoder
 
