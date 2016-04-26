@@ -38,6 +38,10 @@ more efficient, I want to start on the encoding side of FLAC. It will be
 a bit slower as I am busy with work but that is a goal of the project
 for sure.
 
+- [ ] serialization
+  - [ ] metadata
+  - [ ] frame
+    - [ ] sub-frame
 - [ ] encoder
 
 [flac]: https://xiph.org/flac
