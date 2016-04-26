@@ -38,6 +38,27 @@ more efficient, I want to start on the encoding side of FLAC. It will be
 a bit slower as I am busy with work but that is a goal of the project
 for sure.
 
+- [ ] serialization
+  - [ ] metadata
+    - [ ] header
+    - [ ] data
+      - [ ] stream info
+      - [ ] padding
+      - [ ] application
+      - [ ] seek table
+      - [ ] vorbis comment
+      - [ ] cuesheet
+      - [ ] picture
+      - [ ] unknown
+  - [ ] frame
+    - [ ] header
+    - [ ] footer
+    - [ ] sub-frame
+      - [ ] header
+      - [ ] constant
+      - [ ] fixed
+      - [ ] LPC
+      - [ ] verbatim
 - [ ] encoder
 
 [flac]: https://xiph.org/flac
