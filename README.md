@@ -51,6 +51,8 @@ for sure.
       - [ ] picture
       - [ ] unknown
   - [ ] frame
+    - [ ] header
+    - [ ] footer
     - [ ] sub-frame
 - [ ] encoder
 
