@@ -54,6 +54,11 @@ for sure.
     - [ ] header
     - [ ] footer
     - [ ] sub-frame
+      - [ ] header
+      - [ ] constant
+      - [ ] fixed
+      - [ ] LPC
+      - [ ] verbatim
 - [ ] encoder
 
 [flac]: https://xiph.org/flac
