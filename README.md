@@ -60,6 +60,8 @@ for sure.
       - [ ] LPC
       - [ ] verbatim
 - [ ] encoder
+  - [ ] frame
+  - [ ] sub-frame
 
 [flac]: https://xiph.org/flac
 [documentation]: https://sourrust.github.io/flac
