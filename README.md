@@ -60,6 +60,13 @@ for sure.
       - [ ] LPC
       - [ ] verbatim
 - [ ] encoder
+  - [ ] frame
+    - [ ] left side
+    - [ ] right side
+    - [ ] midpoint side
+  - [ ] sub-frame
+    - [ ] fixed
+    - [ ] LPC
 
 [flac]: https://xiph.org/flac
 [documentation]: https://sourrust.github.io/flac
