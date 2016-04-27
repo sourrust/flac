@@ -61,6 +61,9 @@ for sure.
       - [ ] verbatim
 - [ ] encoder
   - [ ] frame
+    - [ ] left side
+    - [ ] right side
+    - [ ] midpoint side
   - [ ] sub-frame
 
 [flac]: https://xiph.org/flac
