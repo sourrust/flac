@@ -65,6 +65,8 @@ for sure.
     - [ ] right side
     - [ ] midpoint side
   - [ ] sub-frame
+    - [ ] fixed
+    - [ ] LPC
 
 [flac]: https://xiph.org/flac
 [documentation]: https://sourrust.github.io/flac
