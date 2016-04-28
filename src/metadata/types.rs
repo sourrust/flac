@@ -184,6 +184,14 @@ impl StreamInfo {
     bytes[2] = (self.max_block_size >> 8) as u8;
     bytes[3] = self.max_block_size as u8;
 
+    bytes[4] = (self.min_frame_size >> 16) as u8;
+    bytes[5] = (self.min_frame_size >> 8) as u8;
+    bytes[6] = self.min_frame_size as u8;
+
+    bytes[7] = (self.max_frame_size >> 16) as u8;
+    bytes[8] = (self.max_frame_size >> 8) as u8;
+    bytes[9] = self.max_frame_size as u8;
+
     bytes.to_vec()
   }
 }
