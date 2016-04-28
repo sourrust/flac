@@ -200,6 +200,12 @@ impl StreamInfo {
     bytes[12] += (self.bits_per_sample - 1) >> 4;
     bytes[13]  = (self.bits_per_sample - 1) << 4;
 
+    bytes[13] += (self.total_samples >> 32) as u8;
+    bytes[14]  = (self.total_samples >> 24) as u8;
+    bytes[15]  = (self.total_samples >> 16) as u8;
+    bytes[16]  = (self.total_samples >> 8) as u8;
+    bytes[17]  = self.total_samples as u8;
+
     bytes.to_vec()
   }
 }
