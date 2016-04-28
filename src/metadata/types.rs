@@ -174,6 +174,48 @@ impl StreamInfo {
   pub fn is_fixed_block_size(&self) -> bool {
     self.min_block_size == self.max_block_size
   }
+
+  pub fn to_bytes(&self) -> Vec<u8> {
+    let mut bytes = [0; 34];
+
+    bytes[0] = (self.min_block_size >> 8) as u8;
+    bytes[1] = self.min_block_size as u8;
+
+    bytes[2] = (self.max_block_size >> 8) as u8;
+    bytes[3] = self.max_block_size as u8;
+
+    bytes[4] = (self.min_frame_size >> 16) as u8;
+    bytes[5] = (self.min_frame_size >> 8) as u8;
+    bytes[6] = self.min_frame_size as u8;
+
+    bytes[7] = (self.max_frame_size >> 16) as u8;
+    bytes[8] = (self.max_frame_size >> 8) as u8;
+    bytes[9] = self.max_frame_size as u8;
+
+    bytes[10] = (self.sample_rate >> 12) as u8;
+    bytes[11] = (self.sample_rate >> 4) as u8;
+    bytes[12] = (self.sample_rate << 4) as u8;
+
+    bytes[12] += (self.channels - 1) << 1;
+    bytes[12] += (self.bits_per_sample - 1) >> 4;
+    bytes[13]  = (self.bits_per_sample - 1) << 4;
+
+    bytes[13] += (self.total_samples >> 32) as u8;
+    bytes[14]  = (self.total_samples >> 24) as u8;
+    bytes[15]  = (self.total_samples >> 16) as u8;
+    bytes[16]  = (self.total_samples >> 8) as u8;
+    bytes[17]  = self.total_samples as u8;
+
+    let mut i = 18;
+
+    for byte in &self.md5_sum {
+      bytes[i] = *byte;
+
+      i += 1;
+    }
+
+    bytes.to_vec()
+  }
 }
 
 /// Data used by third-party applications.
