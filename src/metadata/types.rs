@@ -174,6 +174,18 @@ impl StreamInfo {
   pub fn is_fixed_block_size(&self) -> bool {
     self.min_block_size == self.max_block_size
   }
+
+  pub fn to_bytes(&self) -> Vec<u8> {
+    let mut bytes = [0; 34];
+
+    bytes[0] = (self.min_block_size >> 8) as u8;
+    bytes[1] = self.min_block_size as u8;
+
+    bytes[2] = (self.max_block_size >> 8) as u8;
+    bytes[3] = self.max_block_size as u8;
+
+    bytes.to_vec()
+  }
 }
 
 /// Data used by third-party applications.
