@@ -192,6 +192,10 @@ impl StreamInfo {
     bytes[8] = (self.max_frame_size >> 8) as u8;
     bytes[9] = self.max_frame_size as u8;
 
+    bytes[10] = (self.sample_rate >> 12) as u8;
+    bytes[11] = (self.sample_rate >> 4) as u8;
+    bytes[12] = (self.sample_rate << 4) as u8;
+
     bytes.to_vec()
   }
 }
