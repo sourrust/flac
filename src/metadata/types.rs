@@ -197,6 +197,8 @@ impl StreamInfo {
     bytes[12] = (self.sample_rate << 4) as u8;
 
     bytes[12] += (self.channels - 1) << 1;
+    bytes[12] += (self.bits_per_sample - 1) >> 4;
+    bytes[13]  = (self.bits_per_sample - 1) << 4;
 
     bytes.to_vec()
   }
