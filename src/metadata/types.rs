@@ -206,13 +206,7 @@ impl StreamInfo {
     bytes[16]  = (self.total_samples >> 8) as u8;
     bytes[17]  = self.total_samples as u8;
 
-    let mut i = 18;
-
-    for byte in &self.md5_sum {
-      bytes[i] = *byte;
-
-      i += 1;
-    }
+    bytes[18..].clone_from_slice(&self.md5_sum);
 
     bytes.to_vec()
   }
