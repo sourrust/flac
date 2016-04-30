@@ -226,6 +226,7 @@ impl Application {
     let mut bytes = Vec::with_capacity(4 + self.data.len());
 
     bytes[0..4].clone_from_slice(self.id.as_bytes());
+    bytes[4..].clone_from_slice(&self.data);
 
     bytes
   }
