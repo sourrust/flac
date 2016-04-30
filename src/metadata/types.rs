@@ -221,6 +221,17 @@ pub struct Application {
   pub data: Vec<u8>,
 }
 
+impl Application {
+  pub fn to_bytes(&self) -> Vec<u8> {
+    let mut bytes = Vec::with_capacity(4 + self.data.len());
+
+    bytes[0..4].clone_from_slice(self.id.as_bytes());
+    bytes[4..].clone_from_slice(&self.data);
+
+    bytes
+  }
+}
+
 /// Seek, or skip, to a point within the FLAC file.
 #[derive(Debug, PartialEq, Eq)]
 pub struct SeekPoint {
