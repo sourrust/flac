@@ -243,6 +243,23 @@ pub struct SeekPoint {
   pub frame_samples: u16,
 }
 
+impl SeekPoint {
+  pub fn to_bytes(&self) -> Vec<u8> {
+    let mut bytes = [0; 18];
+
+    bytes[0] = (self.sample_number >> 56) as u8;
+    bytes[1] = (self.sample_number >> 48) as u8;
+    bytes[2] = (self.sample_number >> 40) as u8;
+    bytes[3] = (self.sample_number >> 32) as u8;
+    bytes[4] = (self.sample_number >> 24) as u8;
+    bytes[5] = (self.sample_number >> 16) as u8;
+    bytes[6] = (self.sample_number >> 8) as u8;
+    bytes[7] = self.sample_number as u8;
+
+    bytes.to_vec()
+  }
+}
+
 /// Stores human-readable name/value pairs.
 #[derive(Debug, PartialEq, Eq)]
 pub struct VorbisComment {
