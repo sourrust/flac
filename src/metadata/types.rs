@@ -265,6 +265,9 @@ impl SeekPoint {
     bytes[14] = (self.stream_offset >> 8) as u8;
     bytes[15] = self.stream_offset as u8;
 
+    bytes[16] = (self.frame_samples >> 8) as u8;
+    bytes[17] = self.frame_samples as u8;
+
     bytes.to_vec()
   }
 }
