@@ -282,6 +282,23 @@ pub struct VorbisComment {
   pub comments: HashMap<String, String>,
 }
 
+impl VorbisComment {
+  pub fn to_bytes(&self) -> Vec<u8> {
+    let vendor_bytes  = self.vendor_string.as_bytes();
+    let vendor_length = vendor_bytes.len();
+    let capacity      = 4;
+
+    let mut bytes = Vec::with_capacity(capacity);
+
+    bytes[0] = vendor_length as u8;
+    bytes[1] = (vendor_length >> 8) as u8;
+    bytes[2] = (vendor_length >> 16) as u8;
+    bytes[3] = (vendor_length >> 24) as u8;
+
+    bytes
+  }
+}
+
 /// Stores cue information.
 ///
 /// Generally for storing information from Compact Disk Digital Audio, but
