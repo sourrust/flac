@@ -287,7 +287,13 @@ impl VorbisComment {
     let vendor_bytes   = self.vendor_string.as_bytes();
     let vendor_length  = vendor_bytes.len();
     let comments_count = self.comments.len();
-    let capacity       = 8 + vendor_length;
+    let capacity       = 8 + vendor_length +
+                         self.comments.iter().fold(0, |result, (k, v)| {
+                           let k_length = k.as_bytes().len();
+                           let v_length = v.as_bytes().len();
+
+                           result + k_length + 1 + v_length
+                         });
 
     let mut bytes = Vec::with_capacity(capacity);
 
@@ -302,6 +308,32 @@ impl VorbisComment {
     bytes[vendor_length + 5] = (comments_count >> 8) as u8;
     bytes[vendor_length + 6] = (comments_count >> 16) as u8;
     bytes[vendor_length + 7] = (comments_count >> 24) as u8;
+
+    let mut offset = vendor_length + 8;
+
+    for (key, value) in &self.comments {
+      let key_length   = key.len();
+      let key_bytes    = key.as_bytes();
+      let value_length = value.len();
+      let value_bytes  = value.as_bytes();
+      let length       = key_length + value_length + 1;
+
+      bytes[offset + 0] = length as u8;
+      bytes[offset + 1] = (length >> 8) as u8;
+      bytes[offset + 2] = (length >> 16) as u8;
+      bytes[offset + 3] = (length >> 24) as u8;
+
+      offset += 4;
+
+      bytes[offset..(offset + key_length)].clone_from_slice(key_bytes);
+      bytes[offset + key_length] = b'=';
+
+      offset += key_length + 1;
+
+      bytes[offset..(offset + value_length)].clone_from_slice(value_bytes);
+
+      offset += value_length;
+    }
 
     bytes
   }
