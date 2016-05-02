@@ -284,9 +284,10 @@ pub struct VorbisComment {
 
 impl VorbisComment {
   pub fn to_bytes(&self) -> Vec<u8> {
-    let vendor_bytes  = self.vendor_string.as_bytes();
-    let vendor_length = vendor_bytes.len();
-    let capacity      = 4 + vendor_length;
+    let vendor_bytes   = self.vendor_string.as_bytes();
+    let vendor_length  = vendor_bytes.len();
+    let comments_count = self.comments.len();
+    let capacity       = 8 + vendor_length;
 
     let mut bytes = Vec::with_capacity(capacity);
 
@@ -296,6 +297,11 @@ impl VorbisComment {
     bytes[3] = (vendor_length >> 24) as u8;
 
     bytes[4..(4 + vendor_length)].clone_from_slice(vendor_bytes);
+
+    bytes[vendor_length + 4] = comments_count as u8;
+    bytes[vendor_length + 5] = (comments_count >> 8) as u8;
+    bytes[vendor_length + 6] = (comments_count >> 16) as u8;
+    bytes[vendor_length + 7] = (comments_count >> 24) as u8;
 
     bytes
   }
