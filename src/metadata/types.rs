@@ -392,6 +392,8 @@ impl CueSheetTrackIndex {
     bytes[5] = (self.offset >> 16) as u8;
     bytes[6] = (self.offset >> 8) as u8;
     bytes[7] = self.offset as u8;
+
+    bytes[8] = self.number;
   }
 }
 
