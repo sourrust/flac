@@ -382,6 +382,29 @@ pub struct CueSheetTrackIndex {
   pub number: u8,
 }
 
+impl CueSheetTrackIndex {
+  pub fn to_bytes(&self) -> Vec<u8> {
+    let mut bytes = [0; 9];
+
+    self.to_bytes_buffer(&mut bytes);
+
+    bytes.to_vec()
+  }
+
+  pub fn to_bytes_buffer(&self, bytes: &mut [u8]) {
+    bytes[0] = (self.offset >> 56) as u8;
+    bytes[1] = (self.offset >> 48) as u8;
+    bytes[2] = (self.offset >> 40) as u8;
+    bytes[3] = (self.offset >> 32) as u8;
+    bytes[4] = (self.offset >> 24) as u8;
+    bytes[5] = (self.offset >> 16) as u8;
+    bytes[6] = (self.offset >> 8) as u8;
+    bytes[7] = self.offset as u8;
+
+    bytes[8] = self.number;
+  }
+}
+
 /// Stores pictures associated with the FLAC file.
 ///
 /// More than likely these pictures will be cover art, but you can have more
