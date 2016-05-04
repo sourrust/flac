@@ -375,7 +375,8 @@ pub struct CueSheetTrack {
 
 impl CueSheetTrack {
   pub fn to_bytes(&self) -> Vec<u8> {
-    let mut bytes = Vec::with_capacity(21);
+    let mut bytes = Vec::with_capacity(22);
+    let mut flags = 0;
 
     bytes[0] = (self.offset >> 56) as u8;
     bytes[1] = (self.offset >> 48) as u8;
@@ -389,6 +390,16 @@ impl CueSheetTrack {
     bytes[8] = self.number;
 
     bytes[9..21].clone_from_slice(self.isrc.as_bytes());
+
+    if !self.is_audio {
+      flags |= 0b10000000;
+    }
+
+    if self.is_pre_emphasis {
+      flags |= 0b01000000;
+    }
+
+    bytes[21] = flags;
 
     bytes
   }
