@@ -375,7 +375,7 @@ pub struct CueSheetTrack {
 
 impl CueSheetTrack {
   pub fn to_bytes(&self) -> Vec<u8> {
-    let mut bytes = Vec::with_capacity(9);
+    let mut bytes = Vec::with_capacity(21);
 
     bytes[0] = (self.offset >> 56) as u8;
     bytes[1] = (self.offset >> 48) as u8;
@@ -387,6 +387,8 @@ impl CueSheetTrack {
     bytes[7] = self.offset as u8;
 
     bytes[8] = self.number;
+
+    bytes[9..21].clone_from_slice(self.isrc.as_bytes());
 
     bytes
   }
