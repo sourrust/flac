@@ -373,6 +373,23 @@ pub struct CueSheetTrack {
   pub indices: Vec<CueSheetTrackIndex>,
 }
 
+impl CueSheetTrack {
+  pub fn to_bytes(&self) -> Vec<u8> {
+    let mut bytes = Vec::with_capacity(8);
+
+    bytes[0] = (self.offset >> 56) as u8;
+    bytes[1] = (self.offset >> 48) as u8;
+    bytes[2] = (self.offset >> 40) as u8;
+    bytes[3] = (self.offset >> 32) as u8;
+    bytes[4] = (self.offset >> 24) as u8;
+    bytes[5] = (self.offset >> 16) as u8;
+    bytes[6] = (self.offset >> 8) as u8;
+    bytes[7] = self.offset as u8;
+
+    bytes
+  }
+}
+
 /// An index point within a track, inside of a cue sheet.
 #[derive(Debug, PartialEq, Eq)]
 pub struct CueSheetTrackIndex {
