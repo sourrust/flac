@@ -355,6 +355,16 @@ pub struct CueSheet {
   pub tracks: Vec<CueSheetTrack>,
 }
 
+impl CueSheet {
+  pub fn to_bytes(&self) -> Vec<u8> {
+    let mut bytes  = Vec::with_capacity(128);
+
+    bytes[0..128].clone_from_slice(self.media_catalog_number.as_bytes());
+
+    bytes
+  }
+}
+
 /// Track information inside a cue sheet.
 #[derive(Debug, PartialEq, Eq)]
 pub struct CueSheetTrack {
