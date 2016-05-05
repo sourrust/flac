@@ -357,8 +357,9 @@ pub struct CueSheet {
 
 impl CueSheet {
   pub fn to_bytes(&self) -> Vec<u8> {
-    let mut bytes  = Vec::with_capacity(396);
+    let mut bytes  = Vec::with_capacity(396 * tracks_bytes);
     let mut flag   = 0;
+    let tracks_len = self.tracks.len();
 
     bytes[0..128].clone_from_slice(self.media_catalog_number.as_bytes());
 
@@ -378,6 +379,8 @@ impl CueSheet {
     bytes[136] = flag;
 
     bytes[137..395].clone_from_slice(&[0; 258]);
+
+    bytes[395] = tracks_len as u8;
 
     bytes
   }
