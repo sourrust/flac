@@ -355,6 +355,51 @@ pub struct CueSheet {
   pub tracks: Vec<CueSheetTrack>,
 }
 
+impl CueSheet {
+  pub fn to_bytes(&self) -> Vec<u8> {
+    let tracks_bytes = self.tracks.iter().fold(0, |result, track| {
+      result + track.bytes_len()
+    });
+
+    let mut bytes  = Vec::with_capacity(396 * tracks_bytes);
+    let mut flag   = 0;
+    let tracks_len = self.tracks.len();
+
+    bytes[0..128].clone_from_slice(self.media_catalog_number.as_bytes());
+
+    bytes[128] = (self.lead_in >> 56) as u8;
+    bytes[129] = (self.lead_in >> 48) as u8;
+    bytes[130] = (self.lead_in >> 40) as u8;
+    bytes[131] = (self.lead_in >> 32) as u8;
+    bytes[132] = (self.lead_in >> 24) as u8;
+    bytes[133] = (self.lead_in >> 16) as u8;
+    bytes[134] = (self.lead_in >> 8) as u8;
+    bytes[135] = self.lead_in as u8;
+
+    if self.is_cd {
+      flag |= 0b10000000;
+    }
+
+    bytes[136] = flag;
+
+    bytes[137..395].clone_from_slice(&[0; 258]);
+
+    bytes[395] = tracks_len as u8;
+
+    let mut offset = 396;
+
+    for track in &self.tracks {
+      let len = track.bytes_len();
+
+      track.to_bytes_buffer(&mut bytes[offset..(offset + len)]);
+
+      offset += len;
+    }
+
+    bytes
+  }
+}
+
 /// Track information inside a cue sheet.
 #[derive(Debug, PartialEq, Eq)]
 pub struct CueSheetTrack {
@@ -374,9 +419,22 @@ pub struct CueSheetTrack {
 }
 
 impl CueSheetTrack {
-  pub fn to_bytes(&self) -> Vec<u8> {
+  pub fn bytes_len(&self) -> usize {
     let num_indices = self.indices.len();
-    let mut bytes   = Vec::with_capacity(36 + num_indices * 12);
+
+    36 + num_indices * 12
+  }
+
+  pub fn to_bytes(&self) -> Vec<u8> {
+    let mut bytes = Vec::with_capacity(self.bytes_len());
+
+    self.to_bytes_buffer(&mut bytes);
+
+    bytes
+  }
+
+  pub fn to_bytes_buffer(&self, bytes: &mut [u8]) {
+    let num_indices = self.indices.len();
     let mut flags   = 0;
 
     bytes[0] = (self.offset >> 56) as u8;
@@ -413,8 +471,6 @@ impl CueSheetTrack {
 
       offset += 12;
     }
-
-    bytes
   }
 }
 
