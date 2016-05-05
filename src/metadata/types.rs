@@ -374,6 +374,12 @@ pub struct CueSheetTrack {
 }
 
 impl CueSheetTrack {
+  pub fn bytes_len(&self) -> usize {
+    let num_indices = self.indices.len();
+
+    36 + num_indices * 12
+  }
+
   pub fn to_bytes(&self) -> Vec<u8> {
     let num_indices = self.indices.len();
     let mut bytes   = Vec::with_capacity(36 + num_indices * 12);
