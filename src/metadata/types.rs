@@ -541,7 +541,7 @@ impl Picture {
     let description_len = description.len();
     let extra_bytes     = mime_type_len + description_len;
 
-    let mut bytes = Vec::with_capacity(16 + extra_bytes);
+    let mut bytes = Vec::with_capacity(20 + extra_bytes);
 
     let picture_type: u32 = match self.picture_type {
       PictureType::Other              => 0,
@@ -596,6 +596,13 @@ impl Picture {
     bytes[offset + 1] = (self.width >> 16) as u8;
     bytes[offset + 2] = (self.width >> 8) as u8;
     bytes[offset + 3] = self.width as u8;
+
+    offset += 4;
+
+    bytes[offset]     = (self.height >> 24) as u8;
+    bytes[offset + 1] = (self.height >> 16) as u8;
+    bytes[offset + 2] = (self.height >> 8) as u8;
+    bytes[offset + 3] = self.height as u8;
 
     bytes
   }
