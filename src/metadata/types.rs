@@ -533,6 +533,107 @@ pub struct Picture {
   pub data: Vec<u8>,
 }
 
+impl Picture {
+  pub fn to_bytes(&self) -> Vec<u8> {
+    let mime_type       = self.mime_type.as_bytes();
+    let mime_type_len   = mime_type.len();
+    let description     = self.description.as_bytes();
+    let description_len = description.len();
+    let data_len        = self.data.len();
+    let extra_bytes     = mime_type_len + description_len + data_len;
+
+    let mut bytes = Vec::with_capacity(32 + extra_bytes);
+
+    let picture_type: u32 = match self.picture_type {
+      PictureType::Other              => 0,
+      PictureType::FileIconStandard   => 1,
+      PictureType::FileIcon           => 2,
+      PictureType::FrontCover         => 3,
+      PictureType::BackCover          => 4,
+      PictureType::LeafletPage        => 5,
+      PictureType::Media              => 6,
+      PictureType::LeadArtist         => 7,
+      PictureType::Artist             => 8,
+      PictureType::Conductor          => 9,
+      PictureType::Band               => 10,
+      PictureType::Composer           => 11,
+      PictureType::Lyricist           => 12,
+      PictureType::RecordingLocation  => 13,
+      PictureType::DuringRecording    => 14,
+      PictureType::DuringPerformance  => 15,
+      PictureType::VideoScreenCapture => 16,
+      PictureType::Fish               => 17,
+      PictureType::Illustration       => 18,
+      PictureType::BandLogo           => 19,
+      PictureType::PublisherLogo      => 20,
+    };
+
+    bytes[0] = (picture_type >> 24) as u8;
+    bytes[1] = (picture_type >> 16) as u8;
+    bytes[2] = (picture_type >> 8) as u8;
+    bytes[3] = picture_type as u8;
+
+    bytes[4] = (mime_type_len >> 24) as u8;
+    bytes[5] = (mime_type_len >> 16) as u8;
+    bytes[6] = (mime_type_len >> 8) as u8;
+    bytes[7] = mime_type_len as u8;
+
+    let mut offset = 8 + mime_type_len;
+
+    bytes[8..offset].clone_from_slice(mime_type);
+
+    bytes[offset]     = (description_len >> 24) as u8;
+    bytes[offset + 1] = (description_len >> 16) as u8;
+    bytes[offset + 2] = (description_len >> 8) as u8;
+    bytes[offset + 3] = description_len as u8;
+
+    offset += 4;
+
+    bytes[offset..(offset + description_len)].clone_from_slice(description);
+
+    offset += description_len;
+
+    bytes[offset]     = (self.width >> 24) as u8;
+    bytes[offset + 1] = (self.width >> 16) as u8;
+    bytes[offset + 2] = (self.width >> 8) as u8;
+    bytes[offset + 3] = self.width as u8;
+
+    offset += 4;
+
+    bytes[offset]     = (self.height >> 24) as u8;
+    bytes[offset + 1] = (self.height >> 16) as u8;
+    bytes[offset + 2] = (self.height >> 8) as u8;
+    bytes[offset + 3] = self.height as u8;
+
+    offset += 4;
+
+    bytes[offset]     = (self.depth >> 24) as u8;
+    bytes[offset + 1] = (self.depth >> 16) as u8;
+    bytes[offset + 2] = (self.depth >> 8) as u8;
+    bytes[offset + 3] = self.depth as u8;
+
+    offset += 4;
+
+    bytes[offset]     = (self.colors >> 24) as u8;
+    bytes[offset + 1] = (self.colors >> 16) as u8;
+    bytes[offset + 2] = (self.colors >> 8) as u8;
+    bytes[offset + 3] = self.colors as u8;
+
+    offset += 4;
+
+    bytes[offset]     = (data_len >> 24) as u8;
+    bytes[offset + 1] = (data_len >> 16) as u8;
+    bytes[offset + 2] = (data_len >> 8) as u8;
+    bytes[offset + 3] = data_len as u8;
+
+    offset += 4;
+
+    bytes[offset..(offset + data_len)].clone_from_slice(&self.data);
+
+    bytes
+  }
+}
+
 /// The picture type according to the ID3v2 attached picture frame.
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum PictureType {
