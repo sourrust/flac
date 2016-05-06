@@ -535,7 +535,10 @@ pub struct Picture {
 
 impl Picture {
   pub fn to_bytes(&self) -> Vec<u8> {
-    let mut bytes = Vec::with_capacity(4);
+    let mime_type       = self.mime_type.as_bytes();
+    let mime_type_len   = mime_type.len();
+
+    let mut bytes = Vec::with_capacity(8 + mime_type_len);
 
     let picture_type: u32 = match self.picture_type {
       PictureType::Other              => 0,
@@ -565,6 +568,15 @@ impl Picture {
     bytes[1] = (picture_type >> 16) as u8;
     bytes[2] = (picture_type >> 8) as u8;
     bytes[3] = picture_type as u8;
+
+    bytes[4] = (mime_type_len >> 24) as u8;
+    bytes[5] = (mime_type_len >> 16) as u8;
+    bytes[6] = (mime_type_len >> 8) as u8;
+    bytes[7] = mime_type_len as u8;
+
+    let mut offset = 8 + mime_type_len;
+
+    bytes[8..offset].clone_from_slice(mime_type);
 
     bytes
   }
