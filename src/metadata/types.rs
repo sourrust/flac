@@ -539,9 +539,10 @@ impl Picture {
     let mime_type_len   = mime_type.len();
     let description     = self.description.as_bytes();
     let description_len = description.len();
-    let extra_bytes     = mime_type_len + description_len;
+    let data_len        = self.data.len();
+    let extra_bytes     = mime_type_len + description_len + data_len;
 
-    let mut bytes = Vec::with_capacity(28 + extra_bytes);
+    let mut bytes = Vec::with_capacity(32 + extra_bytes);
 
     let picture_type: u32 = match self.picture_type {
       PictureType::Other              => 0,
@@ -617,6 +618,17 @@ impl Picture {
     bytes[offset + 1] = (self.colors >> 16) as u8;
     bytes[offset + 2] = (self.colors >> 8) as u8;
     bytes[offset + 3] = self.colors as u8;
+
+    offset += 4;
+
+    bytes[offset]     = (data_len >> 24) as u8;
+    bytes[offset + 1] = (data_len >> 16) as u8;
+    bytes[offset + 2] = (data_len >> 8) as u8;
+    bytes[offset + 3] = data_len as u8;
+
+    offset += 4;
+
+    bytes[offset..(offset + data_len)].clone_from_slice(&self.data);
 
     bytes
   }
