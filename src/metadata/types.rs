@@ -533,6 +533,43 @@ pub struct Picture {
   pub data: Vec<u8>,
 }
 
+impl Picture {
+  pub fn to_bytes(&self) -> Vec<u8> {
+    let mut bytes = Vec::with_capacity(4);
+
+    let picture_type: u32 = match self.picture_type {
+      PictureType::Other              => 0,
+      PictureType::FileIconStandard   => 1,
+      PictureType::FileIcon           => 2,
+      PictureType::FrontCover         => 3,
+      PictureType::BackCover          => 4,
+      PictureType::LeafletPage        => 5,
+      PictureType::Media              => 6,
+      PictureType::LeadArtist         => 7,
+      PictureType::Artist             => 8,
+      PictureType::Conductor          => 9,
+      PictureType::Band               => 10,
+      PictureType::Composer           => 11,
+      PictureType::Lyricist           => 12,
+      PictureType::RecordingLocation  => 13,
+      PictureType::DuringRecording    => 14,
+      PictureType::DuringPerformance  => 15,
+      PictureType::VideoScreenCapture => 16,
+      PictureType::Fish               => 17,
+      PictureType::Illustration       => 18,
+      PictureType::BandLogo           => 19,
+      PictureType::PublisherLogo      => 20,
+    };
+
+    bytes[0] = (picture_type >> 24) as u8;
+    bytes[1] = (picture_type >> 16) as u8;
+    bytes[2] = (picture_type >> 8) as u8;
+    bytes[3] = picture_type as u8;
+
+    bytes
+  }
+}
+
 /// The picture type according to the ID3v2 attached picture frame.
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum PictureType {
