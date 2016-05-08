@@ -223,7 +223,7 @@ pub struct Application {
 
 impl Application {
   pub fn to_bytes(&self) -> Vec<u8> {
-    let mut bytes = Vec::with_capacity(4 + self.data.len());
+    let mut bytes = vec![0; (4 + self.data.len())];
 
     bytes[0..4].clone_from_slice(self.id.as_bytes());
     bytes[4..].clone_from_slice(&self.data);
