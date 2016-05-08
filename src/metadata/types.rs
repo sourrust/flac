@@ -792,13 +792,20 @@ mod tests {
 
   #[test]
   fn test_application_to_bytes() {
-    let input = Application {
-      id: "fake".to_owned(),
-      data: vec![],
-    }
+    let inputs = [
+      Application {
+        id: "fake".to_owned(),
+        data: vec![],
+      },
+      Application {
+        id: "riff".to_owned(),
+        data: b"fake data"[..].to_owned(),
+      }
+    ];
 
-    let result = &b"fake"[..];
+    let results = [&b"fake"[..], &b"rifffake data"[..]];
 
-    assert_eq!(&input.to_bytes()[..], result);
+    assert_eq!(&inputs[0].to_bytes()[..], results[0]);
+    assert_eq!(&inputs[1].to_bytes()[..], results[1]);
   }
 }
