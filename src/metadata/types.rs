@@ -223,7 +223,7 @@ pub struct Application {
 
 impl Application {
   pub fn to_bytes(&self) -> Vec<u8> {
-    let mut bytes = Vec::with_capacity(4 + self.data.len());
+    let mut bytes = vec![0; (4 + self.data.len())];
 
     bytes[0..4].clone_from_slice(self.id.as_bytes());
     bytes[4..].clone_from_slice(&self.data);
@@ -788,5 +788,24 @@ mod tests {
 
       assert_eq!(&input.to_bytes()[..], &result[..]);
     }
+  }
+
+  #[test]
+  fn test_application_to_bytes() {
+    let inputs = [
+      Application {
+        id: "fake".to_owned(),
+        data: vec![],
+      },
+      Application {
+        id: "riff".to_owned(),
+        data: b"fake data"[..].to_owned(),
+      }
+    ];
+
+    let results = [&b"fake"[..], &b"rifffake data"[..]];
+
+    assert_eq!(&inputs[0].to_bytes()[..], results[0]);
+    assert_eq!(&inputs[1].to_bytes()[..], results[1]);
   }
 }
