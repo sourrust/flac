@@ -789,4 +789,16 @@ mod tests {
       assert_eq!(&input.to_bytes()[..], &result[..]);
     }
   }
+
+  #[test]
+  fn test_application_to_bytes() {
+    let input = Application {
+      id: "fake".to_owned(),
+      data: vec![],
+    }
+
+    let result = &b"fake"[..];
+
+    assert_eq!(&input.to_bytes()[..], result);
+  }
 }
