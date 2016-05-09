@@ -247,6 +247,12 @@ impl SeekPoint {
   pub fn to_bytes(&self) -> Vec<u8> {
     let mut bytes = [0; 18];
 
+    self.to_bytes_buffer(&mut bytes);
+
+    bytes.to_vec()
+  }
+
+  pub fn to_bytes_buffer(&self, bytes: &mut [u8]) {
     bytes[0] = (self.sample_number >> 56) as u8;
     bytes[1] = (self.sample_number >> 48) as u8;
     bytes[2] = (self.sample_number >> 40) as u8;
@@ -267,8 +273,6 @@ impl SeekPoint {
 
     bytes[16] = (self.frame_samples >> 8) as u8;
     bytes[17] = self.frame_samples as u8;
-
-    bytes.to_vec()
   }
 }
 
@@ -807,5 +811,54 @@ mod tests {
 
     assert_eq!(&inputs[0].to_bytes()[..], results[0]);
     assert_eq!(&inputs[1].to_bytes()[..], results[1]);
+  }
+
+  #[test]
+  fn test_seek_table_to_bytes() {
+    let seek_points = vec![
+      SeekPoint {
+        sample_number: 0,
+        stream_offset: 0,
+        frame_samples: 4608,
+      },
+      SeekPoint {
+        sample_number: 4608,
+        stream_offset: 14,
+        frame_samples: 1272,
+      },
+      SeekPoint {
+        sample_number: 0xffffffffffffffff,
+        stream_offset: 0,
+        frame_samples: 0,
+      },
+      SeekPoint {
+        sample_number: 0xffffffffffffffff,
+        stream_offset: 0,
+        frame_samples: 0,
+      },
+      SeekPoint {
+        sample_number: 0xffffffffffffffff,
+        stream_offset: 0,
+        frame_samples: 0,
+      }
+    ];
+
+    let result = b"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x12\0\0\0\0\0\0\0\x12\0\0\
+                   \0\0\0\0\0\0\x0e\x04\xf8\xff\xff\xff\xff\xff\xff\xff\xff\0\
+                   \0\0\0\0\0\0\0\0\0\xff\xff\xff\xff\xff\xff\xff\xff\0\0\0\0\
+                   \0\0\0\0\0\0\xff\xff\xff\xff\xff\xff\xff\xff\0\0\0\0\0\0\0\
+                   \0\0\0";
+
+    let mut bytes = [0; 90];
+
+    for i in 0..5 {
+      let seek_point = &seek_points[i];
+      let start      = 18 * i;
+      let end        = 18 * (i + 1);
+
+      seek_point.to_bytes_buffer(&mut bytes[start..end])
+    }
+
+    assert_eq!(&bytes[..], &result[..]);
   }
 }
