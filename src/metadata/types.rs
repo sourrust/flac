@@ -247,6 +247,12 @@ impl SeekPoint {
   pub fn to_bytes(&self) -> Vec<u8> {
     let mut bytes = [0; 18];
 
+    self.to_bytes_buffer(&mut bytes);
+
+    bytes.to_vec()
+  }
+
+  pub fn to_bytes_buffer(&self, bytes: &mut [u8]) {
     bytes[0] = (self.sample_number >> 56) as u8;
     bytes[1] = (self.sample_number >> 48) as u8;
     bytes[2] = (self.sample_number >> 40) as u8;
@@ -267,8 +273,6 @@ impl SeekPoint {
 
     bytes[16] = (self.frame_samples >> 8) as u8;
     bytes[17] = self.frame_samples as u8;
-
-    bytes.to_vec()
   }
 }
 
