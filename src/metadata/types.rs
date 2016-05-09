@@ -812,4 +812,21 @@ mod tests {
     assert_eq!(&inputs[0].to_bytes()[..], results[0]);
     assert_eq!(&inputs[1].to_bytes()[..], results[1]);
   }
+
+  #[test]
+  fn test_seek_table_to_bytes() {
+    let seek_point = SeekPoint {
+      sample_number: 0,
+      stream_offset: 0,
+      frame_samples: 4608,
+    };
+
+    let result = b"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x12\0\0\0\0\0\0\0\x12\0\0\
+                   \0\0\0\0\0\0\x0e\x04\xf8\xff\xff\xff\xff\xff\xff\xff\xff\0\
+                   \0\0\0\0\0\0\0\0\0\xff\xff\xff\xff\xff\xff\xff\xff\0\0\0\0\
+                   \0\0\0\0\0\0\xff\xff\xff\xff\xff\xff\xff\xff\0\0\0\0\0\0\0\
+                   \0\0\0";
+
+    assert_eq!(&seek_point.to_bytes()[..], &result[0..18]);
+  }
 }
