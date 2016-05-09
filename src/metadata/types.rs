@@ -825,6 +825,21 @@ mod tests {
         sample_number: 4608,
         stream_offset: 14,
         frame_samples: 1272,
+      },
+      SeekPoint {
+        sample_number: 0xffffffffffffffff,
+        stream_offset: 0,
+        frame_samples: 0,
+      },
+      SeekPoint {
+        sample_number: 0xffffffffffffffff,
+        stream_offset: 0,
+        frame_samples: 0,
+      },
+      SeekPoint {
+        sample_number: 0xffffffffffffffff,
+        stream_offset: 0,
+        frame_samples: 0,
       }
     ];
 
@@ -834,9 +849,9 @@ mod tests {
                    \0\0\0\0\0\0\xff\xff\xff\xff\xff\xff\xff\xff\0\0\0\0\0\0\0\
                    \0\0\0";
 
-    let mut bytes = [0; 36];
+    let mut bytes = [0; 90];
 
-    for i in 0..2 {
+    for i in 0..5 {
       let seek_point = &seek_points[i];
       let start      = 18 * i;
       let end        = 18 * (i + 1);
@@ -844,6 +859,6 @@ mod tests {
       seek_point.to_bytes_buffer(&mut bytes[start..end])
     }
 
-    assert_eq!(&bytes[..], &result[0..36]);
+    assert_eq!(&bytes[..], &result[..]);
   }
 }
