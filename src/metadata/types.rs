@@ -717,6 +717,8 @@ impl fmt::Display for PictureType {
 mod tests {
   use super::*;
 
+  use std::collections::HashMap;
+
   #[test]
   fn test_is_varied_block_size() {
     let mut info = StreamInfo::new();
@@ -859,6 +861,39 @@ mod tests {
       seek_point.to_bytes_buffer(&mut bytes[start..end])
     }
 
+    assert_eq!(&bytes[..], &result[..]);
+  }
+
+  #[test]
+  fn test_vorbis_comment_to_bytes() {
+    let mut comments = HashMap::with_capacity(6);
+
+    comments.insert("REPLAYGAIN_TRACK_PEAK".to_owned(),
+                    "0.99996948".to_owned());
+    comments.insert("REPLAYGAIN_TRACK_GAIN".to_owned(),
+                    "-7.89 dB".to_owned());
+    comments.insert("REPLAYGAIN_ALBUM_PEAK".to_owned(),
+                    "0.99996948".to_owned());
+    comments.insert("REPLAYGAIN_ALBUM_GAIN".to_owned(),
+                    "-7.89 dB".to_owned());
+    comments.insert("artist".to_owned(), "1".to_owned());
+    comments.insert("title".to_owned(), "2".to_owned());
+
+    let input = VorbisComment{
+      vendor_string: "reference libFLAC 1.1.3 20060805".to_owned(),
+      comments: comments,
+    };
+
+    let result = b"\x20\0\0\0reference libFLAC 1.1.3 20060805\x06\0\0\0\
+                   \x20\0\0\0REPLAYGAIN_TRACK_PEAK=0.99996948\
+                   \x1e\0\0\0REPLAYGAIN_TRACK_GAIN=-7.89 dB\
+                   \x20\0\0\0REPLAYGAIN_ALBUM_PEAK=0.99996948\
+                   \x1e\0\0\0REPLAYGAIN_ALBUM_GAIN=-7.89 dB\
+                   \x08\0\0\0artist=1\x07\0\0\0title=2";
+
+    let bytes = input.to_bytes();
+    println!("input: {}", bytes.len());
+    println!("result: {}", result.len());
     assert_eq!(&bytes[..], &result[..]);
   }
 }
