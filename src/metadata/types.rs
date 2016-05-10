@@ -296,10 +296,10 @@ impl VorbisComment {
                            let k_length = k.as_bytes().len();
                            let v_length = v.as_bytes().len();
 
-                           result + k_length + 1 + v_length
+                           result + k_length + 5 + v_length
                          });
 
-    let mut bytes = Vec::with_capacity(capacity);
+    let mut bytes = vec![0; capacity];
 
     bytes[0] = vendor_length as u8;
     bytes[1] = (vendor_length >> 8) as u8;
