@@ -879,17 +879,40 @@ mod tests {
     comments.insert("artist".to_owned(), "1".to_owned());
     comments.insert("title".to_owned(), "2".to_owned());
 
+    let mut result = vec![0; 203];
+    let mut offset = 40;
+
+    result[0..offset].clone_from_slice(
+        b"\x20\0\0\0reference libFLAC 1.1.3 20060805\x06\0\0\0");
+
+    for key in comments.keys() {
+      let bytes = if key == "REPLAYGAIN_TRACK_PEAK" {
+        &b"\x20\0\0\0REPLAYGAIN_TRACK_PEAK=0.99996948"[..]
+      } else if key == "REPLAYGAIN_TRACK_GAIN" {
+        &b"\x1e\0\0\0REPLAYGAIN_TRACK_GAIN=-7.89 dB"[..]
+      } else if key == "REPLAYGAIN_ALBUM_PEAK" {
+        &b"\x20\0\0\0REPLAYGAIN_ALBUM_PEAK=0.99996948"[..]
+      } else if key == "REPLAYGAIN_ALBUM_GAIN" {
+        &b"\x1e\0\0\0REPLAYGAIN_ALBUM_GAIN=-7.89 dB"[..]
+      } else if key == "artist" {
+        &b"\x08\0\0\0artist=1"[..]
+      } else if key == "title" {
+        &b"\x07\0\0\0title=2"[..]
+      } else {
+        &b""[..]
+      };
+
+      let bytes_len = bytes.len();
+
+      result[offset..(offset + bytes_len)].clone_from_slice(bytes);
+
+      offset += bytes_len;
+    }
+
     let input = VorbisComment{
       vendor_string: "reference libFLAC 1.1.3 20060805".to_owned(),
       comments: comments,
     };
-
-    let result = b"\x20\0\0\0reference libFLAC 1.1.3 20060805\x06\0\0\0\
-                   \x20\0\0\0REPLAYGAIN_TRACK_PEAK=0.99996948\
-                   \x1e\0\0\0REPLAYGAIN_TRACK_GAIN=-7.89 dB\
-                   \x20\0\0\0REPLAYGAIN_ALBUM_PEAK=0.99996948\
-                   \x1e\0\0\0REPLAYGAIN_ALBUM_GAIN=-7.89 dB\
-                   \x08\0\0\0artist=1\x07\0\0\0title=2";
 
     let bytes = input.to_bytes();
     println!("input: {}", bytes.len());
