@@ -316,10 +316,10 @@ impl VorbisComment {
     let mut offset = vendor_length + 8;
 
     for (key, value) in &self.comments {
-      let key_length   = key.len();
       let key_bytes    = key.as_bytes();
-      let value_length = value.len();
+      let key_length   = key_bytes.len();
       let value_bytes  = value.as_bytes();
+      let value_length = value_bytes.len();
       let length       = key_length + value_length + 1;
 
       bytes[offset + 0] = length as u8;
