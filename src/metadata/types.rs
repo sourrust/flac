@@ -365,7 +365,7 @@ impl CueSheet {
       result + track.bytes_len()
     });
 
-    let mut bytes  = Vec::with_capacity(396 * tracks_bytes);
+    let mut bytes  = vec![0; (396 * tracks_bytes)];
     let mut flag   = 0;
     let tracks_len = self.tracks.len();
 
@@ -430,7 +430,7 @@ impl CueSheetTrack {
   }
 
   pub fn to_bytes(&self) -> Vec<u8> {
-    let mut bytes = Vec::with_capacity(self.bytes_len());
+    let mut bytes = vec![0; self.bytes_len()];
 
     self.to_bytes_buffer(&mut bytes);
 
