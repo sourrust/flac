@@ -365,7 +365,7 @@ impl CueSheet {
       result + track.bytes_len()
     });
 
-    let mut bytes  = vec![0; (396 * tracks_bytes)];
+    let mut bytes  = vec![0; (396 + tracks_bytes)];
     let mut flag   = 0;
     let tracks_len = self.tracks.len();
 
