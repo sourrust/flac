@@ -546,7 +546,7 @@ impl Picture {
     let data_len        = self.data.len();
     let extra_bytes     = mime_type_len + description_len + data_len;
 
-    let mut bytes = Vec::with_capacity(32 + extra_bytes);
+    let mut bytes = vec![0; (32 + extra_bytes)];
 
     let picture_type: u32 = match self.picture_type {
       PictureType::Other              => 0,
@@ -993,6 +993,25 @@ mod tests {
                   \0\0\0\0\0\0\x01\0\0\0\0\0\0\0\0\x01\0\0\0\0\0\0\0\0\0\x16\
                   \xf8\xaa\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
                   \0\0";
+
+    assert_eq!(&input.to_bytes()[..], &result[..]);
+  }
+
+  #[test]
+  fn test_picture_to_bytes() {
+    let input = Picture {
+      picture_type: PictureType::Other,
+      mime_type: "image/png".to_owned(),
+      description: String::new(),
+      width: 0,
+      height: 0,
+      depth: 0,
+      colors: 0,
+      data: vec![],
+    };
+
+    let result = b"\0\0\0\0\0\0\0\x09image/png\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
+                   \0\0\0\0\0\0\0\0\0";
 
     assert_eq!(&input.to_bytes()[..], &result[..]);
   }
