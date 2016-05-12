@@ -546,7 +546,7 @@ impl Picture {
     let data_len        = self.data.len();
     let extra_bytes     = mime_type_len + description_len + data_len;
 
-    let mut bytes = Vec::with_capacity(32 + extra_bytes);
+    let mut bytes = vec![0; (32 + extra_bytes)];
 
     let picture_type: u32 = match self.picture_type {
       PictureType::Other              => 0,
