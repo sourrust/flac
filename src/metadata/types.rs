@@ -996,4 +996,23 @@ mod tests {
 
     assert_eq!(&input.to_bytes()[..], &result[..]);
   }
+
+  #[test]
+  fn test_picture_to_bytes() {
+    let input = Picture {
+      picture_type: PictureType::Other,
+      mime_type: "image/png".to_owned(),
+      description: String::new(),
+      width: 0,
+      height: 0,
+      depth: 0,
+      colors: 0,
+      data: vec![],
+    };
+
+    let result = b"\0\0\0\0\0\0\0\x09image/png\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
+                   \0\0\0\0\0\0\0\0\0";
+
+    assert_eq!(&input.to_bytes()[..], &result[..]);
+  }
 }
