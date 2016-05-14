@@ -183,6 +183,12 @@ impl StreamInfo {
   pub fn to_bytes(&self) -> Vec<u8> {
     let mut bytes = [0; 34];
 
+    self.to_bytes_buffer(&mut bytes);
+
+    bytes.to_vec()
+  }
+
+  pub fn to_bytes_buffer(&self, bytes: &mut [u8]) {
     bytes[0] = (self.min_block_size >> 8) as u8;
     bytes[1] = self.min_block_size as u8;
 
@@ -212,8 +218,6 @@ impl StreamInfo {
     bytes[17]  = self.total_samples as u8;
 
     bytes[18..].clone_from_slice(&self.md5_sum);
-
-    bytes.to_vec()
   }
 }
 
@@ -235,10 +239,14 @@ impl Application {
   pub fn to_bytes(&self) -> Vec<u8> {
     let mut bytes = vec![0; self.bytes_len()];
 
-    bytes[0..4].clone_from_slice(self.id.as_bytes());
-    bytes[4..].clone_from_slice(&self.data);
+    self.to_bytes_buffer(&mut bytes);
 
     bytes
+  }
+
+  pub fn to_bytes_buffer(&self, bytes: &mut [u8]) {
+    bytes[0..4].clone_from_slice(self.id.as_bytes());
+    bytes[4..].clone_from_slice(&self.data);
   }
 }
 
@@ -316,6 +324,16 @@ impl VorbisComment {
   pub fn to_bytes(&self) -> Vec<u8> {
     let mut bytes = vec![0; self.bytes_len()];
 
+    self.to_bytes_buffer(&mut bytes);
+
+    bytes
+  }
+
+  pub fn to_bytes_buffer(&self, bytes: &mut [u8]) {
+    let vendor_bytes   = self.vendor_string.as_bytes();
+    let vendor_length  = vendor_bytes.len();
+    let comments_count = self.comments.len();
+
     bytes[0] = vendor_length as u8;
     bytes[1] = (vendor_length >> 8) as u8;
     bytes[2] = (vendor_length >> 16) as u8;
@@ -353,8 +371,6 @@ impl VorbisComment {
 
       offset += value_length;
     }
-
-    bytes
   }
 }
 
@@ -385,6 +401,12 @@ impl CueSheet {
   pub fn to_bytes(&self) -> Vec<u8> {
     let mut bytes  = vec![0; self.bytes_len()];
 
+    self.to_bytes_buffer(&mut bytes);
+
+    bytes
+  }
+
+  pub fn to_bytes_buffer(&self, bytes: &mut [u8]) {
     let mut flag   = 0;
     let tracks_len = self.tracks.len();
 
@@ -418,8 +440,6 @@ impl CueSheet {
 
       offset += len;
     }
-
-    bytes
   }
 }
 
@@ -575,6 +595,18 @@ impl Picture {
   pub fn to_bytes(&self) -> Vec<u8> {
     let mut bytes = vec![0; self.bytes_len()];
 
+    self.to_bytes_buffer(&mut bytes);
+
+    bytes
+  }
+
+  pub fn to_bytes_buffer(&self, bytes: &mut [u8]) {
+    let mime_type       = self.mime_type.as_bytes();
+    let mime_type_len   = mime_type.len();
+    let description     = self.description.as_bytes();
+    let description_len = description.len();
+    let data_len        = self.data.len();
+
     let picture_type: u32 = match self.picture_type {
       PictureType::Other              => 0,
       PictureType::FileIconStandard   => 1,
@@ -660,8 +692,6 @@ impl Picture {
     offset += 4;
 
     bytes[offset..(offset + data_len)].clone_from_slice(&self.data);
-
-    bytes
   }
 }
 
