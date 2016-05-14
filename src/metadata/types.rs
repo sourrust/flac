@@ -175,6 +175,11 @@ impl StreamInfo {
     self.min_block_size == self.max_block_size
   }
 
+  #[inline]
+  pub fn bytes_len(&self) -> usize {
+    34
+  }
+
   pub fn to_bytes(&self) -> Vec<u8> {
     let mut bytes = [0; 34];
 
@@ -222,8 +227,13 @@ pub struct Application {
 }
 
 impl Application {
+  #[inline]
+  pub fn bytes_len(&self) -> usize {
+    4 + self.data.len()
+  }
+
   pub fn to_bytes(&self) -> Vec<u8> {
-    let mut bytes = vec![0; (4 + self.data.len())];
+    let mut bytes = vec![0; self.bytes_len()];
 
     bytes[0..4].clone_from_slice(self.id.as_bytes());
     bytes[4..].clone_from_slice(&self.data);
@@ -244,6 +254,10 @@ pub struct SeekPoint {
 }
 
 impl SeekPoint {
+  pub fn bytes_len(&self) -> usize {
+    18
+  }
+
   pub fn to_bytes(&self) -> Vec<u8> {
     let mut bytes = [0; 18];
 
@@ -287,19 +301,20 @@ pub struct VorbisComment {
 }
 
 impl VorbisComment {
-  pub fn to_bytes(&self) -> Vec<u8> {
+  pub fn bytes_len(&self) -> usize {
     let vendor_bytes   = self.vendor_string.as_bytes();
     let vendor_length  = vendor_bytes.len();
-    let comments_count = self.comments.len();
-    let capacity       = 8 + vendor_length +
-                         self.comments.iter().fold(0, |result, (k, v)| {
-                           let k_length = k.as_bytes().len();
-                           let v_length = v.as_bytes().len();
 
-                           result + k_length + 5 + v_length
-                         });
+     self.comments.iter().fold(0, |result, (k, v)| {
+       let k_length = k.as_bytes().len();
+       let v_length = v.as_bytes().len();
 
-    let mut bytes = vec![0; capacity];
+       result + k_length + 5 + v_length
+     }) + 8 + vendor_length
+  }
+
+  pub fn to_bytes(&self) -> Vec<u8> {
+    let mut bytes = vec![0; self.bytes_len()];
 
     bytes[0] = vendor_length as u8;
     bytes[1] = (vendor_length >> 8) as u8;
@@ -360,12 +375,16 @@ pub struct CueSheet {
 }
 
 impl CueSheet {
-  pub fn to_bytes(&self) -> Vec<u8> {
-    let tracks_bytes = self.tracks.iter().fold(0, |result, track| {
+  #[inline]
+  pub fn bytes_len(&self) -> usize {
+    self.tracks.iter().fold(0, |result, track| {
       result + track.bytes_len()
-    });
+    }) + 396
+  }
 
-    let mut bytes  = vec![0; (396 + tracks_bytes)];
+  pub fn to_bytes(&self) -> Vec<u8> {
+    let mut bytes  = vec![0; self.bytes_len()];
+
     let mut flag   = 0;
     let tracks_len = self.tracks.len();
 
@@ -488,6 +507,11 @@ pub struct CueSheetTrackIndex {
 }
 
 impl CueSheetTrackIndex {
+  #[inline]
+  pub fn bytes_len(&self) -> usize {
+    12
+  }
+
   pub fn to_bytes(&self) -> Vec<u8> {
     let mut bytes = [0; 12];
 
@@ -538,15 +562,18 @@ pub struct Picture {
 }
 
 impl Picture {
-  pub fn to_bytes(&self) -> Vec<u8> {
+  pub fn bytes_len(&self) -> usize {
     let mime_type       = self.mime_type.as_bytes();
     let mime_type_len   = mime_type.len();
     let description     = self.description.as_bytes();
     let description_len = description.len();
     let data_len        = self.data.len();
-    let extra_bytes     = mime_type_len + description_len + data_len;
 
-    let mut bytes = vec![0; (32 + extra_bytes)];
+    32 + mime_type_len + description_len + data_len
+  }
+
+  pub fn to_bytes(&self) -> Vec<u8> {
+    let mut bytes = vec![0; self.bytes_len()];
 
     let picture_type: u32 = match self.picture_type {
       PictureType::Other              => 0,
