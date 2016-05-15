@@ -111,6 +111,28 @@ impl Metadata {
 
         bytes
       }
+      Data::SeekTable(ref seek_points)        => {
+        let length     = seek_points.iter().fold(0, |result, seek_point|
+                           result + seek_point.bytes_len());
+        let mut bytes  = vec![0; 4 + length];
+        let mut offset = 4;
+
+        bytes[0] = 3;
+
+        bytes[1] = (length >> 16) as u8;
+        bytes[2] = (length >> 8) as u8;
+        bytes[3] = length as u8;
+
+        for seek_point in seek_points {
+          let length = seek_point.bytes_len();
+
+          seek_point.to_bytes_buffer(&mut bytes[offset..(offset + length)]);
+
+          offset += length;
+        }
+
+        bytes
+      }
       Data::Unknown(ref unknown)              => {
         let length    = unknown.len();
         let mut bytes = vec![0; 4 + length];
