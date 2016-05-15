@@ -161,6 +161,20 @@ impl Metadata {
 
         bytes
       }
+      Data::VorbisComment(ref vorbis_comment) => {
+        let length    = vorbis_comment.bytes_len();
+        let mut bytes = vec![0; 4 + length];
+
+        bytes[0] = 4;
+
+        bytes[1] = (length >> 16) as u8;
+        bytes[2] = (length >> 8) as u8;
+        bytes[3] = length as u8;
+
+        vorbis_comment.to_bytes_buffer(&mut bytes[4..]);
+
+        bytes
+      }
       Data::Unknown(ref unknown)              => {
         let length    = unknown.len();
         let mut bytes = vec![0; 4 + length];
