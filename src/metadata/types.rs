@@ -189,6 +189,20 @@ impl Metadata {
 
         bytes
       }
+      Data::Picture(ref picture)              => {
+        let length    = picture.bytes_len();
+        let mut bytes = vec![0; 4 + length];
+
+        bytes[0] = 6;
+
+        bytes[1] = (length >> 16) as u8;
+        bytes[2] = (length >> 8) as u8;
+        bytes[3] = length as u8;
+
+        picture.to_bytes_buffer(&mut bytes[4..]);
+
+        bytes
+      }
       Data::Unknown(ref unknown)              => {
         let length    = unknown.len();
         let mut bytes = vec![0; 4 + length];
