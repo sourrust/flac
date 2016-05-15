@@ -96,6 +96,129 @@ impl Metadata {
     /// Returns true when the current `Metadata` is `Unknown`.
     (is_unknown) -> Unknown
   }
+
+  pub fn to_bytes(&self) -> Vec<u8> {
+    match self.data {
+      Data::StreamInfo(ref stream_info)       => {
+        let length    = stream_info.bytes_len();
+        let mut bytes = vec![0; 4 + length];
+
+        bytes[0] = 0;
+
+        bytes[1] = (length >> 16) as u8;
+        bytes[2] = (length >> 8) as u8;
+        bytes[3] = length as u8;
+
+        stream_info.to_bytes_buffer(&mut bytes[4..]);
+
+        bytes
+      }
+      Data::Padding(_length)                  => {
+        let length    = _length as usize;
+        let mut bytes = vec![0; 4 + length];
+
+        bytes[0] = 1;
+
+        bytes[1] = (length >> 16) as u8;
+        bytes[2] = (length >> 8) as u8;
+        bytes[3] = length as u8;
+
+        bytes
+      }
+      Data::Application(ref application)      => {
+        let length    = application.bytes_len();
+        let mut bytes = vec![0; 4 + length];
+
+        bytes[0] = 2;
+
+        bytes[1] = (length >> 16) as u8;
+        bytes[2] = (length >> 8) as u8;
+        bytes[3] = length as u8;
+
+        application.to_bytes_buffer(&mut bytes[4..]);
+
+        bytes
+      }
+      Data::SeekTable(ref seek_points)        => {
+        let length     = seek_points.iter().fold(0, |result, seek_point|
+                           result + seek_point.bytes_len());
+        let mut bytes  = vec![0; 4 + length];
+        let mut offset = 4;
+
+        bytes[0] = 3;
+
+        bytes[1] = (length >> 16) as u8;
+        bytes[2] = (length >> 8) as u8;
+        bytes[3] = length as u8;
+
+        for seek_point in seek_points {
+          let length = seek_point.bytes_len();
+
+          seek_point.to_bytes_buffer(&mut bytes[offset..(offset + length)]);
+
+          offset += length;
+        }
+
+        bytes
+      }
+      Data::VorbisComment(ref vorbis_comment) => {
+        let length    = vorbis_comment.bytes_len();
+        let mut bytes = vec![0; 4 + length];
+
+        bytes[0] = 4;
+
+        bytes[1] = (length >> 16) as u8;
+        bytes[2] = (length >> 8) as u8;
+        bytes[3] = length as u8;
+
+        vorbis_comment.to_bytes_buffer(&mut bytes[4..]);
+
+        bytes
+      }
+      Data::CueSheet(ref cue_sheet)           => {
+        let length    = cue_sheet.bytes_len();
+        let mut bytes = vec![0; 4 + length];
+
+        bytes[0] = 5;
+
+        bytes[1] = (length >> 16) as u8;
+        bytes[2] = (length >> 8) as u8;
+        bytes[3] = length as u8;
+
+        cue_sheet.to_bytes_buffer(&mut bytes[4..]);
+
+        bytes
+      }
+      Data::Picture(ref picture)              => {
+        let length    = picture.bytes_len();
+        let mut bytes = vec![0; 4 + length];
+
+        bytes[0] = 6;
+
+        bytes[1] = (length >> 16) as u8;
+        bytes[2] = (length >> 8) as u8;
+        bytes[3] = length as u8;
+
+        picture.to_bytes_buffer(&mut bytes[4..]);
+
+        bytes
+      }
+      Data::Unknown(ref unknown)              => {
+        let length    = unknown.len();
+        let mut bytes = vec![0; 4 + length];
+
+        bytes[0] = 7;
+
+        bytes[1] = (length >> 16) as u8;
+        bytes[2] = (length >> 8) as u8;
+        bytes[3] = length as u8;
+
+        bytes[4..].clone_from_slice(&unknown);
+
+        bytes
+      },
+    }
+  }
 }
 
 /// General enum that hold all the different metadata block data.
