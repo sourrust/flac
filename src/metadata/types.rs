@@ -99,6 +99,18 @@ impl Metadata {
 
   pub fn to_bytes(&self) -> Vec<u8> {
     match self.data {
+      Data::Padding(_length)                  => {
+        let length    = _length as usize;
+        let mut bytes = vec![0; 4 + length];
+
+        bytes[0] = 1;
+
+        bytes[1] = (length >> 16) as u8;
+        bytes[2] = (length >> 8) as u8;
+        bytes[3] = length as u8;
+
+        bytes
+      }
       Data::Unknown(ref unknown)              => {
         let length    = unknown.len();
         let mut bytes = vec![0; 4 + length];
