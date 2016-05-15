@@ -125,6 +125,20 @@ impl Metadata {
 
         bytes
       }
+      Data::Application(ref application)      => {
+        let length    = application.bytes_len();
+        let mut bytes = vec![0; 4 + length];
+
+        bytes[0] = 2;
+
+        bytes[1] = (length >> 16) as u8;
+        bytes[2] = (length >> 8) as u8;
+        bytes[3] = length as u8;
+
+        application.to_bytes_buffer(&mut bytes[4..]);
+
+        bytes
+      }
       Data::SeekTable(ref seek_points)        => {
         let length     = seek_points.iter().fold(0, |result, seek_point|
                            result + seek_point.bytes_len());
