@@ -96,6 +96,25 @@ impl Metadata {
     /// Returns true when the current `Metadata` is `Unknown`.
     (is_unknown) -> Unknown
   }
+
+  pub fn to_bytes(&self) -> Vec<u8> {
+    match self.data {
+      Data::Unknown(ref unknown)              => {
+        let length    = unknown.len();
+        let mut bytes = vec![0; 4 + length];
+
+        bytes[0] = 7;
+
+        bytes[1] = (length >> 16) as u8;
+        bytes[2] = (length >> 8) as u8;
+        bytes[3] = length as u8;
+
+        bytes[4..].clone_from_slice(&unknown);
+
+        bytes
+      },
+    }
+  }
 }
 
 /// General enum that hold all the different metadata block data.
