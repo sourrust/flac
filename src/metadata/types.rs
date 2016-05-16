@@ -1209,4 +1209,15 @@ mod tests {
 
     assert_eq!(&input.to_bytes()[..], &result[..]);
   }
+
+  #[test]
+  fn test_unknown_to_bytes() {
+    let input  = Metadata::new(true, 47, Data::Unknown(
+                   b"random data that won't really be parsed \
+                     anyway."[..].to_owned()));
+    let result = b"\x87\0\0\x2frandom data that won't really be parsed \
+                   anyway.";
+
+    assert_eq!(&input.to_bytes()[..], &result[..]);
+  }
 }
