@@ -40,16 +40,16 @@ for sure.
 
 - [ ] serialization
   - [ ] metadata
-    - [ ] header
-    - [ ] data
-      - [ ] stream info
-      - [ ] padding
-      - [ ] application
-      - [ ] seek table
-      - [ ] vorbis comment
-      - [ ] cuesheet
-      - [ ] picture
-      - [ ] unknown
+    - [x] header
+    - [x] data
+      - [x] stream info
+      - [x] padding
+      - [x] application
+      - [x] seek table
+      - [x] vorbis comment
+      - [x] cuesheet
+      - [x] picture
+      - [x] unknown
   - [ ] frame
     - [ ] header
     - [ ] footer
