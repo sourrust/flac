@@ -98,12 +98,18 @@ impl Metadata {
   }
 
   pub fn to_bytes(&self) -> Vec<u8> {
+    let byte = if self.is_last {
+      0b10000000
+    } else {
+      0b00000000
+    };
+
     match self.data {
       Data::StreamInfo(ref stream_info)       => {
         let length    = stream_info.bytes_len();
         let mut bytes = vec![0; 4 + length];
 
-        bytes[0] = 0;
+        bytes[0] = byte + 0;
 
         bytes[1] = (length >> 16) as u8;
         bytes[2] = (length >> 8) as u8;
@@ -117,7 +123,7 @@ impl Metadata {
         let length    = _length as usize;
         let mut bytes = vec![0; 4 + length];
 
-        bytes[0] = 1;
+        bytes[0] = byte + 1;
 
         bytes[1] = (length >> 16) as u8;
         bytes[2] = (length >> 8) as u8;
@@ -129,7 +135,7 @@ impl Metadata {
         let length    = application.bytes_len();
         let mut bytes = vec![0; 4 + length];
 
-        bytes[0] = 2;
+        bytes[0] = byte + 2;
 
         bytes[1] = (length >> 16) as u8;
         bytes[2] = (length >> 8) as u8;
@@ -145,7 +151,7 @@ impl Metadata {
         let mut bytes  = vec![0; 4 + length];
         let mut offset = 4;
 
-        bytes[0] = 3;
+        bytes[0] = byte + 3;
 
         bytes[1] = (length >> 16) as u8;
         bytes[2] = (length >> 8) as u8;
@@ -165,7 +171,7 @@ impl Metadata {
         let length    = vorbis_comment.bytes_len();
         let mut bytes = vec![0; 4 + length];
 
-        bytes[0] = 4;
+        bytes[0] = byte + 4;
 
         bytes[1] = (length >> 16) as u8;
         bytes[2] = (length >> 8) as u8;
@@ -179,7 +185,7 @@ impl Metadata {
         let length    = cue_sheet.bytes_len();
         let mut bytes = vec![0; 4 + length];
 
-        bytes[0] = 5;
+        bytes[0] = byte + 5;
 
         bytes[1] = (length >> 16) as u8;
         bytes[2] = (length >> 8) as u8;
@@ -193,7 +199,7 @@ impl Metadata {
         let length    = picture.bytes_len();
         let mut bytes = vec![0; 4 + length];
 
-        bytes[0] = 6;
+        bytes[0] = byte + 6;
 
         bytes[1] = (length >> 16) as u8;
         bytes[2] = (length >> 8) as u8;
@@ -207,7 +213,7 @@ impl Metadata {
         let length    = unknown.len();
         let mut bytes = vec![0; 4 + length];
 
-        bytes[0] = 7;
+        bytes[0] = byte + 7;
 
         bytes[1] = (length >> 16) as u8;
         bytes[2] = (length >> 8) as u8;
