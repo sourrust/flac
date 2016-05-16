@@ -983,6 +983,14 @@ mod tests {
   }
 
   #[test]
+  fn test_padding_to_bytes() {
+    let input  = Metadata::new(false, 10, Data::Padding(10));
+    let result = b"\x01\0\0\x0a\0\0\0\0\0\0\0\0\0\0";
+
+    assert_eq!(&input.to_bytes()[..], &result[..]);
+  }
+
+  #[test]
   fn test_application_to_bytes() {
     let inputs = [
       Application {
