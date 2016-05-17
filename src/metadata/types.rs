@@ -1010,12 +1010,14 @@ mod tests {
     }
 
     {
-      let input = Application {
+      let application = Application {
         id: "riff".to_owned(),
         data: b"fake data"[..].to_owned(),
       };
 
-      let result = b"rifffake data";
+      let input = Metadata::new(false, 13, Data::Application(application));
+
+      let result = b"\x02\0\0\x0drifffake data";
 
       assert_eq!(&input.to_bytes()[..], &result[..]);
     }
