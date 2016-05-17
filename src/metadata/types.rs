@@ -997,12 +997,14 @@ mod tests {
   #[test]
   fn test_application_to_bytes() {
     {
-      let input = Application {
+      let application = Application {
         id: "fake".to_owned(),
         data: vec![],
       };
 
-      let result = b"fake";
+      let input = Metadata::new(true, 4, Data::Application(application));
+
+      let result = b"\x82\0\0\x04fake";
 
       assert_eq!(&input.to_bytes()[..], &result[..]);
     }
