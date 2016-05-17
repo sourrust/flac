@@ -996,21 +996,27 @@ mod tests {
 
   #[test]
   fn test_application_to_bytes() {
-    let inputs = [
-      Application {
+    {
+      let input = Application {
         id: "fake".to_owned(),
         data: vec![],
-      },
-      Application {
+      };
+
+      let result = b"fake";
+
+      assert_eq!(&input.to_bytes()[..], &result[..]);
+    }
+
+    {
+      let input = Application {
         id: "riff".to_owned(),
         data: b"fake data"[..].to_owned(),
-      }
-    ];
+      };
 
-    let results = [&b"fake"[..], &b"rifffake data"[..]];
+      let result = b"rifffake data";
 
-    assert_eq!(&inputs[0].to_bytes()[..], results[0]);
-    assert_eq!(&inputs[1].to_bytes()[..], results[1]);
+      assert_eq!(&input.to_bytes()[..], &result[..]);
+    }
   }
 
   #[test]
