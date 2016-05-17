@@ -938,7 +938,7 @@ mod tests {
   #[test]
   fn test_stream_info_to_bytes() {
     {
-      let input = StreamInfo {
+      let stream_info = StreamInfo {
         min_block_size: 4608,
         max_block_size: 4608,
         min_frame_size: 14,
@@ -952,15 +952,17 @@ mod tests {
                  ],
       };
 
-      let result = b"\x12\0\x12\0\0\0\x0e\0\0\x10\x01\xf4\x02\x70\0\x01\x38\
-                     \x80\xa0\x42\x23\x7c\x54\x93\xfd\xb9\x65\x6b\x94\xa8\
-                     \x36\x08\xd1\x1a";
+      let input = Metadata::new(false, 34, Data::StreamInfo(stream_info));
+
+      let result = b"\0\0\0\x22\x12\0\x12\0\0\0\x0e\0\0\x10\x01\xf4\x02\x70\
+                     \0\x01\x38\x80\xa0\x42\x23\x7c\x54\x93\xfd\xb9\x65\x6b\
+                     \x94\xa8\x36\x08\xd1\x1a";
 
       assert_eq!(&input.to_bytes()[..], &result[..]);
     }
 
     {
-      let input = StreamInfo {
+      let stream_info = StreamInfo {
         min_block_size: 4096,
         max_block_size: 4096,
         min_frame_size: 2731,
@@ -974,9 +976,11 @@ mod tests {
                  ],
       };
 
-      let result = b"\x10\0\x10\0\0\x0a\xab\0\x53\x05\x0b\xb8\x03\x70\0\x9b\
-                     \x8f\x4a\xc6\x16\x1b\x2b\xb3\xf8\x1c\xa6\x72\x79\x1d\
-                     \x96\xf0\x9d\x0b\x0c";
+      let input = Metadata::new(true, 34, Data::StreamInfo(stream_info));
+
+      let result = b"\x80\0\0\x22\x10\0\x10\0\0\x0a\xab\0\x53\x05\x0b\xb8\
+                     \x03\x70\0\x9b\x8f\x4a\xc6\x16\x1b\x2b\xb3\xf8\x1c\xa6\
+                     \x72\x79\x1d\x96\xf0\x9d\x0b\x0c";
 
       assert_eq!(&input.to_bytes()[..], &result[..]);
     }
@@ -992,21 +996,31 @@ mod tests {
 
   #[test]
   fn test_application_to_bytes() {
-    let inputs = [
-      Application {
+    {
+      let application = Application {
         id: "fake".to_owned(),
         data: vec![],
-      },
-      Application {
+      };
+
+      let input = Metadata::new(true, 4, Data::Application(application));
+
+      let result = b"\x82\0\0\x04fake";
+
+      assert_eq!(&input.to_bytes()[..], &result[..]);
+    }
+
+    {
+      let application = Application {
         id: "riff".to_owned(),
         data: b"fake data"[..].to_owned(),
-      }
-    ];
+      };
 
-    let results = [&b"fake"[..], &b"rifffake data"[..]];
+      let input = Metadata::new(false, 13, Data::Application(application));
 
-    assert_eq!(&inputs[0].to_bytes()[..], results[0]);
-    assert_eq!(&inputs[1].to_bytes()[..], results[1]);
+      let result = b"\x02\0\0\x0drifffake data";
+
+      assert_eq!(&input.to_bytes()[..], &result[..]);
+    }
   }
 
   #[test]
