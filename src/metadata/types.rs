@@ -938,7 +938,7 @@ mod tests {
   #[test]
   fn test_stream_info_to_bytes() {
     {
-      let input = StreamInfo {
+      let stream_info = StreamInfo {
         min_block_size: 4608,
         max_block_size: 4608,
         min_frame_size: 14,
@@ -952,9 +952,11 @@ mod tests {
                  ],
       };
 
-      let result = b"\x12\0\x12\0\0\0\x0e\0\0\x10\x01\xf4\x02\x70\0\x01\x38\
-                     \x80\xa0\x42\x23\x7c\x54\x93\xfd\xb9\x65\x6b\x94\xa8\
-                     \x36\x08\xd1\x1a";
+      let input = Metadata::new(false, 34, Data::StreamInfo(stream_info));
+
+      let result = b"\0\0\0\x22\x12\0\x12\0\0\0\x0e\0\0\x10\x01\xf4\x02\x70\
+                     \0\x01\x38\x80\xa0\x42\x23\x7c\x54\x93\xfd\xb9\x65\x6b\
+                     \x94\xa8\x36\x08\xd1\x1a";
 
       assert_eq!(&input.to_bytes()[..], &result[..]);
     }
