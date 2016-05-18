@@ -1053,23 +1053,16 @@ mod tests {
       }
     ];
 
-    let result = b"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x12\0\0\0\0\0\0\0\x12\0\
-                   \0\0\0\0\0\0\0\x0e\x04\xf8\xff\xff\xff\xff\xff\xff\xff\
-                   \xff\0\0\0\0\0\0\0\0\0\0\xff\xff\xff\xff\xff\xff\xff\xff\
-                   \0\0\0\0\0\0\0\0\0\0\xff\xff\xff\xff\xff\xff\xff\xff\0\0\
-                   \0\0\0\0\0\0\0\0";
+    let input = Metadata::new(true, 90, Data::SeekTable(seek_points));
 
-    let mut bytes = [0; 90];
+    let result = b"\x83\0\0\x5a\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x12\0\0\0\0\
+                   \0\0\0\x12\0\0\0\0\0\0\0\0\x0e\x04\xf8\xff\xff\xff\xff\
+                   \xff\xff\xff\xff\0\0\0\0\0\0\0\0\0\0\xff\xff\xff\xff\xff\
+                   \xff\xff\xff\0\0\0\0\0\0\0\0\0\0\xff\xff\xff\xff\xff\xff\
+                   \xff\xff\0\0\0\0\0\0\0\0\0\0";
 
-    for i in 0..5 {
-      let seek_point = &seek_points[i];
-      let start      = 18 * i;
-      let end        = 18 * (i + 1);
 
-      seek_point.to_bytes_buffer(&mut bytes[start..end])
-    }
-
-    assert_eq!(&bytes[..], &result[..]);
+    assert_eq!(&input.to_bytes()[..], &result[..]);
   }
 
   #[test]
