@@ -1080,11 +1080,11 @@ mod tests {
     comments.insert("artist".to_owned(), "1".to_owned());
     comments.insert("title".to_owned(), "2".to_owned());
 
-    let mut result = vec![0; 203];
-    let mut offset = 40;
+    let mut result = vec![0; 207];
+    let mut offset = 44;
 
     result[0..offset].clone_from_slice(
-        b"\x20\0\0\0reference libFLAC 1.1.3 20060805\x06\0\0\0");
+      b"\x04\0\0\xcb\x20\0\0\0reference libFLAC 1.1.3 20060805\x06\0\0\0");
 
     for key in comments.keys() {
       let bytes = if key == "REPLAYGAIN_TRACK_PEAK" {
@@ -1110,15 +1110,15 @@ mod tests {
       offset += bytes_len;
     }
 
-    let input = VorbisComment{
+    let vorbis_comment = VorbisComment{
       vendor_string: "reference libFLAC 1.1.3 20060805".to_owned(),
       comments: comments,
     };
 
-    let bytes = input.to_bytes();
-    println!("input: {}", bytes.len());
-    println!("result: {}", result.len());
-    assert_eq!(&bytes[..], &result[..]);
+    let input = Metadata::new(false, 203,
+      Data::VorbisComment(vorbis_comment));
+
+    assert_eq!(&input.to_bytes()[..], &result[..]);
   }
 
   #[test]
