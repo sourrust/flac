@@ -1203,7 +1203,7 @@ mod tests {
 
   #[test]
   fn test_picture_to_bytes() {
-    let input = Picture {
+    let picture = Picture {
       picture_type: PictureType::Other,
       mime_type: "image/png".to_owned(),
       description: String::new(),
@@ -1214,8 +1214,10 @@ mod tests {
       data: vec![],
     };
 
-    let result = b"\0\0\0\0\0\0\0\x09image/png\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
-                   \0\0\0\0\0\0\0\0\0";
+    let input = Metadata::new(false, 41, Data::Picture(picture));
+
+    let result = b"\x06\0\0\x29\0\0\0\0\0\0\0\x09image/png\0\0\0\0\0\0\0\0\0\
+                   \0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
 
     assert_eq!(&input.to_bytes()[..], &result[..]);
   }
