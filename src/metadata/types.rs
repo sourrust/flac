@@ -952,8 +952,7 @@ mod tests {
                  ],
       };
 
-      let input = Metadata::new(false, 34, Data::StreamInfo(stream_info));
-
+      let input  = Metadata::new(false, 34, Data::StreamInfo(stream_info));
       let result = b"\0\0\0\x22\x12\0\x12\0\0\0\x0e\0\0\x10\x01\xf4\x02\x70\
                      \0\x01\x38\x80\xa0\x42\x23\x7c\x54\x93\xfd\xb9\x65\x6b\
                      \x94\xa8\x36\x08\xd1\x1a";
@@ -976,8 +975,7 @@ mod tests {
                  ],
       };
 
-      let input = Metadata::new(true, 34, Data::StreamInfo(stream_info));
-
+      let input  = Metadata::new(true, 34, Data::StreamInfo(stream_info));
       let result = b"\x80\0\0\x22\x10\0\x10\0\0\x0a\xab\0\x53\x05\x0b\xb8\
                      \x03\x70\0\x9b\x8f\x4a\xc6\x16\x1b\x2b\xb3\xf8\x1c\xa6\
                      \x72\x79\x1d\x96\xf0\x9d\x0b\x0c";
@@ -1002,8 +1000,7 @@ mod tests {
         data: vec![],
       };
 
-      let input = Metadata::new(true, 4, Data::Application(application));
-
+      let input  = Metadata::new(true, 4, Data::Application(application));
       let result = b"\x82\0\0\x04fake";
 
       assert_eq!(&input.to_bytes()[..], &result[..]);
@@ -1015,8 +1012,7 @@ mod tests {
         data: b"fake data"[..].to_owned(),
       };
 
-      let input = Metadata::new(false, 13, Data::Application(application));
-
+      let input  = Metadata::new(false, 13, Data::Application(application));
       let result = b"\x02\0\0\x0drifffake data";
 
       assert_eq!(&input.to_bytes()[..], &result[..]);
@@ -1053,8 +1049,7 @@ mod tests {
       }
     ];
 
-    let input = Metadata::new(true, 90, Data::SeekTable(seek_points));
-
+    let input  = Metadata::new(true, 90, Data::SeekTable(seek_points));
     let result = b"\x83\0\0\x5a\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x12\0\0\0\0\
                    \0\0\0\x12\0\0\0\0\0\0\0\0\x0e\x04\xf8\xff\xff\xff\xff\
                    \xff\xff\xff\xff\0\0\0\0\0\0\0\0\0\0\xff\xff\xff\xff\xff\
@@ -1174,8 +1169,7 @@ mod tests {
       ],
     };
 
-    let input = Metadata::new(true, 540, Data::CueSheet(cue_sheet));
-
+    let input  = Metadata::new(true, 540, Data::CueSheet(cue_sheet));
     let result = b"\x85\0\x02\x1c1234567890123\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
                    \0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
                    \0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
@@ -1214,8 +1208,7 @@ mod tests {
       data: vec![],
     };
 
-    let input = Metadata::new(false, 41, Data::Picture(picture));
-
+    let input  = Metadata::new(false, 41, Data::Picture(picture));
     let result = b"\x06\0\0\x29\0\0\0\0\0\0\0\x09image/png\0\0\0\0\0\0\0\0\0\
                    \0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
 
@@ -1224,11 +1217,11 @@ mod tests {
 
   #[test]
   fn test_unknown_to_bytes() {
-    let input  = Metadata::new(true, 47, Data::Unknown(
-                   b"random data that won't really be parsed \
-                     anyway."[..].to_owned()));
-    let result = b"\x87\0\0\x2frandom data that won't really be parsed \
-                   anyway.";
+    let unknown = Data::Unknown(b"random data that won't really be parsed \
+                                  anyway."[..].to_owned());
+    let input   = Metadata::new(true, 47, unknown);
+    let result  = b"\x87\0\0\x2frandom data that won't really be parsed \
+                    anyway.";
 
     assert_eq!(&input.to_bytes()[..], &result[..]);
   }
