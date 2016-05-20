@@ -39,7 +39,7 @@ a bit slower as I am busy with work but that is a goal of the project
 for sure.
 
 - [ ] serialization
-  - [ ] metadata
+  - [x] metadata
     - [x] header
     - [x] data
       - [x] stream info
