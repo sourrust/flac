@@ -10,6 +10,7 @@ use nom::{self, IResult};
 use metadata::{Metadata, metadata_parser};
 
 use std::ops::{Add, AddAssign, BitAnd, BitOr, Mul, Sub, Shl, ShlAssign, Shr};
+use std::io;
 
 /// An interface for parsing through some type of producer to a byte stream.
 ///
@@ -78,6 +79,22 @@ impl SampleSize for i16 {
 
 impl SampleSize for i32 {
   type Extended = i64;
+}
+
+pub trait WriteExtension: io::Write {
+  fn write_u8(&mut self, number: u8) -> io::Result<()>;
+
+  fn write_be_u16(&mut self, number: u16) -> io::Result<()>;
+  fn write_le_u16(&mut self, number: u16) -> io::Result<()>;
+
+  fn write_be_u24(&mut self, number: u32) -> io::Result<()>;
+  fn write_le_u24(&mut self, number: u32) -> io::Result<()>;
+
+  fn write_be_u32(&mut self, number: u32) -> io::Result<()>;
+  fn write_le_u32(&mut self, number: u32) -> io::Result<()>;
+
+  fn write_be_u64(&mut self, number: u64) -> io::Result<()>;
+  fn write_le_u64(&mut self, number: u64) -> io::Result<()>;
 }
 
 // Convert one to four byte slices into an unsigned 32-bit number.
