@@ -97,6 +97,12 @@ pub trait WriteExtension: io::Write {
   fn write_le_u64(&mut self, number: u64) -> io::Result<()>;
 }
 
+impl<Write> WriteExtension for Write where Write: io::Write {
+  fn write_u8(&mut self, number: u8) -> io::Result<()> {
+    self.write_all(&[number])
+  }
+}
+
 // Convert one to four byte slices into an unsigned 32-bit number.
 //
 // NOTE: This assumes big-endian since most numbers in the FLAC binary are
