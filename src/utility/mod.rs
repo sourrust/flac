@@ -119,6 +119,26 @@ impl<Write> WriteExtension for Write where Write: io::Write {
 
     self.write_all(&buffer)
   }
+
+  fn write_be_u24(&mut self, number: u32) -> io::Result<()> {
+    let mut buffer = [0; 3];
+
+    buffer[0] = (number >> 16) as u8;
+    buffer[1] = (number >> 8) as u8;
+    buffer[2] = number as u8;
+
+    self.write_all(&buffer)
+  }
+
+  fn write_le_u24(&mut self, number: u32) -> io::Result<()> {
+    let mut buffer = [0; 3];
+
+    buffer[0] = number as u8;
+    buffer[1] = (number >> 8) as u8;
+    buffer[2] = (number >> 16) as u8;
+
+    self.write_all(&buffer)
+  }
 }
 
 // Convert one to four byte slices into an unsigned 32-bit number.
