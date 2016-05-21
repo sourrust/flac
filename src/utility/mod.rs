@@ -10,6 +10,7 @@ use nom::{self, IResult};
 use metadata::{Metadata, metadata_parser};
 
 use std::ops::{Add, AddAssign, BitAnd, BitOr, Mul, Sub, Shl, ShlAssign, Shr};
+use std::io;
 
 /// An interface for parsing through some type of producer to a byte stream.
 ///
@@ -78,6 +79,118 @@ impl SampleSize for i16 {
 
 impl SampleSize for i32 {
   type Extended = i64;
+}
+
+pub trait WriteExtension: io::Write {
+  fn write_u8(&mut self, number: u8) -> io::Result<()>;
+
+  fn write_be_u16(&mut self, number: u16) -> io::Result<()>;
+  fn write_le_u16(&mut self, number: u16) -> io::Result<()>;
+
+  fn write_be_u24(&mut self, number: u32) -> io::Result<()>;
+  fn write_le_u24(&mut self, number: u32) -> io::Result<()>;
+
+  fn write_be_u32(&mut self, number: u32) -> io::Result<()>;
+  fn write_le_u32(&mut self, number: u32) -> io::Result<()>;
+
+  fn write_be_u64(&mut self, number: u64) -> io::Result<()>;
+  fn write_le_u64(&mut self, number: u64) -> io::Result<()>;
+}
+
+impl<Write> WriteExtension for Write where Write: io::Write {
+  fn write_u8(&mut self, number: u8) -> io::Result<()> {
+    self.write_all(&[number])
+  }
+
+  fn write_be_u16(&mut self, number: u16) -> io::Result<()> {
+    let mut buffer = [0; 2];
+
+    buffer[0] = (number >> 8) as u8;
+    buffer[1] = number as u8;
+
+    self.write_all(&buffer)
+  }
+
+  fn write_le_u16(&mut self, number: u16) -> io::Result<()> {
+    let mut buffer = [0; 2];
+
+    buffer[2] = number as u8;
+    buffer[1] = (number >> 8) as u8;
+
+    self.write_all(&buffer)
+  }
+
+  fn write_be_u24(&mut self, number: u32) -> io::Result<()> {
+    let mut buffer = [0; 3];
+
+    buffer[0] = (number >> 16) as u8;
+    buffer[1] = (number >> 8) as u8;
+    buffer[2] = number as u8;
+
+    self.write_all(&buffer)
+  }
+
+  fn write_le_u24(&mut self, number: u32) -> io::Result<()> {
+    let mut buffer = [0; 3];
+
+    buffer[0] = number as u8;
+    buffer[1] = (number >> 8) as u8;
+    buffer[2] = (number >> 16) as u8;
+
+    self.write_all(&buffer)
+  }
+
+  fn write_be_u32(&mut self, number: u32) -> io::Result<()> {
+    let mut buffer = [0; 4];
+
+    buffer[0] = (number >> 24) as u8;
+    buffer[1] = (number >> 16) as u8;
+    buffer[2] = (number >> 8) as u8;
+    buffer[3] = number as u8;
+
+    self.write_all(&buffer)
+  }
+
+  fn write_le_u32(&mut self, number: u32) -> io::Result<()> {
+    let mut buffer = [0; 4];
+
+    buffer[0] = number as u8;
+    buffer[1] = (number >> 8) as u8;
+    buffer[2] = (number >> 16) as u8;
+    buffer[3] = (number >> 24) as u8;
+
+    self.write_all(&buffer)
+  }
+
+  fn write_be_u64(&mut self, number: u64) -> io::Result<()> {
+    let mut buffer = [0; 8];
+
+    buffer[0] = (number >> 56) as u8;
+    buffer[1] = (number >> 48) as u8;
+    buffer[2] = (number >> 40) as u8;
+    buffer[3] = (number >> 32) as u8;
+    buffer[4] = (number >> 24) as u8;
+    buffer[5] = (number >> 16) as u8;
+    buffer[6] = (number >> 8) as u8;
+    buffer[7] = number as u8;
+
+    self.write_all(&buffer)
+  }
+
+  fn write_le_u64(&mut self, number: u64) -> io::Result<()> {
+    let mut buffer = [0; 8];
+
+    buffer[0] = number as u8;
+    buffer[1] = (number >> 8) as u8;
+    buffer[2] = (number >> 16) as u8;
+    buffer[3] = (number >> 24) as u8;
+    buffer[4] = (number >> 32) as u8;
+    buffer[5] = (number >> 40) as u8;
+    buffer[6] = (number >> 48) as u8;
+    buffer[7] = (number >> 56) as u8;
+
+    self.write_all(&buffer)
+  }
 }
 
 // Convert one to four byte slices into an unsigned 32-bit number.
