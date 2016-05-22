@@ -550,7 +550,7 @@ mod tests {
   }
 
   #[test]
-  fn test_samole_size() {
+  fn test_sample_size() {
     assert_eq!(<i16 as Sample>::size(), 8);
     assert_eq!(<i16 as Sample>::size_extended(), 16);
 
