@@ -114,7 +114,7 @@ impl<Write> WriteExtension for Write where Write: io::Write {
   fn write_le_u16(&mut self, number: u16) -> io::Result<()> {
     let mut buffer = [0; 2];
 
-    buffer[2] = number as u8;
+    buffer[0] = number as u8;
     buffer[1] = (number >> 8) as u8;
 
     self.write_all(&buffer)
@@ -346,5 +346,47 @@ mod tests {
     assert_eq!(power_of_two(2), 4);
     assert_eq!(power_of_two(10), 1024);
     assert_eq!(power_of_two(31), 2147483648);
+  }
+
+  #[test]
+  fn test_write_u8() {
+    let mut buffer = [0; 1];
+
+    assert!((&mut buffer[..]).write_u8(0xa0).is_ok());
+    assert_eq!(buffer, [0xa0]);
+
+    assert!((&mut buffer[..]).write_u8(0xff).is_ok());
+    assert_eq!(buffer, [0xff]);
+
+    assert!((&mut buffer[..]).write_u8(0x10).is_ok());
+    assert_eq!(buffer, [0x10]);
+  }
+
+  #[test]
+  fn test_write_le_u16() {
+    let mut buffer = [0; 2];
+
+    assert!((&mut buffer[..]).write_le_u16(0xabcd).is_ok());
+    assert_eq!(buffer, [0xcd, 0xab]);
+
+    assert!((&mut buffer[..]).write_le_u16(0xff00).is_ok());
+    assert_eq!(buffer, [0x00, 0xff]);
+
+    assert!((&mut buffer[..]).write_le_u16(0x5e9a).is_ok());
+    assert_eq!(buffer, [0x9a, 0x5e]);
+  }
+
+  #[test]
+  fn test_write_be_u16() {
+    let mut buffer = [0; 2];
+
+    assert!((&mut buffer[..]).write_be_u16(0xabcd).is_ok());
+    assert_eq!(buffer, [0xab, 0xcd]);
+
+    assert!((&mut buffer[..]).write_be_u16(0xff00).is_ok());
+    assert_eq!(buffer, [0xff, 0x00]);
+
+    assert!((&mut buffer[..]).write_be_u16(0x5e9a).is_ok());
+    assert_eq!(buffer, [0x5e, 0x9a]);
   }
 }
