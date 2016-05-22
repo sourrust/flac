@@ -347,4 +347,18 @@ mod tests {
     assert_eq!(power_of_two(10), 1024);
     assert_eq!(power_of_two(31), 2147483648);
   }
+
+  #[test]
+  fn test_write_u8() {
+    let mut buffer = [0; 1];
+
+    assert!((&mut buffer[..]).write_u8(0xa0).is_ok());
+    assert_eq!(buffer, [0xa0]);
+
+    assert!((&mut buffer[..]).write_u8(0xff).is_ok());
+    assert_eq!(buffer, [0xff]);
+
+    assert!((&mut buffer[..]).write_u8(0x10).is_ok());
+    assert_eq!(buffer, [0x10]);
+  }
 }
