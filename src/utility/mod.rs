@@ -114,7 +114,7 @@ impl<Write> WriteExtension for Write where Write: io::Write {
   fn write_le_u16(&mut self, number: u16) -> io::Result<()> {
     let mut buffer = [0; 2];
 
-    buffer[2] = number as u8;
+    buffer[0] = number as u8;
     buffer[1] = (number >> 8) as u8;
 
     self.write_all(&buffer)
