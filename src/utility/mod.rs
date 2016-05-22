@@ -389,4 +389,60 @@ mod tests {
     assert!((&mut buffer[..]).write_be_u16(0x5e9a).is_ok());
     assert_eq!(buffer, [0x5e, 0x9a]);
   }
+
+  #[test]
+  fn test_write_le_u24() {
+    let mut buffer = [0; 3];
+
+    assert!((&mut buffer[..]).write_le_u24(0xabcdef).is_ok());
+    assert_eq!(buffer, [0xef, 0xcd, 0xab]);
+
+    assert!((&mut buffer[..]).write_le_u24(0x54a21d).is_ok());
+    assert_eq!(buffer, [0x1d, 0xa2, 0x54]);
+
+    assert!((&mut buffer[..]).write_le_u24(0xffeedd).is_ok());
+    assert_eq!(buffer, [0xdd, 0xee, 0xff]);
+  }
+
+  #[test]
+  fn test_write_be_u24() {
+    let mut buffer = [0; 3];
+
+    assert!((&mut buffer[..]).write_be_u24(0xabcdef).is_ok());
+    assert_eq!(buffer, [0xab, 0xcd, 0xef]);
+
+    assert!((&mut buffer[..]).write_be_u24(0x54a21d).is_ok());
+    assert_eq!(buffer, [0x54, 0xa2, 0x1d]);
+
+    assert!((&mut buffer[..]).write_be_u24(0xffeedd).is_ok());
+    assert_eq!(buffer, [0xff, 0xee, 0xdd]);
+  }
+
+  #[test]
+  fn test_write_le_u32() {
+    let mut buffer = [0; 4];
+
+    assert!((&mut buffer[..]).write_le_u32(0x89abcdef).is_ok());
+    assert_eq!(buffer, [0xef, 0xcd, 0xab, 0x89]);
+
+    assert!((&mut buffer[..]).write_le_u32(0xc354a21d).is_ok());
+    assert_eq!(buffer, [0x1d, 0xa2, 0x54, 0xc3]);
+
+    assert!((&mut buffer[..]).write_le_u32(0xffeeddcc).is_ok());
+    assert_eq!(buffer, [0xcc, 0xdd, 0xee, 0xff]);
+  }
+
+  #[test]
+  fn test_write_be_u32() {
+    let mut buffer = [0; 4];
+
+    assert!((&mut buffer[..]).write_be_u32(0x89abcdef).is_ok());
+    assert_eq!(buffer, [0x89, 0xab, 0xcd, 0xef]);
+
+    assert!((&mut buffer[..]).write_be_u32(0xc354a21d).is_ok());
+    assert_eq!(buffer, [0xc3, 0x54, 0xa2, 0x1d]);
+
+    assert!((&mut buffer[..]).write_be_u32(0xffeeddcc).is_ok());
+    assert_eq!(buffer, [0xff, 0xee, 0xdd, 0xcc]);
+  }
 }
