@@ -361,4 +361,32 @@ mod tests {
     assert!((&mut buffer[..]).write_u8(0x10).is_ok());
     assert_eq!(buffer, [0x10]);
   }
+
+  #[test]
+  fn test_write_le_u16() {
+    let mut buffer = [0; 2];
+
+    assert!((&mut buffer[..]).write_le_u16(0xabcd).is_ok());
+    assert_eq!(buffer, [0xcd, 0xab]);
+
+    assert!((&mut buffer[..]).write_le_u16(0xff00).is_ok());
+    assert_eq!(buffer, [0x00, 0xff]);
+
+    assert!((&mut buffer[..]).write_le_u16(0x5e9a).is_ok());
+    assert_eq!(buffer, [0x9a, 0x5e]);
+  }
+
+  #[test]
+  fn test_write_be_u16() {
+    let mut buffer = [0; 2];
+
+    assert!((&mut buffer[..]).write_be_u16(0xabcd).is_ok());
+    assert_eq!(buffer, [0xab, 0xcd]);
+
+    assert!((&mut buffer[..]).write_be_u16(0xff00).is_ok());
+    assert_eq!(buffer, [0xff, 0x00]);
+
+    assert!((&mut buffer[..]).write_be_u16(0x5e9a).is_ok());
+    assert_eq!(buffer, [0x5e, 0x9a]);
+  }
 }
