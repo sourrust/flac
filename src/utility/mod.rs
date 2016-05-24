@@ -445,4 +445,18 @@ mod tests {
     assert!((&mut buffer[..]).write_be_u32(0xffeeddcc).is_ok());
     assert_eq!(buffer, [0xff, 0xee, 0xdd, 0xcc]);
   }
+
+  #[test]
+  fn test_write_le_u64() {
+    let mut buffer = [0; 8];
+
+    assert!((&mut buffer[..]).write_le_u64(0x0123456789abcdef).is_ok());
+    assert_eq!(buffer, [0xef, 0xcd, 0xab, 0x89, 0x67, 0x45, 0x23, 0x01]);
+
+    assert!((&mut buffer[..]).write_le_u64(0x3f9348cda3b8d022).is_ok());
+    assert_eq!(buffer, [0x22, 0xd0, 0xb8, 0xa3, 0xcd, 0x48, 0x93, 0x3f]);
+
+    assert!((&mut buffer[..]).write_le_u64(0x0f1e2d3c4b5a6978).is_ok());
+    assert_eq!(buffer, [0x78, 0x69, 0x5a, 0x4b, 0x3c, 0x2d, 0x1e, 0x0f]);
+  }
 }
