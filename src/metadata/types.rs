@@ -1,5 +1,8 @@
 use std::collections::HashMap;
 use std::fmt;
+use std::io;
+
+use utility::WriteExtension;
 
 /// Data associated with a single metadata block.
 #[derive(Debug)]
@@ -107,15 +110,13 @@ impl Metadata {
     match self.data {
       Data::StreamInfo(ref stream_info)       => {
         let length    = stream_info.bytes_len();
-        let mut bytes = vec![0; 4 + length];
+        let mut bytes = Vec::with_capacity(4 + length);
 
-        bytes[0] = byte + 0;
+        bytes.write_u8(byte + 0);
 
-        bytes[1] = (length >> 16) as u8;
-        bytes[2] = (length >> 8) as u8;
-        bytes[3] = length as u8;
+        bytes.write_be_u24(length as u32);
 
-        stream_info.to_bytes_buffer(&mut bytes[4..]);
+        stream_info.to_bytes(&mut bytes);
 
         bytes
       }
@@ -309,44 +310,29 @@ impl StreamInfo {
     34
   }
 
-  pub fn to_bytes(&self) -> Vec<u8> {
-    let mut bytes = [0; 34];
+  pub fn to_bytes<Write: io::Write>(&self, buffer: &mut Write)
+                                    -> io::Result<()> {
+    try!(buffer.write_be_u16(self.min_block_size));
+    try!(buffer.write_be_u16(self.max_block_size));
 
-    self.to_bytes_buffer(&mut bytes);
+    try!(buffer.write_be_u24(self.min_frame_size));
+    try!(buffer.write_be_u24(self.max_frame_size));
 
-    bytes.to_vec()
-  }
+    let bytes = [
+      (self.sample_rate >> 12) as u8,
+      (self.sample_rate >> 4) as u8,
 
-  pub fn to_bytes_buffer(&self, bytes: &mut [u8]) {
-    bytes[0] = (self.min_block_size >> 8) as u8;
-    bytes[1] = self.min_block_size as u8;
+      ((self.sample_rate << 4) as u8) | ((self.channels - 1) << 1) |
+      ((self.bits_per_sample - 1) >> 4),
 
-    bytes[2] = (self.max_block_size >> 8) as u8;
-    bytes[3] = self.max_block_size as u8;
+      ((self.bits_per_sample - 1) << 4) | ((self.total_samples >> 32) as u8),
+    ];
 
-    bytes[4] = (self.min_frame_size >> 16) as u8;
-    bytes[5] = (self.min_frame_size >> 8) as u8;
-    bytes[6] = self.min_frame_size as u8;
+    try!(buffer.write_all(&bytes));
 
-    bytes[7] = (self.max_frame_size >> 16) as u8;
-    bytes[8] = (self.max_frame_size >> 8) as u8;
-    bytes[9] = self.max_frame_size as u8;
+    try!(buffer.write_be_u32(self.total_samples as u32));
 
-    bytes[10] = (self.sample_rate >> 12) as u8;
-    bytes[11] = (self.sample_rate >> 4) as u8;
-    bytes[12] = (self.sample_rate << 4) as u8;
-
-    bytes[12] += (self.channels - 1) << 1;
-    bytes[12] += (self.bits_per_sample - 1) >> 4;
-    bytes[13]  = (self.bits_per_sample - 1) << 4;
-
-    bytes[13] += (self.total_samples >> 32) as u8;
-    bytes[14]  = (self.total_samples >> 24) as u8;
-    bytes[15]  = (self.total_samples >> 16) as u8;
-    bytes[16]  = (self.total_samples >> 8) as u8;
-    bytes[17]  = self.total_samples as u8;
-
-    bytes[18..].clone_from_slice(&self.md5_sum);
+    buffer.write_all(&self.md5_sum)
   }
 }
 
