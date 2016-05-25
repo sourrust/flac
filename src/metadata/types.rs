@@ -1,5 +1,8 @@
 use std::collections::HashMap;
 use std::fmt;
+use std::io;
+
+use utility::WriteExtension;
 
 /// Data associated with a single metadata block.
 #[derive(Debug)]
@@ -309,36 +312,29 @@ impl StreamInfo {
     34
   }
 
-  pub fn to_bytes(&self, bytes: &mut [u8]) {
-    bytes[0] = (self.min_block_size >> 8) as u8;
-    bytes[1] = self.min_block_size as u8;
+  pub fn to_bytes<Write: io::Write>(&self, buffer: &mut Write)
+                                    -> io::Result<()> {
+    try!(buffer.write_be_u16(self.min_block_size));
+    try!(buffer.write_be_u16(self.max_block_size));
 
-    bytes[2] = (self.max_block_size >> 8) as u8;
-    bytes[3] = self.max_block_size as u8;
+    try!(buffer.write_be_u24(self.min_frame_size));
+    try!(buffer.write_be_u24(self.max_frame_size));
 
-    bytes[4] = (self.min_frame_size >> 16) as u8;
-    bytes[5] = (self.min_frame_size >> 8) as u8;
-    bytes[6] = self.min_frame_size as u8;
+    let bytes = [
+      (self.sample_rate >> 12) as u8,
+      (self.sample_rate >> 4) as u8,
 
-    bytes[7] = (self.max_frame_size >> 16) as u8;
-    bytes[8] = (self.max_frame_size >> 8) as u8;
-    bytes[9] = self.max_frame_size as u8;
+      ((self.sample_rate << 4) as u8) | ((self.channels - 1) << 1) |
+      ((self.bits_per_sample - 1) >> 4),
 
-    bytes[10] = (self.sample_rate >> 12) as u8;
-    bytes[11] = (self.sample_rate >> 4) as u8;
-    bytes[12] = (self.sample_rate << 4) as u8;
+      ((self.bits_per_sample - 1) << 4) | ((self.total_samples >> 32) as u8),
+    ];
 
-    bytes[12] += (self.channels - 1) << 1;
-    bytes[12] += (self.bits_per_sample - 1) >> 4;
-    bytes[13]  = (self.bits_per_sample - 1) << 4;
+    try!(buffer.write_all(&bytes));
 
-    bytes[13] += (self.total_samples >> 32) as u8;
-    bytes[14]  = (self.total_samples >> 24) as u8;
-    bytes[15]  = (self.total_samples >> 16) as u8;
-    bytes[16]  = (self.total_samples >> 8) as u8;
-    bytes[17]  = self.total_samples as u8;
+    try!(buffer.write_be_u32(self.total_samples as u32));
 
-    bytes[18..].clone_from_slice(&self.md5_sum);
+    buffer.write_all(&self.md5_sum)
   }
 }
 
