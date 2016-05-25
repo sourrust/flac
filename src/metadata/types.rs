@@ -309,15 +309,7 @@ impl StreamInfo {
     34
   }
 
-  pub fn to_bytes(&self) -> Vec<u8> {
-    let mut bytes = [0; 34];
-
-    self.to_bytes_buffer(&mut bytes);
-
-    bytes.to_vec()
-  }
-
-  pub fn to_bytes_buffer(&self, bytes: &mut [u8]) {
+  pub fn to_bytes(&self, bytes: &mut [u8]) {
     bytes[0] = (self.min_block_size >> 8) as u8;
     bytes[1] = self.min_block_size as u8;
 
