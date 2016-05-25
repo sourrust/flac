@@ -110,15 +110,13 @@ impl Metadata {
     match self.data {
       Data::StreamInfo(ref stream_info)       => {
         let length    = stream_info.bytes_len();
-        let mut bytes = vec![0; 4 + length];
+        let mut bytes = Vec::with_capacity(4 + length);
 
-        bytes[0] = byte + 0;
+        bytes.write_u8(byte + 0);
 
-        bytes[1] = (length >> 16) as u8;
-        bytes[2] = (length >> 8) as u8;
-        bytes[3] = length as u8;
+        bytes.write_be_u24(length as u32);
 
-        stream_info.to_bytes_buffer(&mut bytes[4..]);
+        stream_info.to_bytes(&mut bytes);
 
         bytes
       }
