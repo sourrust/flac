@@ -121,28 +121,29 @@ impl Metadata {
         bytes
       }
       Data::Padding(_length)                  => {
+        use std::io::Write;
+
         let length    = _length as usize;
-        let mut bytes = vec![0; 4 + length];
+        let mut bytes = Vec::with_capacity(4 + length);
+        let padding   = vec![0; length];
 
-        bytes[0] = byte + 1;
+        bytes.write_u8(byte + 1);
 
-        bytes[1] = (length >> 16) as u8;
-        bytes[2] = (length >> 8) as u8;
-        bytes[3] = length as u8;
+        bytes.write_be_u24(length as u32);
+
+        bytes.write_all(&padding);
 
         bytes
       }
       Data::Application(ref application)      => {
         let length    = application.bytes_len();
-        let mut bytes = vec![0; 4 + length];
+        let mut bytes = Vec::with_capacity(4 + length);
 
-        bytes[0] = byte + 2;
+        bytes.write_u8(byte + 2);
 
-        bytes[1] = (length >> 16) as u8;
-        bytes[2] = (length >> 8) as u8;
-        bytes[3] = length as u8;
+        bytes.write_be_u24(length as u32);
 
-        application.to_bytes_buffer(&mut bytes[4..]);
+        application.to_bytes(&mut bytes);
 
         bytes
       }
@@ -351,17 +352,11 @@ impl Application {
     4 + self.data.len()
   }
 
-  pub fn to_bytes(&self) -> Vec<u8> {
-    let mut bytes = vec![0; self.bytes_len()];
+  pub fn to_bytes<Write: io::Write>(&self, buffer: &mut Write)
+                                    -> io::Result<()> {
+    try!(buffer.write_all(&self.id.as_bytes()));
 
-    self.to_bytes_buffer(&mut bytes);
-
-    bytes
-  }
-
-  pub fn to_bytes_buffer(&self, bytes: &mut [u8]) {
-    bytes[0..4].clone_from_slice(self.id.as_bytes());
-    bytes[4..].clone_from_slice(&self.data);
+    buffer.write_all(&self.data)
   }
 }
 
