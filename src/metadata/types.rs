@@ -354,10 +354,11 @@ impl Application {
     4 + self.data.len()
   }
 
+  pub fn to_bytes<Write: io::Write>(&self, buffer: &mut Write)
+                                    -> io::Result<()> {
+    try!(buffer.write_all(&self.id.as_bytes()));
 
-  pub fn to_bytes(&self, bytes: &mut [u8]) {
-    bytes[0..4].clone_from_slice(self.id.as_bytes());
-    bytes[4..].clone_from_slice(&self.data);
+    buffer.write_all(&self.data)
   }
 }
 
