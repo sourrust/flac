@@ -354,15 +354,8 @@ impl Application {
     4 + self.data.len()
   }
 
-  pub fn to_bytes(&self) -> Vec<u8> {
-    let mut bytes = vec![0; self.bytes_len()];
 
-    self.to_bytes_buffer(&mut bytes);
-
-    bytes
-  }
-
-  pub fn to_bytes_buffer(&self, bytes: &mut [u8]) {
+  pub fn to_bytes(&self, bytes: &mut [u8]) {
     bytes[0..4].clone_from_slice(self.id.as_bytes());
     bytes[4..].clone_from_slice(&self.data);
   }
