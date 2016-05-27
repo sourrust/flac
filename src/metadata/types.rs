@@ -148,23 +148,16 @@ impl Metadata {
         bytes
       }
       Data::SeekTable(ref seek_points)        => {
-        let length     = seek_points.iter().fold(0, |result, seek_point|
-                           result + seek_point.bytes_len());
-        let mut bytes  = vec![0; 4 + length];
-        let mut offset = 4;
+        let length    = seek_points.iter().fold(0, |result, seek_point|
+                          result + seek_point.bytes_len());
+        let mut bytes = Vec::with_capacity(4 + length);
 
-        bytes[0] = byte + 3;
+        bytes.write_u8(byte + 3);
 
-        bytes[1] = (length >> 16) as u8;
-        bytes[2] = (length >> 8) as u8;
-        bytes[3] = length as u8;
+        bytes.write_be_u24(length as u32);
 
         for seek_point in seek_points {
-          let length = seek_point.bytes_len();
-
-          seek_point.to_bytes_buffer(&mut bytes[offset..(offset + length)]);
-
-          offset += length;
+          seek_point.to_bytes(&mut bytes);
         }
 
         bytes
