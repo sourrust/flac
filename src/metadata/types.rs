@@ -148,23 +148,16 @@ impl Metadata {
         bytes
       }
       Data::SeekTable(ref seek_points)        => {
-        let length     = seek_points.iter().fold(0, |result, seek_point|
-                           result + seek_point.bytes_len());
-        let mut bytes  = vec![0; 4 + length];
-        let mut offset = 4;
+        let length    = seek_points.iter().fold(0, |result, seek_point|
+                          result + seek_point.bytes_len());
+        let mut bytes = Vec::with_capacity(4 + length);
 
-        bytes[0] = byte + 3;
+        bytes.write_u8(byte + 3);
 
-        bytes[1] = (length >> 16) as u8;
-        bytes[2] = (length >> 8) as u8;
-        bytes[3] = length as u8;
+        bytes.write_be_u24(length as u32);
 
         for seek_point in seek_points {
-          let length = seek_point.bytes_len();
-
-          seek_point.to_bytes_buffer(&mut bytes[offset..(offset + length)]);
-
-          offset += length;
+          seek_point.to_bytes(&mut bytes);
         }
 
         bytes
@@ -376,35 +369,13 @@ impl SeekPoint {
     18
   }
 
-  pub fn to_bytes(&self) -> Vec<u8> {
-    let mut bytes = [0; 18];
+  pub fn to_bytes<Write: io::Write>(&self, buffer: &mut Write)
+                                    -> io::Result<()> {
+    try!(buffer.write_be_u64(self.sample_number));
 
-    self.to_bytes_buffer(&mut bytes);
+    try!(buffer.write_be_u64(self.stream_offset));
 
-    bytes.to_vec()
-  }
-
-  pub fn to_bytes_buffer(&self, bytes: &mut [u8]) {
-    bytes[0] = (self.sample_number >> 56) as u8;
-    bytes[1] = (self.sample_number >> 48) as u8;
-    bytes[2] = (self.sample_number >> 40) as u8;
-    bytes[3] = (self.sample_number >> 32) as u8;
-    bytes[4] = (self.sample_number >> 24) as u8;
-    bytes[5] = (self.sample_number >> 16) as u8;
-    bytes[6] = (self.sample_number >> 8) as u8;
-    bytes[7] = self.sample_number as u8;
-
-    bytes[8]  = (self.stream_offset >> 56) as u8;
-    bytes[9]  = (self.stream_offset >> 48) as u8;
-    bytes[10] = (self.stream_offset >> 40) as u8;
-    bytes[11] = (self.stream_offset >> 32) as u8;
-    bytes[12] = (self.stream_offset >> 24) as u8;
-    bytes[13] = (self.stream_offset >> 16) as u8;
-    bytes[14] = (self.stream_offset >> 8) as u8;
-    bytes[15] = self.stream_offset as u8;
-
-    bytes[16] = (self.frame_samples >> 8) as u8;
-    bytes[17] = self.frame_samples as u8;
+    buffer.write_be_u16(self.frame_samples)
   }
 }
 
