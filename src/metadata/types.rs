@@ -402,24 +402,16 @@ impl VorbisComment {
      }) + 8 + vendor_length
   }
 
-  pub fn to_bytes(&self, bytes: &mut [u8]) {
+  pub fn to_bytes<Write: io::Write>(&self, buffer: &mut Write)
+                                    -> io::Result<()> {
     let vendor_bytes   = self.vendor_string.as_bytes();
     let vendor_length  = vendor_bytes.len();
     let comments_count = self.comments.len();
 
-    bytes[0] = vendor_length as u8;
-    bytes[1] = (vendor_length >> 8) as u8;
-    bytes[2] = (vendor_length >> 16) as u8;
-    bytes[3] = (vendor_length >> 24) as u8;
+    try!(buffer.write_le_u32(vendor_length as u32));
+    try!(buffer.write_all(vendor_bytes));
 
-    bytes[4..(4 + vendor_length)].clone_from_slice(vendor_bytes);
-
-    bytes[vendor_length + 4] = comments_count as u8;
-    bytes[vendor_length + 5] = (comments_count >> 8) as u8;
-    bytes[vendor_length + 6] = (comments_count >> 16) as u8;
-    bytes[vendor_length + 7] = (comments_count >> 24) as u8;
-
-    let mut offset = vendor_length + 8;
+    try!(buffer.write_le_u32(comments_count as u32));
 
     for (key, value) in &self.comments {
       let key_bytes    = key.as_bytes();
@@ -428,22 +420,16 @@ impl VorbisComment {
       let value_length = value_bytes.len();
       let length       = key_length + value_length + 1;
 
-      bytes[offset + 0] = length as u8;
-      bytes[offset + 1] = (length >> 8) as u8;
-      bytes[offset + 2] = (length >> 16) as u8;
-      bytes[offset + 3] = (length >> 24) as u8;
+      try!(buffer.write_le_u32(length as u32));
 
-      offset += 4;
+      try!(buffer.write_all(key_bytes));
+      try!(buffer.write_u8(b'='));
 
-      bytes[offset..(offset + key_length)].clone_from_slice(key_bytes);
-      bytes[offset + key_length] = b'=';
 
-      offset += key_length + 1;
-
-      bytes[offset..(offset + value_length)].clone_from_slice(value_bytes);
-
-      offset += value_length;
+      try!(buffer.write_all(value_bytes));
     }
+
+    Ok(())
   }
 }
 
