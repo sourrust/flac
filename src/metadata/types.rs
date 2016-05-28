@@ -402,15 +402,7 @@ impl VorbisComment {
      }) + 8 + vendor_length
   }
 
-  pub fn to_bytes(&self) -> Vec<u8> {
-    let mut bytes = vec![0; self.bytes_len()];
-
-    self.to_bytes_buffer(&mut bytes);
-
-    bytes
-  }
-
-  pub fn to_bytes_buffer(&self, bytes: &mut [u8]) {
+  pub fn to_bytes(&self, bytes: &mut [u8]) {
     let vendor_bytes   = self.vendor_string.as_bytes();
     let vendor_length  = vendor_bytes.len();
     let comments_count = self.comments.len();
