@@ -455,15 +455,7 @@ impl CueSheet {
     }) + 396
   }
 
-  pub fn to_bytes(&self) -> Vec<u8> {
-    let mut bytes  = vec![0; self.bytes_len()];
-
-    self.to_bytes_buffer(&mut bytes);
-
-    bytes
-  }
-
-  pub fn to_bytes_buffer(&self, bytes: &mut [u8]) {
+  pub fn to_bytes(&self, bytes: &mut [u8]) {
     let mut flag   = 0;
     let tracks_len = self.tracks.len();
 
@@ -525,15 +517,7 @@ impl CueSheetTrack {
     36 + num_indices * 12
   }
 
-  pub fn to_bytes(&self) -> Vec<u8> {
-    let mut bytes = vec![0; self.bytes_len()];
-
-    self.to_bytes_buffer(&mut bytes);
-
-    bytes
-  }
-
-  pub fn to_bytes_buffer(&self, bytes: &mut [u8]) {
+  pub fn to_bytes(&self, bytes: &mut [u8]) {
     let num_indices = self.indices.len();
     let mut flags   = 0;
 
@@ -589,15 +573,7 @@ impl CueSheetTrackIndex {
     12
   }
 
-  pub fn to_bytes(&self) -> Vec<u8> {
-    let mut bytes = [0; 12];
-
-    self.to_bytes_buffer(&mut bytes);
-
-    bytes.to_vec()
-  }
-
-  pub fn to_bytes_buffer(&self, bytes: &mut [u8]) {
+  pub fn to_bytes(&self, bytes: &mut [u8]) {
     bytes[0] = (self.offset >> 56) as u8;
     bytes[1] = (self.offset >> 48) as u8;
     bytes[2] = (self.offset >> 40) as u8;
