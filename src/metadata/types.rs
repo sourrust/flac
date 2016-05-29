@@ -455,40 +455,30 @@ impl CueSheet {
     }) + 396
   }
 
-  pub fn to_bytes(&self, bytes: &mut [u8]) {
+  pub fn to_bytes<Write: io::Write>(&self, mut buffer: Write)
+                                   -> io::Result<()> {
     let mut flag   = 0;
     let tracks_len = self.tracks.len();
 
-    bytes[0..128].clone_from_slice(self.media_catalog_number.as_bytes());
+    try!(buffer.write_all(self.media_catalog_number.as_bytes()));
 
-    bytes[128] = (self.lead_in >> 56) as u8;
-    bytes[129] = (self.lead_in >> 48) as u8;
-    bytes[130] = (self.lead_in >> 40) as u8;
-    bytes[131] = (self.lead_in >> 32) as u8;
-    bytes[132] = (self.lead_in >> 24) as u8;
-    bytes[133] = (self.lead_in >> 16) as u8;
-    bytes[134] = (self.lead_in >> 8) as u8;
-    bytes[135] = self.lead_in as u8;
+    try!(buffer.write_be_u64(self.lead_in));
 
     if self.is_cd {
       flag |= 0b10000000;
     }
 
-    bytes[136] = flag;
+    try!(buffer.write_u8(flag));
 
-    bytes[137..395].clone_from_slice(&[0; 258]);
+    try!(buffer.write_all(&[0; 258]));
 
-    bytes[395] = tracks_len as u8;
-
-    let mut offset = 396;
+    try!(buffer.write_u8(tracks_len as u8));
 
     for track in &self.tracks {
-      let len = track.bytes_len();
-
-      track.to_bytes_buffer(&mut bytes[offset..(offset + len)]);
-
-      offset += len;
+      try!(track.to_bytes(&mut buffer));
     }
+
+    Ok(())
   }
 }
 
