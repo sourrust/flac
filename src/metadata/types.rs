@@ -176,15 +176,13 @@ impl Metadata {
       }
       Data::CueSheet(ref cue_sheet)           => {
         let length    = cue_sheet.bytes_len();
-        let mut bytes = vec![0; 4 + length];
+        let mut bytes = Vec::with_capacity(4 + length);
 
-        bytes[0] = byte + 5;
+        bytes.write_u8(byte + 5);
 
-        bytes[1] = (length >> 16) as u8;
-        bytes[2] = (length >> 8) as u8;
-        bytes[3] = length as u8;
+        bytes.write_be_u24(length as u32);
 
-        cue_sheet.to_bytes_buffer(&mut bytes[4..]);
+        cue_sheet.to_bytes(&mut bytes);
 
         bytes
       }
@@ -455,48 +453,30 @@ impl CueSheet {
     }) + 396
   }
 
-  pub fn to_bytes(&self) -> Vec<u8> {
-    let mut bytes  = vec![0; self.bytes_len()];
-
-    self.to_bytes_buffer(&mut bytes);
-
-    bytes
-  }
-
-  pub fn to_bytes_buffer(&self, bytes: &mut [u8]) {
+  pub fn to_bytes<Write: io::Write>(&self, mut buffer: Write)
+                                   -> io::Result<()> {
     let mut flag   = 0;
     let tracks_len = self.tracks.len();
 
-    bytes[0..128].clone_from_slice(self.media_catalog_number.as_bytes());
+    try!(buffer.write_all(self.media_catalog_number.as_bytes()));
 
-    bytes[128] = (self.lead_in >> 56) as u8;
-    bytes[129] = (self.lead_in >> 48) as u8;
-    bytes[130] = (self.lead_in >> 40) as u8;
-    bytes[131] = (self.lead_in >> 32) as u8;
-    bytes[132] = (self.lead_in >> 24) as u8;
-    bytes[133] = (self.lead_in >> 16) as u8;
-    bytes[134] = (self.lead_in >> 8) as u8;
-    bytes[135] = self.lead_in as u8;
+    try!(buffer.write_be_u64(self.lead_in));
 
     if self.is_cd {
       flag |= 0b10000000;
     }
 
-    bytes[136] = flag;
+    try!(buffer.write_u8(flag));
 
-    bytes[137..395].clone_from_slice(&[0; 258]);
+    try!(buffer.write_all(&[0; 258]));
 
-    bytes[395] = tracks_len as u8;
-
-    let mut offset = 396;
+    try!(buffer.write_u8(tracks_len as u8));
 
     for track in &self.tracks {
-      let len = track.bytes_len();
-
-      track.to_bytes_buffer(&mut bytes[offset..(offset + len)]);
-
-      offset += len;
+      try!(track.to_bytes(&mut buffer));
     }
+
+    Ok(())
   }
 }
 
@@ -525,30 +505,16 @@ impl CueSheetTrack {
     36 + num_indices * 12
   }
 
-  pub fn to_bytes(&self) -> Vec<u8> {
-    let mut bytes = vec![0; self.bytes_len()];
-
-    self.to_bytes_buffer(&mut bytes);
-
-    bytes
-  }
-
-  pub fn to_bytes_buffer(&self, bytes: &mut [u8]) {
+  pub fn to_bytes<Write: io::Write>(&self, buffer: &mut Write)
+                                   -> io::Result<()> {
     let num_indices = self.indices.len();
     let mut flags   = 0;
 
-    bytes[0] = (self.offset >> 56) as u8;
-    bytes[1] = (self.offset >> 48) as u8;
-    bytes[2] = (self.offset >> 40) as u8;
-    bytes[3] = (self.offset >> 32) as u8;
-    bytes[4] = (self.offset >> 24) as u8;
-    bytes[5] = (self.offset >> 16) as u8;
-    bytes[6] = (self.offset >> 8) as u8;
-    bytes[7] = self.offset as u8;
+    try!(buffer.write_be_u64(self.offset));
 
-    bytes[8] = self.number;
+    try!(buffer.write_u8(self.number));
 
-    bytes[9..21].clone_from_slice(self.isrc.as_bytes());
+    try!(buffer.write_all(self.isrc.as_bytes()));
 
     if !self.is_audio {
       flags |= 0b10000000;
@@ -558,19 +524,17 @@ impl CueSheetTrack {
       flags |= 0b01000000;
     }
 
-    bytes[21] = flags;
+    try!(buffer.write_u8(flags));
 
-    bytes[22..35].clone_from_slice(&[0; 13]);
+    try!(buffer.write_all(&[0; 13]));
 
-    bytes[35] = num_indices as u8;
-
-    let mut offset = 36;
+    try!(buffer.write_u8(num_indices as u8));
 
     for indice in &self.indices {
-      indice.to_bytes_buffer(&mut bytes[offset..(offset + 12)]);
-
-      offset += 12;
+      try!(indice.to_bytes(buffer));
     }
+
+    Ok(())
   }
 }
 
@@ -589,27 +553,13 @@ impl CueSheetTrackIndex {
     12
   }
 
-  pub fn to_bytes(&self) -> Vec<u8> {
-    let mut bytes = [0; 12];
+  pub fn to_bytes<Write: io::Write>(&self, buffer: &mut Write)
+                                    -> io::Result<()> {
+    try!(buffer.write_be_u64(self.offset));
 
-    self.to_bytes_buffer(&mut bytes);
+    try!(buffer.write_u8(self.number));
 
-    bytes.to_vec()
-  }
-
-  pub fn to_bytes_buffer(&self, bytes: &mut [u8]) {
-    bytes[0] = (self.offset >> 56) as u8;
-    bytes[1] = (self.offset >> 48) as u8;
-    bytes[2] = (self.offset >> 40) as u8;
-    bytes[3] = (self.offset >> 32) as u8;
-    bytes[4] = (self.offset >> 24) as u8;
-    bytes[5] = (self.offset >> 16) as u8;
-    bytes[6] = (self.offset >> 8) as u8;
-    bytes[7] = self.offset as u8;
-
-    bytes[8] = self.number;
-
-    bytes[9..].clone_from_slice(&[0; 3]);
+    buffer.write_all(&[0; 3])
   }
 }
 
