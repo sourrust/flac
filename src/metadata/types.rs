@@ -517,22 +517,16 @@ impl CueSheetTrack {
     36 + num_indices * 12
   }
 
-  pub fn to_bytes(&self, bytes: &mut [u8]) {
+  pub fn to_bytes<Write: io::Write>(&self, buffer: &mut Write)
+                                   -> io::Result<()> {
     let num_indices = self.indices.len();
     let mut flags   = 0;
 
-    bytes[0] = (self.offset >> 56) as u8;
-    bytes[1] = (self.offset >> 48) as u8;
-    bytes[2] = (self.offset >> 40) as u8;
-    bytes[3] = (self.offset >> 32) as u8;
-    bytes[4] = (self.offset >> 24) as u8;
-    bytes[5] = (self.offset >> 16) as u8;
-    bytes[6] = (self.offset >> 8) as u8;
-    bytes[7] = self.offset as u8;
+    try!(buffer.write_be_u64(self.offset));
 
-    bytes[8] = self.number;
+    try!(buffer.write_u8(self.number));
 
-    bytes[9..21].clone_from_slice(self.isrc.as_bytes());
+    try!(buffer.write_all(self.isrc.as_bytes()));
 
     if !self.is_audio {
       flags |= 0b10000000;
@@ -542,19 +536,17 @@ impl CueSheetTrack {
       flags |= 0b01000000;
     }
 
-    bytes[21] = flags;
+    try!(buffer.write_u8(flags));
 
-    bytes[22..35].clone_from_slice(&[0; 13]);
+    try!(buffer.write_all(&[0; 13]));
 
-    bytes[35] = num_indices as u8;
-
-    let mut offset = 36;
+    try!(buffer.write_u8(num_indices as u8));
 
     for indice in &self.indices {
-      indice.to_bytes_buffer(&mut bytes[offset..(offset + 12)]);
-
-      offset += 12;
+      try!(indice.to_bytes(buffer));
     }
+
+    Ok(())
   }
 }
 
