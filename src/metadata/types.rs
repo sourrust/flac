@@ -573,19 +573,13 @@ impl CueSheetTrackIndex {
     12
   }
 
-  pub fn to_bytes(&self, bytes: &mut [u8]) {
-    bytes[0] = (self.offset >> 56) as u8;
-    bytes[1] = (self.offset >> 48) as u8;
-    bytes[2] = (self.offset >> 40) as u8;
-    bytes[3] = (self.offset >> 32) as u8;
-    bytes[4] = (self.offset >> 24) as u8;
-    bytes[5] = (self.offset >> 16) as u8;
-    bytes[6] = (self.offset >> 8) as u8;
-    bytes[7] = self.offset as u8;
+  pub fn to_bytes<Write: io::Write>(&self, buffer: &mut Write)
+                                    -> io::Result<()> {
+    try!(buffer.write_be_u64(self.offset));
 
-    bytes[8] = self.number;
+    try!(buffer.write_u8(self.number));
 
-    bytes[9..].clone_from_slice(&[0; 3]);
+    buffer.write_all(&[0; 3])
   }
 }
 
