@@ -188,15 +188,13 @@ impl Metadata {
       }
       Data::Picture(ref picture)              => {
         let length    = picture.bytes_len();
-        let mut bytes = vec![0; 4 + length];
+        let mut bytes = Vec::with_capacity(4 + length);
 
-        bytes[0] = byte + 6;
+        bytes.write_u8(byte + 6);
 
-        bytes[1] = (length >> 16) as u8;
-        bytes[2] = (length >> 8) as u8;
-        bytes[3] = length as u8;
+        bytes.write_be_u24(length as u32);
 
-        picture.to_bytes_buffer(&mut bytes[4..]);
+        picture.to_bytes(&mut bytes);
 
         bytes
       }
