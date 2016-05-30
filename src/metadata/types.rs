@@ -188,15 +188,13 @@ impl Metadata {
       }
       Data::Picture(ref picture)              => {
         let length    = picture.bytes_len();
-        let mut bytes = vec![0; 4 + length];
+        let mut bytes = Vec::with_capacity(4 + length);
 
-        bytes[0] = byte + 6;
+        bytes.write_u8(byte + 6);
 
-        bytes[1] = (length >> 16) as u8;
-        bytes[2] = (length >> 8) as u8;
-        bytes[3] = length as u8;
+        bytes.write_be_u24(length as u32);
 
-        picture.to_bytes_buffer(&mut bytes[4..]);
+        picture.to_bytes(&mut bytes);
 
         bytes
       }
@@ -599,15 +597,8 @@ impl Picture {
     32 + mime_type_len + description_len + data_len
   }
 
-  pub fn to_bytes(&self) -> Vec<u8> {
-    let mut bytes = vec![0; self.bytes_len()];
-
-    self.to_bytes_buffer(&mut bytes);
-
-    bytes
-  }
-
-  pub fn to_bytes_buffer(&self, bytes: &mut [u8]) {
+  pub fn to_bytes<Write: io::Write>(&self, buffer: &mut Write)
+                                    -> io::Result<()> {
     let mime_type       = self.mime_type.as_bytes();
     let mime_type_len   = mime_type.len();
     let description     = self.description.as_bytes();
@@ -638,67 +629,22 @@ impl Picture {
       PictureType::PublisherLogo      => 20,
     };
 
-    bytes[0] = (picture_type >> 24) as u8;
-    bytes[1] = (picture_type >> 16) as u8;
-    bytes[2] = (picture_type >> 8) as u8;
-    bytes[3] = picture_type as u8;
 
-    bytes[4] = (mime_type_len >> 24) as u8;
-    bytes[5] = (mime_type_len >> 16) as u8;
-    bytes[6] = (mime_type_len >> 8) as u8;
-    bytes[7] = mime_type_len as u8;
+    try!(buffer.write_be_u32(picture_type));
 
-    let mut offset = 8 + mime_type_len;
+    try!(buffer.write_be_u32(mime_type_len as u32));
+    try!(buffer.write_all(mime_type));
 
-    bytes[8..offset].clone_from_slice(mime_type);
+    try!(buffer.write_be_u32(description_len as u32));
+    try!(buffer.write_all(description));
 
-    bytes[offset]     = (description_len >> 24) as u8;
-    bytes[offset + 1] = (description_len >> 16) as u8;
-    bytes[offset + 2] = (description_len >> 8) as u8;
-    bytes[offset + 3] = description_len as u8;
+    try!(buffer.write_be_u32(self.width));
+    try!(buffer.write_be_u32(self.height));
+    try!(buffer.write_be_u32(self.depth));
+    try!(buffer.write_be_u32(self.colors));
 
-    offset += 4;
-
-    bytes[offset..(offset + description_len)].clone_from_slice(description);
-
-    offset += description_len;
-
-    bytes[offset]     = (self.width >> 24) as u8;
-    bytes[offset + 1] = (self.width >> 16) as u8;
-    bytes[offset + 2] = (self.width >> 8) as u8;
-    bytes[offset + 3] = self.width as u8;
-
-    offset += 4;
-
-    bytes[offset]     = (self.height >> 24) as u8;
-    bytes[offset + 1] = (self.height >> 16) as u8;
-    bytes[offset + 2] = (self.height >> 8) as u8;
-    bytes[offset + 3] = self.height as u8;
-
-    offset += 4;
-
-    bytes[offset]     = (self.depth >> 24) as u8;
-    bytes[offset + 1] = (self.depth >> 16) as u8;
-    bytes[offset + 2] = (self.depth >> 8) as u8;
-    bytes[offset + 3] = self.depth as u8;
-
-    offset += 4;
-
-    bytes[offset]     = (self.colors >> 24) as u8;
-    bytes[offset + 1] = (self.colors >> 16) as u8;
-    bytes[offset + 2] = (self.colors >> 8) as u8;
-    bytes[offset + 3] = self.colors as u8;
-
-    offset += 4;
-
-    bytes[offset]     = (data_len >> 24) as u8;
-    bytes[offset + 1] = (data_len >> 16) as u8;
-    bytes[offset + 2] = (data_len >> 8) as u8;
-    bytes[offset + 3] = data_len as u8;
-
-    offset += 4;
-
-    bytes[offset..(offset + data_len)].clone_from_slice(&self.data);
+    try!(buffer.write_be_u32(data_len as u32));
+    buffer.write_all(&self.data)
   }
 }
 
