@@ -599,15 +599,7 @@ impl Picture {
     32 + mime_type_len + description_len + data_len
   }
 
-  pub fn to_bytes(&self) -> Vec<u8> {
-    let mut bytes = vec![0; self.bytes_len()];
-
-    self.to_bytes_buffer(&mut bytes);
-
-    bytes
-  }
-
-  pub fn to_bytes_buffer(&self, bytes: &mut [u8]) {
+  pub fn to_bytes(&self, bytes: &mut [u8]) {
     let mime_type       = self.mime_type.as_bytes();
     let mime_type_len   = mime_type.len();
     let description     = self.description.as_bytes();
