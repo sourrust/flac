@@ -790,7 +790,10 @@ mod tests {
                      \0\x01\x38\x80\xa0\x42\x23\x7c\x54\x93\xfd\xb9\x65\x6b\
                      \x94\xa8\x36\x08\xd1\x1a";
 
-      assert_eq!(&input.to_bytes()[..], &result[..]);
+      let mut bytes = Vec::with_capacity(input.bytes_len());
+
+      assert!(input.to_bytes(&mut bytes).is_ok());
+      assert_eq!(&bytes[..], &result[..]);
     }
 
     {
@@ -813,7 +816,10 @@ mod tests {
                      \x03\x70\0\x9b\x8f\x4a\xc6\x16\x1b\x2b\xb3\xf8\x1c\xa6\
                      \x72\x79\x1d\x96\xf0\x9d\x0b\x0c";
 
-      assert_eq!(&input.to_bytes()[..], &result[..]);
+      let mut bytes = Vec::with_capacity(input.bytes_len());
+
+      assert!(input.to_bytes(&mut bytes).is_ok());
+      assert_eq!(&bytes[..], &result[..]);
     }
   }
 
@@ -822,7 +828,10 @@ mod tests {
     let input  = Metadata::new(false, 10, Data::Padding(10));
     let result = b"\x01\0\0\x0a\0\0\0\0\0\0\0\0\0\0";
 
-    assert_eq!(&input.to_bytes()[..], &result[..]);
+    let mut bytes = Vec::with_capacity(input.bytes_len());
+
+    assert!(input.to_bytes(&mut bytes).is_ok());
+    assert_eq!(&bytes[..], &result[..]);
   }
 
   #[test]
@@ -836,7 +845,10 @@ mod tests {
       let input  = Metadata::new(true, 4, Data::Application(application));
       let result = b"\x82\0\0\x04fake";
 
-      assert_eq!(&input.to_bytes()[..], &result[..]);
+      let mut bytes = Vec::with_capacity(input.bytes_len());
+
+      assert!(input.to_bytes(&mut bytes).is_ok());
+      assert_eq!(&bytes[..], &result[..]);
     }
 
     {
@@ -848,7 +860,10 @@ mod tests {
       let input  = Metadata::new(false, 13, Data::Application(application));
       let result = b"\x02\0\0\x0drifffake data";
 
-      assert_eq!(&input.to_bytes()[..], &result[..]);
+      let mut bytes = Vec::with_capacity(input.bytes_len());
+
+      assert!(input.to_bytes(&mut bytes).is_ok());
+      assert_eq!(&bytes[..], &result[..]);
     }
   }
 
@@ -890,7 +905,10 @@ mod tests {
                    \xff\xff\0\0\0\0\0\0\0\0\0\0";
 
 
-    assert_eq!(&input.to_bytes()[..], &result[..]);
+    let mut bytes = Vec::with_capacity(input.bytes_len());
+
+    assert!(input.to_bytes(&mut bytes).is_ok());
+    assert_eq!(&bytes[..], &result[..]);
   }
 
   #[test]
@@ -946,7 +964,10 @@ mod tests {
     let input = Metadata::new(false, 203,
       Data::VorbisComment(vorbis_comment));
 
-    assert_eq!(&input.to_bytes()[..], &result[..]);
+    let mut bytes = Vec::with_capacity(input.bytes_len());
+
+    assert!(input.to_bytes(&mut bytes).is_ok());
+    assert_eq!(&bytes[..], &result[..]);
   }
 
   #[test]
@@ -1025,7 +1046,10 @@ mod tests {
                    \xaa\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
                    \0";
 
-    assert_eq!(&input.to_bytes()[..], &result[..]);
+    let mut bytes = Vec::with_capacity(input.bytes_len());
+
+    assert!(input.to_bytes(&mut bytes).is_ok());
+    assert_eq!(&bytes[..], &result[..]);
   }
 
   #[test]
@@ -1045,7 +1069,10 @@ mod tests {
     let result = b"\x06\0\0\x29\0\0\0\0\0\0\0\x09image/png\0\0\0\0\0\0\0\0\0\
                    \0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
 
-    assert_eq!(&input.to_bytes()[..], &result[..]);
+    let mut bytes = Vec::with_capacity(input.bytes_len());
+
+    assert!(input.to_bytes(&mut bytes).is_ok());
+    assert_eq!(&bytes[..], &result[..]);
   }
 
   #[test]
@@ -1056,6 +1083,9 @@ mod tests {
     let result  = b"\x87\0\0\x2frandom data that won't really be parsed \
                     anyway.";
 
-    assert_eq!(&input.to_bytes()[..], &result[..]);
+    let mut bytes = Vec::with_capacity(input.bytes_len());
+
+    assert!(input.to_bytes(&mut bytes).is_ok());
+    assert_eq!(&bytes[..], &result[..]);
   }
 }
