@@ -117,7 +117,8 @@ impl Metadata {
     }
   }
 
-  pub fn to_bytes(&self) -> Vec<u8> {
+  pub fn to_bytes<Write: io::Write>(&self, buffer: &mut Write)
+                                    -> io::Result<()> {
     let byte = if self.is_last {
       0b10000000
     } else {
@@ -126,8 +127,7 @@ impl Metadata {
 
     match self.data {
       Data::StreamInfo(ref stream_info)       => {
-        let length    = stream_info.bytes_len();
-        let mut bytes = Vec::with_capacity(4 + length);
+        let length = stream_info.bytes_len();
 
         bytes.write_u8(byte + 0);
 
@@ -135,14 +135,12 @@ impl Metadata {
 
         stream_info.to_bytes(&mut bytes);
 
-        bytes
+        Ok(())
       }
-      Data::Padding(_length)                  => {
+      Data::Padding(length)                   => {
         use std::io::Write;
 
-        let length    = _length as usize;
-        let mut bytes = Vec::with_capacity(4 + length);
-        let padding   = vec![0; length];
+        let padding = vec![0; length as usize];
 
         bytes.write_u8(byte + 1);
 
@@ -150,11 +148,10 @@ impl Metadata {
 
         bytes.write_all(&padding);
 
-        bytes
+        Ok(())
       }
       Data::Application(ref application)      => {
-        let length    = application.bytes_len();
-        let mut bytes = Vec::with_capacity(4 + length);
+        let length = application.bytes_len();
 
         bytes.write_u8(byte + 2);
 
@@ -162,12 +159,11 @@ impl Metadata {
 
         application.to_bytes(&mut bytes);
 
-        bytes
+        Ok(())
       }
       Data::SeekTable(ref seek_points)        => {
-        let length    = seek_points.iter().fold(0, |result, seek_point|
-                          result + seek_point.bytes_len());
-        let mut bytes = Vec::with_capacity(4 + length);
+        let length = seek_points.iter().fold(0, |result, seek_point|
+                       result + seek_point.bytes_len());
 
         bytes.write_u8(byte + 3);
 
@@ -177,11 +173,10 @@ impl Metadata {
           seek_point.to_bytes(&mut bytes);
         }
 
-        bytes
+        Ok(())
       }
       Data::VorbisComment(ref vorbis_comment) => {
-        let length    = vorbis_comment.bytes_len();
-        let mut bytes = Vec::with_capacity(4 + length);
+        let length = vorbis_comment.bytes_len();
 
         bytes.write_u8(byte + 4);
 
@@ -189,11 +184,10 @@ impl Metadata {
 
         vorbis_comment.to_bytes(&mut bytes);
 
-        bytes
+        Ok(())
       }
       Data::CueSheet(ref cue_sheet)           => {
-        let length    = cue_sheet.bytes_len();
-        let mut bytes = Vec::with_capacity(4 + length);
+        let length = cue_sheet.bytes_len();
 
         bytes.write_u8(byte + 5);
 
@@ -201,11 +195,10 @@ impl Metadata {
 
         cue_sheet.to_bytes(&mut bytes);
 
-        bytes
+        Ok(())
       }
       Data::Picture(ref picture)              => {
-        let length    = picture.bytes_len();
-        let mut bytes = Vec::with_capacity(4 + length);
+        let length = picture.bytes_len();
 
         bytes.write_u8(byte + 6);
 
@@ -213,13 +206,12 @@ impl Metadata {
 
         picture.to_bytes(&mut bytes);
 
-        bytes
+        Ok(())
       }
       Data::Unknown(ref unknown)              => {
         use std::io::Write;
 
-        let length    = unknown.len();
-        let mut bytes = Vec::with_capacity(4 + length);
+        let length = unknown.len();
 
         bytes.write_u8(byte + 7);
 
@@ -227,7 +219,7 @@ impl Metadata {
 
         bytes.write_all(&unknown);
 
-        bytes
+        Ok(())
       },
     }
   }
