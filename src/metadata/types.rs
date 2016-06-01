@@ -100,6 +100,23 @@ impl Metadata {
     (is_unknown) -> Unknown
   }
 
+  #[inline]
+  pub fn bytes_len(&self) -> usize {
+    4 + match self.data {
+      Data::StreamInfo(ref s)    => s.bytes_len(),
+      Data::Padding(ref length)  => *length as usize,
+      Data::Application(ref a)   => a.bytes_len(),
+      Data::SeekTable(ref s)     => {
+        s.iter().fold(0, |result, seek_point|
+          result + seek_point.bytes_len())
+      }
+      Data::VorbisComment(ref v) => v.bytes_len(),
+      Data::CueSheet(ref c)      => c.bytes_len(),
+      Data::Picture(ref p)       => p.bytes_len(),
+      Data::Unknown(ref u)       => u.len(),
+    }
+  }
+
   pub fn to_bytes(&self) -> Vec<u8> {
     let byte = if self.is_last {
       0b10000000
