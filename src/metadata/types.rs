@@ -100,7 +100,25 @@ impl Metadata {
     (is_unknown) -> Unknown
   }
 
-  pub fn to_bytes(&self) -> Vec<u8> {
+  #[inline]
+  pub fn bytes_len(&self) -> usize {
+    4 + match self.data {
+      Data::StreamInfo(ref s)    => s.bytes_len(),
+      Data::Padding(ref length)  => *length as usize,
+      Data::Application(ref a)   => a.bytes_len(),
+      Data::SeekTable(ref s)     => {
+        s.iter().fold(0, |result, seek_point|
+          result + seek_point.bytes_len())
+      }
+      Data::VorbisComment(ref v) => v.bytes_len(),
+      Data::CueSheet(ref c)      => c.bytes_len(),
+      Data::Picture(ref p)       => p.bytes_len(),
+      Data::Unknown(ref u)       => u.len(),
+    }
+  }
+
+  pub fn to_bytes<Write: io::Write>(&self, buffer: &mut Write)
+                                    -> io::Result<()> {
     let byte = if self.is_last {
       0b10000000
     } else {
@@ -109,108 +127,99 @@ impl Metadata {
 
     match self.data {
       Data::StreamInfo(ref stream_info)       => {
-        let length    = stream_info.bytes_len();
-        let mut bytes = Vec::with_capacity(4 + length);
+        let length = stream_info.bytes_len();
 
-        bytes.write_u8(byte + 0);
+        buffer.write_u8(byte + 0);
 
-        bytes.write_be_u24(length as u32);
+        buffer.write_be_u24(length as u32);
 
-        stream_info.to_bytes(&mut bytes);
+        stream_info.to_bytes(buffer);
 
-        bytes
+        Ok(())
       }
-      Data::Padding(_length)                  => {
+      Data::Padding(length)                   => {
         use std::io::Write;
 
-        let length    = _length as usize;
-        let mut bytes = Vec::with_capacity(4 + length);
-        let padding   = vec![0; length];
+        let padding = vec![0; length as usize];
 
-        bytes.write_u8(byte + 1);
+        buffer.write_u8(byte + 1);
 
-        bytes.write_be_u24(length as u32);
+        buffer.write_be_u24(length as u32);
 
-        bytes.write_all(&padding);
+        buffer.write_all(&padding);
 
-        bytes
+        Ok(())
       }
       Data::Application(ref application)      => {
-        let length    = application.bytes_len();
-        let mut bytes = Vec::with_capacity(4 + length);
+        let length = application.bytes_len();
 
-        bytes.write_u8(byte + 2);
+        buffer.write_u8(byte + 2);
 
-        bytes.write_be_u24(length as u32);
+        buffer.write_be_u24(length as u32);
 
-        application.to_bytes(&mut bytes);
+        application.to_bytes(buffer);
 
-        bytes
+        Ok(())
       }
       Data::SeekTable(ref seek_points)        => {
-        let length    = seek_points.iter().fold(0, |result, seek_point|
-                          result + seek_point.bytes_len());
-        let mut bytes = Vec::with_capacity(4 + length);
+        let length = seek_points.iter().fold(0, |result, seek_point|
+                       result + seek_point.bytes_len());
 
-        bytes.write_u8(byte + 3);
+        buffer.write_u8(byte + 3);
 
-        bytes.write_be_u24(length as u32);
+        buffer.write_be_u24(length as u32);
 
         for seek_point in seek_points {
-          seek_point.to_bytes(&mut bytes);
+          seek_point.to_bytes(buffer);
         }
 
-        bytes
+        Ok(())
       }
       Data::VorbisComment(ref vorbis_comment) => {
-        let length    = vorbis_comment.bytes_len();
-        let mut bytes = Vec::with_capacity(4 + length);
+        let length = vorbis_comment.bytes_len();
 
-        bytes.write_u8(byte + 4);
+        buffer.write_u8(byte + 4);
 
-        bytes.write_be_u24(length as u32);
+        buffer.write_be_u24(length as u32);
 
-        vorbis_comment.to_bytes(&mut bytes);
+        vorbis_comment.to_bytes(buffer);
 
-        bytes
+        Ok(())
       }
       Data::CueSheet(ref cue_sheet)           => {
-        let length    = cue_sheet.bytes_len();
-        let mut bytes = Vec::with_capacity(4 + length);
+        let length = cue_sheet.bytes_len();
 
-        bytes.write_u8(byte + 5);
+        buffer.write_u8(byte + 5);
 
-        bytes.write_be_u24(length as u32);
+        buffer.write_be_u24(length as u32);
 
-        cue_sheet.to_bytes(&mut bytes);
+        cue_sheet.to_bytes(buffer);
 
-        bytes
+        Ok(())
       }
       Data::Picture(ref picture)              => {
-        let length    = picture.bytes_len();
-        let mut bytes = Vec::with_capacity(4 + length);
+        let length = picture.bytes_len();
 
-        bytes.write_u8(byte + 6);
+        buffer.write_u8(byte + 6);
 
-        bytes.write_be_u24(length as u32);
+        buffer.write_be_u24(length as u32);
 
-        picture.to_bytes(&mut bytes);
+        picture.to_bytes(buffer);
 
-        bytes
+        Ok(())
       }
       Data::Unknown(ref unknown)              => {
         use std::io::Write;
 
-        let length    = unknown.len();
-        let mut bytes = Vec::with_capacity(4 + length);
+        let length = unknown.len();
 
-        bytes.write_u8(byte + 7);
+        buffer.write_u8(byte + 7);
 
-        bytes.write_be_u24(length as u32);
+        buffer.write_be_u24(length as u32);
 
-        bytes.write_all(&unknown);
+        buffer.write_all(&unknown);
 
-        bytes
+        Ok(())
       },
     }
   }
@@ -781,7 +790,10 @@ mod tests {
                      \0\x01\x38\x80\xa0\x42\x23\x7c\x54\x93\xfd\xb9\x65\x6b\
                      \x94\xa8\x36\x08\xd1\x1a";
 
-      assert_eq!(&input.to_bytes()[..], &result[..]);
+      let mut bytes = Vec::with_capacity(input.bytes_len());
+
+      assert!(input.to_bytes(&mut bytes).is_ok());
+      assert_eq!(&bytes[..], &result[..]);
     }
 
     {
@@ -804,7 +816,10 @@ mod tests {
                      \x03\x70\0\x9b\x8f\x4a\xc6\x16\x1b\x2b\xb3\xf8\x1c\xa6\
                      \x72\x79\x1d\x96\xf0\x9d\x0b\x0c";
 
-      assert_eq!(&input.to_bytes()[..], &result[..]);
+      let mut bytes = Vec::with_capacity(input.bytes_len());
+
+      assert!(input.to_bytes(&mut bytes).is_ok());
+      assert_eq!(&bytes[..], &result[..]);
     }
   }
 
@@ -813,7 +828,10 @@ mod tests {
     let input  = Metadata::new(false, 10, Data::Padding(10));
     let result = b"\x01\0\0\x0a\0\0\0\0\0\0\0\0\0\0";
 
-    assert_eq!(&input.to_bytes()[..], &result[..]);
+    let mut bytes = Vec::with_capacity(input.bytes_len());
+
+    assert!(input.to_bytes(&mut bytes).is_ok());
+    assert_eq!(&bytes[..], &result[..]);
   }
 
   #[test]
@@ -827,7 +845,10 @@ mod tests {
       let input  = Metadata::new(true, 4, Data::Application(application));
       let result = b"\x82\0\0\x04fake";
 
-      assert_eq!(&input.to_bytes()[..], &result[..]);
+      let mut bytes = Vec::with_capacity(input.bytes_len());
+
+      assert!(input.to_bytes(&mut bytes).is_ok());
+      assert_eq!(&bytes[..], &result[..]);
     }
 
     {
@@ -839,7 +860,10 @@ mod tests {
       let input  = Metadata::new(false, 13, Data::Application(application));
       let result = b"\x02\0\0\x0drifffake data";
 
-      assert_eq!(&input.to_bytes()[..], &result[..]);
+      let mut bytes = Vec::with_capacity(input.bytes_len());
+
+      assert!(input.to_bytes(&mut bytes).is_ok());
+      assert_eq!(&bytes[..], &result[..]);
     }
   }
 
@@ -881,7 +905,10 @@ mod tests {
                    \xff\xff\0\0\0\0\0\0\0\0\0\0";
 
 
-    assert_eq!(&input.to_bytes()[..], &result[..]);
+    let mut bytes = Vec::with_capacity(input.bytes_len());
+
+    assert!(input.to_bytes(&mut bytes).is_ok());
+    assert_eq!(&bytes[..], &result[..]);
   }
 
   #[test]
@@ -937,7 +964,10 @@ mod tests {
     let input = Metadata::new(false, 203,
       Data::VorbisComment(vorbis_comment));
 
-    assert_eq!(&input.to_bytes()[..], &result[..]);
+    let mut bytes = Vec::with_capacity(input.bytes_len());
+
+    assert!(input.to_bytes(&mut bytes).is_ok());
+    assert_eq!(&bytes[..], &result[..]);
   }
 
   #[test]
@@ -1016,7 +1046,10 @@ mod tests {
                    \xaa\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
                    \0";
 
-    assert_eq!(&input.to_bytes()[..], &result[..]);
+    let mut bytes = Vec::with_capacity(input.bytes_len());
+
+    assert!(input.to_bytes(&mut bytes).is_ok());
+    assert_eq!(&bytes[..], &result[..]);
   }
 
   #[test]
@@ -1036,7 +1069,10 @@ mod tests {
     let result = b"\x06\0\0\x29\0\0\0\0\0\0\0\x09image/png\0\0\0\0\0\0\0\0\0\
                    \0\0\0\0\0\0\0\0\0\0\0\0\0\0\0";
 
-    assert_eq!(&input.to_bytes()[..], &result[..]);
+    let mut bytes = Vec::with_capacity(input.bytes_len());
+
+    assert!(input.to_bytes(&mut bytes).is_ok());
+    assert_eq!(&bytes[..], &result[..]);
   }
 
   #[test]
@@ -1047,6 +1083,9 @@ mod tests {
     let result  = b"\x87\0\0\x2frandom data that won't really be parsed \
                     anyway.";
 
-    assert_eq!(&input.to_bytes()[..], &result[..]);
+    let mut bytes = Vec::with_capacity(input.bytes_len());
+
+    assert!(input.to_bytes(&mut bytes).is_ok());
+    assert_eq!(&bytes[..], &result[..]);
   }
 }
