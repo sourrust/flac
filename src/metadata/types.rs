@@ -129,11 +129,11 @@ impl Metadata {
       Data::StreamInfo(ref stream_info)       => {
         let length = stream_info.bytes_len();
 
-        bytes.write_u8(byte + 0);
+        buffer.write_u8(byte + 0);
 
-        bytes.write_be_u24(length as u32);
+        buffer.write_be_u24(length as u32);
 
-        stream_info.to_bytes(&mut bytes);
+        stream_info.to_bytes(buffer);
 
         Ok(())
       }
@@ -142,22 +142,22 @@ impl Metadata {
 
         let padding = vec![0; length as usize];
 
-        bytes.write_u8(byte + 1);
+        buffer.write_u8(byte + 1);
 
-        bytes.write_be_u24(length as u32);
+        buffer.write_be_u24(length as u32);
 
-        bytes.write_all(&padding);
+        buffer.write_all(&padding);
 
         Ok(())
       }
       Data::Application(ref application)      => {
         let length = application.bytes_len();
 
-        bytes.write_u8(byte + 2);
+        buffer.write_u8(byte + 2);
 
-        bytes.write_be_u24(length as u32);
+        buffer.write_be_u24(length as u32);
 
-        application.to_bytes(&mut bytes);
+        application.to_bytes(buffer);
 
         Ok(())
       }
@@ -165,12 +165,12 @@ impl Metadata {
         let length = seek_points.iter().fold(0, |result, seek_point|
                        result + seek_point.bytes_len());
 
-        bytes.write_u8(byte + 3);
+        buffer.write_u8(byte + 3);
 
-        bytes.write_be_u24(length as u32);
+        buffer.write_be_u24(length as u32);
 
         for seek_point in seek_points {
-          seek_point.to_bytes(&mut bytes);
+          seek_point.to_bytes(buffer);
         }
 
         Ok(())
@@ -178,33 +178,33 @@ impl Metadata {
       Data::VorbisComment(ref vorbis_comment) => {
         let length = vorbis_comment.bytes_len();
 
-        bytes.write_u8(byte + 4);
+        buffer.write_u8(byte + 4);
 
-        bytes.write_be_u24(length as u32);
+        buffer.write_be_u24(length as u32);
 
-        vorbis_comment.to_bytes(&mut bytes);
+        vorbis_comment.to_bytes(buffer);
 
         Ok(())
       }
       Data::CueSheet(ref cue_sheet)           => {
         let length = cue_sheet.bytes_len();
 
-        bytes.write_u8(byte + 5);
+        buffer.write_u8(byte + 5);
 
-        bytes.write_be_u24(length as u32);
+        buffer.write_be_u24(length as u32);
 
-        cue_sheet.to_bytes(&mut bytes);
+        cue_sheet.to_bytes(buffer);
 
         Ok(())
       }
       Data::Picture(ref picture)              => {
         let length = picture.bytes_len();
 
-        bytes.write_u8(byte + 6);
+        buffer.write_u8(byte + 6);
 
-        bytes.write_be_u24(length as u32);
+        buffer.write_be_u24(length as u32);
 
-        picture.to_bytes(&mut bytes);
+        picture.to_bytes(buffer);
 
         Ok(())
       }
@@ -213,11 +213,11 @@ impl Metadata {
 
         let length = unknown.len();
 
-        bytes.write_u8(byte + 7);
+        buffer.write_u8(byte + 7);
 
-        bytes.write_be_u24(length as u32);
+        buffer.write_be_u24(length as u32);
 
-        bytes.write_all(&unknown);
+        buffer.write_all(&unknown);
 
         Ok(())
       },
