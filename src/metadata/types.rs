@@ -213,11 +213,11 @@ impl Metadata {
 
         let length = unknown.len();
 
-        buffer.write_u8(byte + 7);
+        try!(buffer.write_u8(byte + 7));
 
-        buffer.write_be_u24(length as u32);
+        try!(buffer.write_be_u24(length as u32));
 
-        buffer.write_all(&unknown);
+        try!(buffer.write_all(&unknown));
 
         Ok(())
       },
