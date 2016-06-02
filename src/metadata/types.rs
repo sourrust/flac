@@ -153,11 +153,11 @@ impl Metadata {
       Data::Application(ref application)      => {
         let length = application.bytes_len();
 
-        buffer.write_u8(byte + 2);
+        try!(buffer.write_u8(byte + 2));
 
-        buffer.write_be_u24(length as u32);
+        try!(buffer.write_be_u24(length as u32));
 
-        application.to_bytes(buffer);
+        try!(application.to_bytes(buffer));
 
         Ok(())
       }
