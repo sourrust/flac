@@ -142,11 +142,11 @@ impl Metadata {
 
         let padding = vec![0; length as usize];
 
-        buffer.write_u8(byte + 1);
+        try!(buffer.write_u8(byte + 1));
 
-        buffer.write_be_u24(length as u32);
+        try!(buffer.write_be_u24(length));
 
-        buffer.write_all(&padding);
+        try!(buffer.write_all(&padding));
 
         Ok(())
       }
