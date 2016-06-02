@@ -129,11 +129,11 @@ impl Metadata {
       Data::StreamInfo(ref stream_info)       => {
         let length = stream_info.bytes_len();
 
-        buffer.write_u8(byte + 0);
+        try!(buffer.write_u8(byte + 0));
 
-        buffer.write_be_u24(length as u32);
+        try!(buffer.write_be_u24(length as u32));
 
-        stream_info.to_bytes(buffer);
+        try!(stream_info.to_bytes(buffer));
 
         Ok(())
       }
