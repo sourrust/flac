@@ -165,12 +165,12 @@ impl Metadata {
         let length = seek_points.iter().fold(0, |result, seek_point|
                        result + seek_point.bytes_len());
 
-        buffer.write_u8(byte + 3);
+        try!(buffer.write_u8(byte + 3));
 
-        buffer.write_be_u24(length as u32);
+        try!(buffer.write_be_u24(length as u32));
 
         for seek_point in seek_points {
-          seek_point.to_bytes(buffer);
+          try!(seek_point.to_bytes(buffer));
         }
 
         Ok(())
