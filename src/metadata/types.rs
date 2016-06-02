@@ -189,11 +189,11 @@ impl Metadata {
       Data::CueSheet(ref cue_sheet)           => {
         let length = cue_sheet.bytes_len();
 
-        buffer.write_u8(byte + 5);
+        try!(buffer.write_u8(byte + 5));
 
-        buffer.write_be_u24(length as u32);
+        try!(buffer.write_be_u24(length as u32));
 
-        cue_sheet.to_bytes(buffer);
+        try!(cue_sheet.to_bytes(buffer));
 
         Ok(())
       }
