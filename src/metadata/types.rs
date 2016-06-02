@@ -200,11 +200,11 @@ impl Metadata {
       Data::Picture(ref picture)              => {
         let length = picture.bytes_len();
 
-        buffer.write_u8(byte + 6);
+        try!(buffer.write_u8(byte + 6));
 
-        buffer.write_be_u24(length as u32);
+        try!(buffer.write_be_u24(length as u32));
 
-        picture.to_bytes(buffer);
+        try!(picture.to_bytes(buffer));
 
         Ok(())
       }
