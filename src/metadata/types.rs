@@ -178,11 +178,11 @@ impl Metadata {
       Data::VorbisComment(ref vorbis_comment) => {
         let length = vorbis_comment.bytes_len();
 
-        buffer.write_u8(byte + 4);
+        try!(buffer.write_u8(byte + 4));
 
-        buffer.write_be_u24(length as u32);
+        try!(buffer.write_be_u24(length as u32));
 
-        vorbis_comment.to_bytes(buffer);
+        try!(vorbis_comment.to_bytes(buffer));
 
         Ok(())
       }
