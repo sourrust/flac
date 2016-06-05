@@ -138,8 +138,6 @@ impl Metadata {
         Ok(())
       }
       Data::Padding(length)                   => {
-        use std::io::Write;
-
         let padding = vec![0; length as usize];
 
         try!(buffer.write_u8(byte + 1));
@@ -209,8 +207,6 @@ impl Metadata {
         Ok(())
       }
       Data::Unknown(ref unknown)              => {
-        use std::io::Write;
-
         let length = unknown.len();
 
         try!(buffer.write_u8(byte + 7));
@@ -247,7 +243,7 @@ pub enum Data {
 }
 
 /// Information regarding the entire audio stream.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct StreamInfo {
   /// Minimum block size, in samples, used in the stream.
   pub min_block_size: u16,
@@ -273,21 +269,6 @@ pub struct StreamInfo {
 }
 
 impl StreamInfo {
-  /// Constructs a zeroed out `StreamInfo` struct.
-  pub fn new() -> StreamInfo {
-    StreamInfo {
-      min_block_size: 0,
-      max_block_size: 0,
-      min_frame_size: 0,
-      max_frame_size: 0,
-      sample_rate: 0,
-      channels: 0,
-      bits_per_sample: 0,
-      total_samples: 0,
-      md5_sum: [0; 16],
-    }
-  }
-
   /// Returns true if `min_block_size` and `max_block_size` are different,
   /// otherwise false.
   #[inline]
@@ -740,7 +721,7 @@ mod tests {
 
   #[test]
   fn test_is_varied_block_size() {
-    let mut info = StreamInfo::new();
+    let mut info: StreamInfo = Default::default();
 
     info.min_block_size = 512;
     info.max_block_size = 1024;
@@ -755,7 +736,7 @@ mod tests {
 
   #[test]
   fn test_is_fixed_block_size() {
-    let mut info = StreamInfo::new();
+    let mut info: StreamInfo = Default::default();
 
     info.min_block_size = 512;
     info.max_block_size = 512;

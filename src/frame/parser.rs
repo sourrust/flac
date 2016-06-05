@@ -457,7 +457,7 @@ mod tests {
                         \x01\x88"[..]
                    , &b"\xff\xf8\xc8\x72\x40\x19"[..]
                    ];
-    let mut info = StreamInfo::new();
+    let mut info: StreamInfo = Default::default();
     let results  = [ IResult::Done(&[][..], Header {
                        block_size: 4608,
                        sample_rate: 192000,
