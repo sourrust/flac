@@ -93,7 +93,7 @@ impl<P> Stream<P> where P: StreamProducer {
   }
 
   fn from_stream_producer(mut producer: P) -> Result<Self, ErrorKind> {
-    let mut stream_info = StreamInfo::new();
+    let mut stream_info = Default::default();
     let mut metadata    = Vec::new();
 
     many_metadata(&mut producer, |block| {

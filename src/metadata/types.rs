@@ -721,7 +721,7 @@ mod tests {
 
   #[test]
   fn test_is_varied_block_size() {
-    let mut info = StreamInfo::new();
+    let mut info: StreamInfo = Default::default();
 
     info.min_block_size = 512;
     info.max_block_size = 1024;
@@ -736,7 +736,7 @@ mod tests {
 
   #[test]
   fn test_is_fixed_block_size() {
-    let mut info = StreamInfo::new();
+    let mut info: StreamInfo = Default::default();
 
     info.min_block_size = 512;
     info.max_block_size = 512;
