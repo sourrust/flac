@@ -243,7 +243,7 @@ pub enum Data {
 }
 
 /// Information regarding the entire audio stream.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct StreamInfo {
   /// Minimum block size, in samples, used in the stream.
   pub min_block_size: u16,
@@ -269,21 +269,6 @@ pub struct StreamInfo {
 }
 
 impl StreamInfo {
-  /// Constructs a zeroed out `StreamInfo` struct.
-  pub fn new() -> StreamInfo {
-    StreamInfo {
-      min_block_size: 0,
-      max_block_size: 0,
-      min_frame_size: 0,
-      max_frame_size: 0,
-      sample_rate: 0,
-      channels: 0,
-      bits_per_sample: 0,
-      total_samples: 0,
-      md5_sum: [0; 16],
-    }
-  }
-
   /// Returns true if `min_block_size` and `max_block_size` are different,
   /// otherwise false.
   #[inline]
