@@ -138,8 +138,6 @@ impl Metadata {
         Ok(())
       }
       Data::Padding(length)                   => {
-        use std::io::Write;
-
         let padding = vec![0; length as usize];
 
         try!(buffer.write_u8(byte + 1));
@@ -209,8 +207,6 @@ impl Metadata {
         Ok(())
       }
       Data::Unknown(ref unknown)              => {
-        use std::io::Write;
-
         let length = unknown.len();
 
         try!(buffer.write_u8(byte + 7));
