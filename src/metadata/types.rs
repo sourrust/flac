@@ -558,7 +558,7 @@ impl CueSheetTrackIndex {
 /// mime type string.
 #[derive(Debug, PartialEq, Eq)]
 pub struct Picture {
-  /// Picture type, based on the ID3v2 APIC frame.
+  /// Picture type, based on the `ID3v2` APIC frame.
   pub picture_type: PictureType,
   /// Multipurpose Internet Mail Extensions (MIME) type.
   pub mime_type: String,
@@ -638,7 +638,7 @@ impl Picture {
   }
 }
 
-/// The picture type according to the ID3v2 attached picture frame.
+/// The picture type according to the `ID3v2` attached picture frame.
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum PictureType {
   /// Other picture type not categorized in this enum.
