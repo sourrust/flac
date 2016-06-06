@@ -154,8 +154,8 @@ impl<P> Stream<P> where P: StreamProducer {
 
           return Some(block_size);
         }
-        Err(ErrorKind::EndOfInput) => return None,
         Err(ErrorKind::Continue)   => continue,
+        Err(ErrorKind::EndOfInput) |
         Err(_)                     => return None,
       }
     }
