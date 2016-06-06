@@ -135,7 +135,7 @@ impl<P> Stream<P> where P: StreamProducer {
 
     loop {
       match self.producer.parse(|i| frame_parser(i, stream_info, buffer)) {
-        Ok(frame)                  => {
+        Ok(frame)                => {
           let channels    = frame.header.channels as usize;
           let block_size  = frame.header.block_size as usize;
           let mut channel = 0;
@@ -154,9 +154,8 @@ impl<P> Stream<P> where P: StreamProducer {
 
           return Some(block_size);
         }
-        Err(ErrorKind::Continue)   => continue,
-        Err(ErrorKind::EndOfInput) |
-        Err(_)                     => return None,
+        Err(ErrorKind::Continue) => continue,
+        Err(_)                   => return None,
       }
     }
   }
