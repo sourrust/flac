@@ -192,7 +192,7 @@ impl<'a, P, S> Iterator for Iter<'a, P, S>
 
     let channels = self.stream.info.channels as usize;
     let index    = self.sample_index + (self.channel * self.block_size);
-    let sample   = self.buffer[index];
+    let sample   = unsafe { *self.buffer.get_unchecked(index) };
 
     self.channel += 1;
 
