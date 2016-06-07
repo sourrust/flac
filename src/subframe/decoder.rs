@@ -22,7 +22,7 @@ pub fn fixed_restore_signal<S: Sample>(order: usize,
                    , &[-1, 4, -6, 4][..]
                    ];
 
-  let coefficients = polynomial[order];
+  let coefficients = unsafe { *polynomial.get_unchecked(order) };
   let length       = block_size - order;
 
   for i in 0..length {
