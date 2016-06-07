@@ -9,11 +9,13 @@ pub fn decode_left_side<S: Sample>(buffer: &mut [S]) {
   let block_size = buffer.len() / 2;
 
   for i in 0..block_size {
-    let left = buffer[i];
-    let side = buffer[i + block_size];
+    unsafe {
+      let left = *buffer.get_unchecked(i);
+      let side = *buffer.get_unchecked(i + block_size);
 
-    // right channel
-    buffer[i + block_size] = left - side;
+      // right channel
+      buffer[i + block_size] = left - side;
+    }
   }
 }
 
