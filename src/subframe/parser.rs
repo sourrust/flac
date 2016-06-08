@@ -16,9 +16,9 @@ pub fn leading_zeros(input: (&[u8], usize)) -> IResult<(&[u8], usize), u32> {
   let mut is_parsed = false;
   let bytes_len     = bytes.len();
 
-  for i in 0..bytes_len {
+  for (i, _byte) in bytes.iter().enumerate() {
     // Clear the number of offset bits
-    let byte  = bytes[i] << offset;
+    let byte  = *_byte << offset;
     let zeros = byte.leading_zeros() as usize;
 
     index = i;

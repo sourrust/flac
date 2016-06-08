@@ -187,8 +187,8 @@ pub fn number_type(input: &[u8], is_sample: bool,
   let mut result   = value as u64;
   let mut is_error = false;
 
-  for i in 0..size {
-    let byte = bytes[i] as u64;
+  for _byte in bytes.iter().take(size) {
+    let byte = *_byte as u64;
 
     if byte >= 0b10000000 && byte <= 0b10111111 {
       result = (result << 6) + (byte & 0b00111111);
