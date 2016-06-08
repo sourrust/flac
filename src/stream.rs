@@ -136,18 +136,16 @@ impl<P> Stream<P> where P: StreamProducer {
     loop {
       match self.producer.parse(|i| frame_parser(i, stream_info, buffer)) {
         Ok(frame)                => {
-          let channels    = frame.header.channels as usize;
-          let block_size  = frame.header.block_size as usize;
-          let mut channel = 0;
+          let channels   = frame.header.channels as usize;
+          let block_size = frame.header.block_size as usize;
+          let subframes  = frame.subframes[0..channels].iter();
 
-          for subframe in &frame.subframes[0..channels] {
+          for (channel, subframe) in subframes.enumerate() {
             let start  = channel * block_size;
             let end    = (channel + 1) * block_size;
             let output = &mut buffer[start..end];
 
             subframe::decode(&subframe, block_size, output);
-
-            channel += 1;
           }
 
           frame::decode(frame.header.channel_assignment, buffer);
