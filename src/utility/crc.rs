@@ -133,8 +133,11 @@ pub fn crc8(data: &[u8]) -> u8 {
 
 #[inline]
 pub fn crc16(data: &[u8]) -> u16 {
-  data.iter().fold(0, |crc, byte|
-    (crc << 8) ^ CRC_16_TABLE[(((crc >> 8) as u8) ^ byte) as usize])
+  data.iter().fold(0, |crc, byte| {
+    let index = (((crc >> 8) as u8) ^ byte) as usize;
+
+    (crc << 8) ^ unsafe { *CRC_16_TABLE.get_unchecked(index) }
+  })
 }
 
 #[cfg(test)]
