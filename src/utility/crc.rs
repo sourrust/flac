@@ -124,13 +124,20 @@ const CRC_16_TABLE: [u16; 256] = [
 
 #[inline]
 pub fn crc8(data: &[u8]) -> u8 {
-  data.iter().fold(0, |crc, byte| CRC_8_TABLE[(crc ^ byte) as usize])
+  data.iter().fold(0, |crc, byte| {
+    let index = (crc ^ byte) as usize;
+
+    unsafe { *CRC_8_TABLE.get_unchecked(index) }
+  })
 }
 
 #[inline]
 pub fn crc16(data: &[u8]) -> u16 {
-  data.iter().fold(0, |crc, byte|
-    (crc << 8) ^ CRC_16_TABLE[(((crc >> 8) as u8) ^ byte) as usize])
+  data.iter().fold(0, |crc, byte| {
+    let index = (((crc >> 8) as u8) ^ byte) as usize;
+
+    (crc << 8) ^ unsafe { *CRC_16_TABLE.get_unchecked(index) }
+  })
 }
 
 #[cfg(test)]
