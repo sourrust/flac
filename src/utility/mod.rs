@@ -203,9 +203,11 @@ pub fn to_u32(bytes: &[u8]) -> u32 {
 
   debug_assert!(length <= 4);
 
-  (0..length).fold(0, |result, i|
-    result + ((bytes[i] as u32) << ((length - 1 - i) * 8))
-  )
+  (0..length).fold(0, |result, i| {
+    let byte = unsafe { *bytes.get_unchecked(i) };
+
+    result + ((byte as u32) << ((length - 1 - i) * 8))
+  })
 }
 
 // Extends a signed value of a specific bit size to a larger bit size.
