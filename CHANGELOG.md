@@ -2,7 +2,7 @@
 
 ### Added
 
-* Encoder for Metadata types
+* Binary serialization for Metadata types
 
 ### Changed
 
