@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+### Added
+
+* Encoder for Metadata types
+
 ## [0.4.0] - 2016-04-23
 
 ### Added
