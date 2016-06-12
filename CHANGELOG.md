@@ -4,6 +4,11 @@
 
 * Encoder for Metadata types
 
+### Changed
+
+* Improve decoding performance, [average of 3% decrease in decode
+  times][2016-06-11], thanks to the advice of [@mmstick][mmstick].
+
 ## [0.4.0] - 2016-04-23
 
 ### Added
@@ -79,6 +84,9 @@
 * Complete parsing of FLAC files
 * Complete decoding of FLAC files
 * Example decoder from FLAC to WAV
+
+[2016-06-11]: https://gist.github.com/sourrust/7dcc4966a30dbbd870990342b900bc63
+[mmstick]: https://github.com/mmstick
 
 [Unreleased]: https://github.com/sourrust/flac/compare/v0.4.0...HEAD
 [0.2.0]: https://github.com/sourrust/flac/compare/v0.1.0...v0.2.0
