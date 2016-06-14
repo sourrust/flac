@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `ErrorKind` enum in crate `flac`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, ErrorKind">
+
+    <title>flac::ErrorKind - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='index.html'>flac</a></p><script>window.sidebarCurrent = {name: 'ErrorKind', ty: 'enum', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content enum">
+<h1 class='fqn'><span class='in-band'>Enum <a href='index.html'>flac</a>::<wbr><a class='enum' href=''>ErrorKind</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-32' class='srclink' href='../src/flac/src/utility/types.rs.html#11-95' title='goto source code'>[src]</a></span></h1>
+<pre class='rust enum'>pub enum ErrorKind {
+    IO(<a class='enum' href='https://doc.rust-lang.org/nightly/std/io/error/enum.ErrorKind.html' title='std::io::error::ErrorKind'>ErrorKind</a>),
+    Incomplete(<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>),
+    Continue,
+    EndOfInput,
+    Unknown,
+    HeaderParser,
+    MetadataHeaderParser,
+    StreamInfoParser,
+    PaddingParser,
+    ApplicationParser,
+    SeekTableParser,
+    VorbisCommentParser,
+    CueSheetParser,
+    PictureParser,
+    UnknownParser,
+    BlockingStrategyParser,
+    BlockingSampleParser,
+    ChannelBitsParser,
+    UTF8HeaderParser,
+    UTF8BodyParser,
+    BlockSizeParser,
+    SampleRateParser,
+    CRC8Parser,
+    FrameFooterParser,
+    SubframeHeaderParser,
+    LeadingZerosParser,
+    ConstantParser,
+    VerbatimParser,
+    FixedParser,
+    LPCParser,
+    InvalidBlockType,
+    InvalidSyncCode,
+    InvalidBlockSample,
+    InvalidChannelBits,
+    InvalidUTF8,
+    InvalidCRC8,
+    InvalidCRC16,
+    InvalidSubframeHeader,
+    NotFound,
+}</pre><div class='docblock'><p>Represent the different kinds of errors.</p>
+</div><h2 class='variants'>Variants</h2>
+<table class='variants_table'><tr><td id='variant.IO'><code>IO</code></td><td><div class='docblock'><p>Error from I/O.</p>
+</div></td><td></td></tr><tr><td id='variant.Incomplete'><code>Incomplete</code></td><td><div class='docblock'><p>A parser stopped midway and need more bytes to consume.</p>
+</div></td><td></td></tr><tr><td id='variant.Continue'><code>Continue</code></td><td><div class='docblock'><p>A parser has completes and there is still more bytes to consume.</p>
+</div></td><td></td></tr><tr><td id='variant.EndOfInput'><code>EndOfInput</code></td><td><div class='docblock'><p>A parser has completes and there is no more bytes to consume.</p>
+</div></td><td></td></tr><tr><td id='variant.Unknown'><code>Unknown</code></td><td><div class='docblock'><p>A non-specified error.</p>
+</div></td><td></td></tr><tr><td id='variant.HeaderParser'><code>HeaderParser</code></td><td><div class='docblock'><p>Failed parsing the &quot;fLaC&quot; header token.</p>
+</div></td><td></td></tr><tr><td id='variant.MetadataHeaderParser'><code>MetadataHeaderParser</code></td><td><div class='docblock'><p>Failed parsing a metadata header.</p>
+</div></td><td></td></tr><tr><td id='variant.StreamInfoParser'><code>StreamInfoParser</code></td><td><div class='docblock'><p>Failed parsing the metadata block <code>StreamInfo</code>.</p>
+</div></td><td></td></tr><tr><td id='variant.PaddingParser'><code>PaddingParser</code></td><td><div class='docblock'><p>Failed parsing the metadata block <code>Padding</code>.</p>
+</div></td><td></td></tr><tr><td id='variant.ApplicationParser'><code>ApplicationParser</code></td><td><div class='docblock'><p>Failed parsing the metadata block <code>Application</code>.</p>
+</div></td><td></td></tr><tr><td id='variant.SeekTableParser'><code>SeekTableParser</code></td><td><div class='docblock'><p>Failed parsing the metadata block <code>SeekTable</code>.</p>
+</div></td><td></td></tr><tr><td id='variant.VorbisCommentParser'><code>VorbisCommentParser</code></td><td><div class='docblock'><p>Failed parsing the metadata block <code>VorbisComment</code>.</p>
+</div></td><td></td></tr><tr><td id='variant.CueSheetParser'><code>CueSheetParser</code></td><td><div class='docblock'><p>Failed parsing the metadata block <code>CueSheet</code>.</p>
+</div></td><td></td></tr><tr><td id='variant.PictureParser'><code>PictureParser</code></td><td><div class='docblock'><p>Failed parsing the metadata block <code>Picture</code>.</p>
+</div></td><td></td></tr><tr><td id='variant.UnknownParser'><code>UnknownParser</code></td><td><div class='docblock'><p>Failed parsing the metadata block <code>Unknown</code>.</p>
+</div></td><td></td></tr><tr><td id='variant.BlockingStrategyParser'><code>BlockingStrategyParser</code></td><td><div class='docblock'><p>Failed parsing the blocking strategy inside the frame header.</p>
+</div></td><td></td></tr><tr><td id='variant.BlockingSampleParser'><code>BlockingSampleParser</code></td><td><div class='docblock'><p>Failed parsing the blocking sample inside the frame header.</p>
+</div></td><td></td></tr><tr><td id='variant.ChannelBitsParser'><code>ChannelBitsParser</code></td><td><div class='docblock'><p>Failed parsing the channel bits inside the frame header.</p>
+</div></td><td></td></tr><tr><td id='variant.UTF8HeaderParser'><code>UTF8HeaderParser</code></td><td><div class='docblock'><p>Failed parsing the UTF-8 header inside the frame header.</p>
+</div></td><td></td></tr><tr><td id='variant.UTF8BodyParser'><code>UTF8BodyParser</code></td><td><div class='docblock'><p>Failed parsing the UTF-8 body inside the frame header.</p>
+</div></td><td></td></tr><tr><td id='variant.BlockSizeParser'><code>BlockSizeParser</code></td><td><div class='docblock'><p>Failed parsing the secondary block size inside the frame header.</p>
+</div></td><td></td></tr><tr><td id='variant.SampleRateParser'><code>SampleRateParser</code></td><td><div class='docblock'><p>Failed parsing the secondary sample rate inside the frame header.</p>
+</div></td><td></td></tr><tr><td id='variant.CRC8Parser'><code>CRC8Parser</code></td><td><div class='docblock'><p>Failed parsing the CRC-8 inside the frame header.</p>
+</div></td><td></td></tr><tr><td id='variant.FrameFooterParser'><code>FrameFooterParser</code></td><td><div class='docblock'><p>Failed parsing the frame footer, also known as the CRC-16.</p>
+</div></td><td></td></tr><tr><td id='variant.SubframeHeaderParser'><code>SubframeHeaderParser</code></td><td><div class='docblock'><p>Failed parsing the subframe header.</p>
+</div></td><td></td></tr><tr><td id='variant.LeadingZerosParser'><code>LeadingZerosParser</code></td><td><div class='docblock'><p>Failed parsing the leading zero for a unary value.</p>
+</div></td><td></td></tr><tr><td id='variant.ConstantParser'><code>ConstantParser</code></td><td><div class='docblock'><p>Failed parsing a Constant subframe data.</p>
+</div></td><td></td></tr><tr><td id='variant.VerbatimParser'><code>VerbatimParser</code></td><td><div class='docblock'><p>Failed parsing a Verbatim subframe data.</p>
+</div></td><td></td></tr><tr><td id='variant.FixedParser'><code>FixedParser</code></td><td><div class='docblock'><p>Failed parsing a Fixed subframe data.</p>
+</div></td><td></td></tr><tr><td id='variant.LPCParser'><code>LPCParser</code></td><td><div class='docblock'><p>Failed parsing a LPC subframe data.</p>
+</div></td><td></td></tr><tr><td id='variant.InvalidBlockType'><code>InvalidBlockType</code></td><td><div class='docblock'><p>A block type, base on the number, that is outside the range (0-126).</p>
+</div></td><td></td></tr><tr><td id='variant.InvalidSyncCode'><code>InvalidSyncCode</code></td><td><div class='docblock'><p>An incorrect sync code with the frame header.</p>
+</div></td><td></td></tr><tr><td id='variant.InvalidBlockSample'><code>InvalidBlockSample</code></td><td><div class='docblock'><p>A block sample that could cause sync-fooling.</p>
+</div></td><td></td></tr><tr><td id='variant.InvalidChannelBits'><code>InvalidChannelBits</code></td><td><div class='docblock'><p>One or more bits are reserved values.</p>
+</div></td><td></td></tr><tr><td id='variant.InvalidUTF8'><code>InvalidUTF8</code></td><td><div class='docblock'><p>An error occurred in building the UTF-8 value.</p>
+</div></td><td></td></tr><tr><td id='variant.InvalidCRC8'><code>InvalidCRC8</code></td><td><div class='docblock'><p>The stored CRC-8 doesn&#39;t match the one generated from the bytes within
+the frame header.</p>
+</div></td><td></td></tr><tr><td id='variant.InvalidCRC16'><code>InvalidCRC16</code></td><td><div class='docblock'><p>The stored CRC-16 doesn&#39;t match the one generated from the bytes
+within the entire frame.</p>
+</div></td><td></td></tr><tr><td id='variant.InvalidSubframeHeader'><code>InvalidSubframeHeader</code></td><td><div class='docblock'><p>A subframe header that could cause sync-fooling.</p>
+</div></td><td></td></tr><tr><td id='variant.NotFound'><code>NotFound</code></td><td><div class='docblock'><p>Some metadata block was not found with a specific filter.</p>
+</div></td><td></td></tr></table><h2 id='implementations'>Trait Implementations</h2><h3 id='derived_implementations'>Derived Implementations </h3><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html' title='core::cmp::PartialEq'>PartialEq</a> for <a class='enum' href='../flac/enum.ErrorKind.html' title='flac::ErrorKind'>ErrorKind</a></code></h3><div class='impl-items'><h4 id='method.eq' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html#tymethod.eq' class='fnname'>eq</a>(&amp;self, __arg_0: &amp;<a class='enum' href='../flac/enum.ErrorKind.html' title='flac::ErrorKind'>ErrorKind</a>) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+<h4 id='method.ne' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html#method.ne' class='fnname'>ne</a>(&amp;self, __arg_0: &amp;<a class='enum' href='../flac/enum.ErrorKind.html' title='flac::ErrorKind'>ErrorKind</a>) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for <a class='enum' href='../flac/enum.ErrorKind.html' title='flac::ErrorKind'>ErrorKind</a></code></h3><div class='impl-items'></div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='enum' href='../flac/enum.ErrorKind.html' title='flac::ErrorKind'>ErrorKind</a></code></h3><div class='impl-items'><h4 id='method.fmt' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#tymethod.fmt' class='fnname'>fmt</a>(&amp;self, __arg_0: &amp;mut <a class='struct' href='https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html' title='core::fmt::Formatter'>Formatter</a>) -&gt; <a class='type' href='https://doc.rust-lang.org/nightly/core/fmt/type.Result.html' title='core::fmt::Result'>Result</a></code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> for <a class='enum' href='../flac/enum.ErrorKind.html' title='flac::ErrorKind'>ErrorKind</a></code></h3><div class='impl-items'><h4 id='method.clone' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#tymethod.clone' class='fnname'>clone</a>(&amp;self) -&gt; <a class='enum' href='../flac/enum.ErrorKind.html' title='flac::ErrorKind'>ErrorKind</a></code></h4>
+<h4 id='method.clone_from' class='method'><span class="since">1.0.0</span><code>fn <a href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone_from' class='fnname'>clone_from</a>(&amp;mut self, source: &amp;Self)</code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/marker/trait.Copy.html' title='core::marker::Copy'>Copy</a> for <a class='enum' href='../flac/enum.ErrorKind.html' title='flac::ErrorKind'>ErrorKind</a></code></h3><div class='impl-items'></div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "flac";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../jquery.js"></script>
+    <script src="../main.js"></script>
+    
+    <script defer src="../search-index.js"></script>
+</body>
+</html>

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `Metadata` struct in crate `flac`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, Metadata">
+
+    <title>flac::Metadata - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='index.html'>flac</a></p><script>window.sidebarCurrent = {name: 'Metadata', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content struct">
+<h1 class='fqn'><span class='in-band'>Struct <a href='index.html'>flac</a>::<wbr><a class='struct' href=''>Metadata</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-1878' class='srclink' href='../src/flac/src/metadata/types.rs.html#9-17' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct Metadata {
+    pub data: <a class='enum' href='../flac/metadata/enum.Data.html' title='flac::metadata::Data'>Data</a>,
+    // some fields omitted
+}</pre><div class='docblock'><p>Data associated with a single metadata block.</p>
+</div><h2 class='fields'>Fields</h2>
+<table><tr class='stab '>
+                             <td id='structfield.data'><code>data</code></td><td><div class='docblock'><p>Block data containing one of the eight different types of metadata.</p>
+</div></td></tr></table><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl <a class='struct' href='../flac/struct.Metadata.html' title='flac::Metadata'>Metadata</a></code></h3><div class='impl-items'><h4 id='method.new' class='method'><code>fn <a href='#method.new' class='fnname'>new</a>(is_last: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a>, length: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u32.html'>u32</a>, data: <a class='enum' href='../flac/metadata/enum.Data.html' title='flac::metadata::Data'>Data</a>) -&gt; Self</code></h4>
+<div class='docblock'><p>Constructs a new <code>Metadata</code> struct based on the arguments passed in.</p>
+</div><h4 id='method.is_last' class='method'><code>fn <a href='#method.is_last' class='fnname'>is_last</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+<div class='docblock'><p>Returns whether the current metadata block is the last.</p>
+</div><h4 id='method.data_type' class='method'><code>fn <a href='#method.data_type' class='fnname'>data_type</a>(&amp;self) -&gt; <a class='enum' href='../flac/metadata/enum.Type.html' title='flac::metadata::Type'>Type</a></code></h4>
+<div class='docblock'><p>Returns the metadata block&#39;s type.</p>
+</div><h4 id='method.is_stream_info' class='method'><code>fn <a href='#method.is_stream_info' class='fnname'>is_stream_info</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+<div class='docblock'><p>Returns true when the current <code>Metadata</code> is <code>StreamInfo</code>.</p>
+</div><h4 id='method.is_padding' class='method'><code>fn <a href='#method.is_padding' class='fnname'>is_padding</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+<div class='docblock'><p>Returns true when the current <code>Metadata</code> is <code>Padding</code>.</p>
+</div><h4 id='method.is_application' class='method'><code>fn <a href='#method.is_application' class='fnname'>is_application</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+<div class='docblock'><p>Returns true when the current <code>Metadata</code> is <code>Application</code>.</p>
+</div><h4 id='method.is_seek_table' class='method'><code>fn <a href='#method.is_seek_table' class='fnname'>is_seek_table</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+<div class='docblock'><p>Returns true when the current <code>Metadata</code> is <code>SeekTable</code>.</p>
+</div><h4 id='method.is_vorbis_comment' class='method'><code>fn <a href='#method.is_vorbis_comment' class='fnname'>is_vorbis_comment</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+<div class='docblock'><p>Returns true when the current <code>Metadata</code> is <code>VorbisComment</code>.</p>
+</div><h4 id='method.is_cue_sheet' class='method'><code>fn <a href='#method.is_cue_sheet' class='fnname'>is_cue_sheet</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+<div class='docblock'><p>Returns true when the current <code>Metadata</code> is <code>CueSheet</code>.</p>
+</div><h4 id='method.is_picture' class='method'><code>fn <a href='#method.is_picture' class='fnname'>is_picture</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+<div class='docblock'><p>Returns true when the current <code>Metadata</code> is <code>Picture</code>.</p>
+</div><h4 id='method.is_unknown' class='method'><code>fn <a href='#method.is_unknown' class='fnname'>is_unknown</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+<div class='docblock'><p>Returns true when the current <code>Metadata</code> is <code>Unknown</code>.</p>
+</div><h4 id='method.bytes_len' class='method'><code>fn <a href='#method.bytes_len' class='fnname'>bytes_len</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h4>
+<h4 id='method.to_bytes' class='method'><code>fn <a href='#method.to_bytes' class='fnname'>to_bytes</a>&lt;Write: <a class='trait' href='https://doc.rust-lang.org/nightly/std/io/trait.Write.html' title='std::io::Write'>Write</a>&gt;(&amp;self, buffer: &amp;mut Write) -&gt; <a class='type' href='https://doc.rust-lang.org/nightly/std/io/error/type.Result.html' title='std::io::error::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>&gt;</code></h4>
+</div><h2 id='implementations'>Trait Implementations</h2><h3 id='derived_implementations'>Derived Implementations </h3><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../flac/struct.Metadata.html' title='flac::Metadata'>Metadata</a></code></h3><div class='impl-items'><h4 id='method.fmt' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#tymethod.fmt' class='fnname'>fmt</a>(&amp;self, __arg_0: &amp;mut <a class='struct' href='https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html' title='core::fmt::Formatter'>Formatter</a>) -&gt; <a class='type' href='https://doc.rust-lang.org/nightly/core/fmt/type.Result.html' title='core::fmt::Result'>Result</a></code></h4>
+</div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "flac";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../jquery.js"></script>
+    <script src="../main.js"></script>
+    
+    <script defer src="../search-index.js"></script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Iter","An iterator over a reference of the decoded FLAC stream."],["Stream","FLAC stream that decodes and hold file information."]],"type":[["StreamBuffer","Alias for a FLAC stream produced from a byte stream buffer."],["StreamReader","Alias for a FLAC stream produced from `Read`."]]});

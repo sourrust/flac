@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["ErrorKind","Represent the different kinds of errors."]],"struct":[["ByteStream","Structure that hold a slice of bytes."],["ReadStream","Structure that hold a reader for a source of bytes."]]});

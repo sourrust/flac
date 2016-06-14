@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `PictureType` enum in crate `flac`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, PictureType">
+
+    <title>flac::metadata::PictureType - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='../index.html'>flac</a>::<wbr><a href='index.html'>metadata</a></p><script>window.sidebarCurrent = {name: 'PictureType', ty: 'enum', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content enum">
+<h1 class='fqn'><span class='in-band'>Enum <a href='../index.html'>flac</a>::<wbr><a href='index.html'>metadata</a>::<wbr><a class='enum' href=''>PictureType</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-2699' class='srclink' href='../../src/flac/src/metadata/types.rs.html#643-686' title='goto source code'>[src]</a></span></h1>
+<pre class='rust enum'>pub enum PictureType {
+    Other,
+    FileIconStandard,
+    FileIcon,
+    FrontCover,
+    BackCover,
+    LeafletPage,
+    Media,
+    LeadArtist,
+    Artist,
+    Conductor,
+    Band,
+    Composer,
+    Lyricist,
+    RecordingLocation,
+    DuringRecording,
+    DuringPerformance,
+    VideoScreenCapture,
+    Fish,
+    Illustration,
+    BandLogo,
+    PublisherLogo,
+}</pre><div class='docblock'><p>The picture type according to the <code>ID3v2</code> attached picture frame.</p>
+</div><h2 class='variants'>Variants</h2>
+<table class='variants_table'><tr><td id='variant.Other'><code>Other</code></td><td><div class='docblock'><p>Other picture type not categorized in this enum.</p>
+</div></td><td></td></tr><tr><td id='variant.FileIconStandard'><code>FileIconStandard</code></td><td><div class='docblock'><p>32x32 pixels &#39;file icon&#39;.</p>
+</div></td><td></td></tr><tr><td id='variant.FileIcon'><code>FileIcon</code></td><td><div class='docblock'><p>Other, or non-standard, file icon.</p>
+</div></td><td></td></tr><tr><td id='variant.FrontCover'><code>FrontCover</code></td><td><div class='docblock'><p>Cover (front).</p>
+</div></td><td></td></tr><tr><td id='variant.BackCover'><code>BackCover</code></td><td><div class='docblock'><p>Cover (back).</p>
+</div></td><td></td></tr><tr><td id='variant.LeafletPage'><code>LeafletPage</code></td><td><div class='docblock'><p>Leaflet page.</p>
+</div></td><td></td></tr><tr><td id='variant.Media'><code>Media</code></td><td><div class='docblock'><p>Media, like label side of a CD.</p>
+</div></td><td></td></tr><tr><td id='variant.LeadArtist'><code>LeadArtist</code></td><td><div class='docblock'><p>Lead artist, lead performer, or soloist.</p>
+</div></td><td></td></tr><tr><td id='variant.Artist'><code>Artist</code></td><td><div class='docblock'><p>Artist or performer.</p>
+</div></td><td></td></tr><tr><td id='variant.Conductor'><code>Conductor</code></td><td><div class='docblock'><p>Conductor.</p>
+</div></td><td></td></tr><tr><td id='variant.Band'><code>Band</code></td><td><div class='docblock'><p>Band or orchestra.</p>
+</div></td><td></td></tr><tr><td id='variant.Composer'><code>Composer</code></td><td><div class='docblock'><p>Composer.</p>
+</div></td><td></td></tr><tr><td id='variant.Lyricist'><code>Lyricist</code></td><td><div class='docblock'><p>Lyricist or text writer.</p>
+</div></td><td></td></tr><tr><td id='variant.RecordingLocation'><code>RecordingLocation</code></td><td><div class='docblock'><p>Recording location.</p>
+</div></td><td></td></tr><tr><td id='variant.DuringRecording'><code>DuringRecording</code></td><td><div class='docblock'><p>During recording.</p>
+</div></td><td></td></tr><tr><td id='variant.DuringPerformance'><code>DuringPerformance</code></td><td><div class='docblock'><p>During performance.</p>
+</div></td><td></td></tr><tr><td id='variant.VideoScreenCapture'><code>VideoScreenCapture</code></td><td><div class='docblock'><p>Movie, or video, screen capture.</p>
+</div></td><td></td></tr><tr><td id='variant.Fish'><code>Fish</code></td><td><div class='docblock'><p>A bright colored fish.</p>
+</div></td><td></td></tr><tr><td id='variant.Illustration'><code>Illustration</code></td><td><div class='docblock'><p>Illustration.</p>
+</div></td><td></td></tr><tr><td id='variant.BandLogo'><code>BandLogo</code></td><td><div class='docblock'><p>Band, or artist, logotype.</p>
+</div></td><td></td></tr><tr><td id='variant.PublisherLogo'><code>PublisherLogo</code></td><td><div class='docblock'><p>Publisher, or studio, logotype.</p>
+</div></td><td></td></tr></table><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/fmt/trait.Display.html' title='core::fmt::Display'>Display</a> for <a class='enum' href='../../flac/metadata/enum.PictureType.html' title='flac::metadata::PictureType'>PictureType</a></code></h3><div class='impl-items'><h4 id='method.fmt' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/fmt/trait.Display.html#tymethod.fmt' class='fnname'>fmt</a>(&amp;self, formatter: &amp;mut <a class='struct' href='https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html' title='core::fmt::Formatter'>Formatter</a>) -&gt; <a class='type' href='https://doc.rust-lang.org/nightly/core/fmt/type.Result.html' title='core::fmt::Result'>Result</a></code></h4>
+</div><h3 id='derived_implementations'>Derived Implementations </h3><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/marker/trait.Copy.html' title='core::marker::Copy'>Copy</a> for <a class='enum' href='../../flac/metadata/enum.PictureType.html' title='flac::metadata::PictureType'>PictureType</a></code></h3><div class='impl-items'></div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> for <a class='enum' href='../../flac/metadata/enum.PictureType.html' title='flac::metadata::PictureType'>PictureType</a></code></h3><div class='impl-items'><h4 id='method.clone' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#tymethod.clone' class='fnname'>clone</a>(&amp;self) -&gt; <a class='enum' href='../../flac/metadata/enum.PictureType.html' title='flac::metadata::PictureType'>PictureType</a></code></h4>
+<h4 id='method.clone_from' class='method'><span class="since">1.0.0</span><code>fn <a href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone_from' class='fnname'>clone_from</a>(&amp;mut self, source: &amp;Self)</code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for <a class='enum' href='../../flac/metadata/enum.PictureType.html' title='flac::metadata::PictureType'>PictureType</a></code></h3><div class='impl-items'></div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html' title='core::cmp::PartialEq'>PartialEq</a> for <a class='enum' href='../../flac/metadata/enum.PictureType.html' title='flac::metadata::PictureType'>PictureType</a></code></h3><div class='impl-items'><h4 id='method.eq' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html#tymethod.eq' class='fnname'>eq</a>(&amp;self, __arg_0: &amp;<a class='enum' href='../../flac/metadata/enum.PictureType.html' title='flac::metadata::PictureType'>PictureType</a>) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+<h4 id='method.ne' class='method'><span class="since">1.0.0</span><code>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html#method.ne' class='fnname'>ne</a>(&amp;self, other: &amp;Rhs) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='enum' href='../../flac/metadata/enum.PictureType.html' title='flac::metadata::PictureType'>PictureType</a></code></h3><div class='impl-items'><h4 id='method.fmt-1' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#tymethod.fmt' class='fnname'>fmt</a>(&amp;self, __arg_0: &amp;mut <a class='struct' href='https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html' title='core::fmt::Formatter'>Formatter</a>) -&gt; <a class='type' href='https://doc.rust-lang.org/nightly/core/fmt/type.Result.html' title='core::fmt::Result'>Result</a></code></h4>
+</div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "flac";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    
+    <script defer src="../../search-index.js"></script>
+</body>
+</html>
