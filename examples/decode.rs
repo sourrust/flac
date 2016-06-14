@@ -129,7 +129,8 @@ fn main() {
     .unwrap_or_else(|e| e.exit());
 
   if let Some(ref output_file) = args.arg_output {
-    let input_file = &args.arg_input[0];
+    let input_file = args.arg_input.get(0)
+                     .expect("No input file");
 
     if let Err(e) = decode_file(input_file, output_file) {
       println!("{:?}", e);
