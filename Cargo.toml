@@ -14,7 +14,7 @@ keywords      = ["audio", "codec", "flac"]
 
 docopt          = "^0.6.78"
 hound           = "^1.1.0"
-nom             = "^1.0.0"
+nom             = { version = "^2.0.0", features = ["verbose-errors"] }
 rustc-serialize = "^0.3.16"
 
 [dev-dependencies]
