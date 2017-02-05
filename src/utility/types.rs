@@ -3,6 +3,8 @@ use nom::{self, IResult, Needed};
 use std::io::{self, Read};
 use std::ptr;
 use std::cmp;
+use std::fmt;
+use std::error::Error;
 
 use super::{Sample, StreamProducer};
 
@@ -92,6 +94,68 @@ pub enum ErrorKind {
   // Not Found
   /// Some metadata block was not found with a specific filter.
   NotFound,
+}
+
+impl fmt::Display for ErrorKind {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        if let &ErrorKind::IO(io_err) = self {
+            write!(f, "{}: {:?}", self.description(), io_err)
+        } else {
+            write!(f, "{}", self.description())
+        }
+    }
+}
+
+impl Error for ErrorKind {
+    fn description(&self) -> &str {
+        match *self {
+            ErrorKind::IO(_) => "Error from I/O",
+            ErrorKind::Incomplete(_) => "A parser stopped midway and need more bytes to consume",
+            ErrorKind::Continue => "A parser has completes and there is still more bytes to consume",
+            ErrorKind::EndOfInput => "A parser has completes and there is no more bytes to consume",
+            ErrorKind::Unknown => "A non-specified error",
+            ErrorKind::HeaderParser => "Failed parsing the \"fLaC\" header token",
+            ErrorKind::MetadataHeaderParser => "Failed parsing a metadata header",
+            ErrorKind::StreamInfoParser => "Failed parsing the metadata block `StreamInfo`",
+            ErrorKind::PaddingParser => "Failed parsing the metadata block `Padding`",
+            ErrorKind::ApplicationParser => "Failed parsing the metadata block `Application`",
+            ErrorKind::SeekTableParser => "Failed parsing the metadata block `SeekTable`",
+            ErrorKind::VorbisCommentParser => "Failed parsing the metadata block `VorbisComment`",
+            ErrorKind::CueSheetParser => "Failed parsing the metadata block `CueSheet`",
+            ErrorKind::PictureParser => "Failed parsing the metadata block `Picture`",
+            ErrorKind::UnknownParser => "Failed parsing the metadata block `Unknown`",
+            ErrorKind::BlockingStrategyParser => "Failed parsing the blocking strategy inside the frame header",
+            ErrorKind::BlockingSampleParser => "Failed parsing the blocking sample inside the frame header",
+            ErrorKind::ChannelBitsParser => "Failed parsing the channel bits inside the frame header",
+            ErrorKind::UTF8HeaderParser => "Failed parsing the UTF-8 header inside the frame header",
+            ErrorKind::UTF8BodyParser => "Failed parsing the UTF-8 body inside the frame header",
+            ErrorKind::BlockSizeParser => "Failed parsing the secondary block size inside the frame header",
+            ErrorKind::SampleRateParser => "Failed parsing the secondary sample rate inside the frame header",
+            ErrorKind::CRC8Parser => "Failed parsing the CRC-8 inside the frame header",
+            ErrorKind::FrameFooterParser => "Failed parsing the frame footer, also known as the CRC-16",
+            ErrorKind::SubframeHeaderParser => "Failed parsing the subframe header",
+            ErrorKind::LeadingZerosParser => "Failed parsing the leading zero for a unary value",
+            ErrorKind::ConstantParser => "Failed parsing a Constant subframe data",
+            ErrorKind::VerbatimParser => "Failed parsing a Verbatim subframe data",
+            ErrorKind::FixedParser => "Failed parsing a Fixed subframe data",
+            ErrorKind::LPCParser => "Failed parsing a LPC subframe data",
+            ErrorKind::InvalidBlockType => "A block type, base on the number, that is outside the range (0-126)",
+            ErrorKind::InvalidSyncCode => "An incorrect sync code with the frame header",
+            ErrorKind::InvalidBlockSample => "A block sample that could cause sync-fooling",
+            ErrorKind::InvalidChannelBits => "One or more bits are reserved values",
+            ErrorKind::InvalidUTF8 => "An error occurred in building the UTF-8 value",
+            ErrorKind::InvalidCRC8 => "The stored CRC-8 doesn't match the one generated from the bytes within the frame header",
+            ErrorKind::InvalidCRC16 => "The stored CRC-16 doesn't match the one generated from the bytes within the entire frame",
+            ErrorKind::InvalidSubframeHeader => "A subframe header that could cause sync-fooling",
+            ErrorKind::NotFound => "Some metadata block was not found with a specific filter",
+        }
+    }
+
+    fn cause(&self) -> Option<&Error> {
+        // TODO: It would be preferrable to store the io::Error instead of only its ErrorKind so we
+        // can use it here.
+        None
+    }
 }
 
 /// Structure that hold a slice of bytes.
