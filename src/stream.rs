@@ -9,6 +9,7 @@ use utility::{
   many_metadata,
 };
 
+use std::marker;
 use std::io;
 use std::usize;
 use std::fs::File;
@@ -113,7 +114,7 @@ impl<P> Stream<P> where P: StreamProducer {
 
   /// Returns an iterator over the decoded samples.
   #[inline]
-  pub fn iter<S: SampleSize>(&mut self) -> Iter<P, S::Extended> {
+  pub fn iter<S: SampleSize>(&mut self) -> Iter<P, S::Extended, &mut Self> {
     let samples_left = self.info.total_samples;
     let channels     = self.info.channels as usize;
     let block_size   = self.info.max_block_size as usize;
@@ -125,7 +126,27 @@ impl<P> Stream<P> where P: StreamProducer {
       block_size: 0,
       sample_index: 0,
       samples_left: samples_left,
-      buffer: vec![S::Extended::from_i8(0); buffer_size]
+      buffer: vec![S::Extended::from_i8(0); buffer_size],
+      ph: marker::PhantomData,
+    }
+  }
+
+  /// Takes ownership of the stream and returns an iterator over the decoded samples.
+  #[inline]
+  pub fn into_iter<S: SampleSize>(self) -> Iter<P, S::Extended, Self> {
+    let samples_left = self.info.total_samples;
+    let channels     = self.info.channels as usize;
+    let block_size   = self.info.max_block_size as usize;
+    let buffer_size  = block_size * channels;
+
+    Iter {
+      stream: self,
+      channel: 0,
+      block_size: 0,
+      sample_index: 0,
+      samples_left: samples_left,
+      buffer: vec![S::Extended::from_i8(0); buffer_size],
+      ph: marker::PhantomData,
     }
   }
 
@@ -160,27 +181,30 @@ impl<P> Stream<P> where P: StreamProducer {
 }
 
 /// An iterator over a reference of the decoded FLAC stream.
-pub struct Iter<'a, P, S>
- where P: 'a + StreamProducer,
-       S: Sample{
-  stream: &'a mut Stream<P>,
+pub struct Iter<P, S, T>
+ where P: StreamProducer,
+       S: Sample,
+       T: AsRef<Stream<P>> + AsMut<Stream<P>> {
+  stream: T,
   channel: usize,
   block_size: usize,
   sample_index: usize,
   samples_left: u64,
   buffer: Vec<S>,
+  ph: marker::PhantomData<P>,
 }
 
-impl<'a, P, S> Iterator for Iter<'a, P, S>
+impl<P, S, T> Iterator for Iter<P, S, T>
  where P: StreamProducer,
-       S: Sample {
+       S: Sample,
+       T: AsRef<Stream<P>> + AsMut<Stream<P>> {
   type Item = S::Normal;
 
   fn next(&mut self) -> Option<Self::Item> {
     if self.sample_index == self.block_size {
       let buffer = &mut self.buffer;
 
-      if let Some(block_size) = self.stream.next_frame(buffer) {
+      if let Some(block_size) = self.stream.as_mut().next_frame(buffer) {
         self.sample_index = 0;
         self.block_size   = block_size;
       } else {
@@ -188,7 +212,7 @@ impl<'a, P, S> Iterator for Iter<'a, P, S>
       }
     }
 
-    let channels = self.stream.info.channels as usize;
+    let channels = self.stream.as_ref().info.channels as usize;
     let index    = self.sample_index + (self.channel * self.block_size);
     let sample   = unsafe { *self.buffer.get_unchecked(index) };
 
@@ -216,6 +240,16 @@ impl<'a, P, S> Iterator for Iter<'a, P, S>
       (samples_left, Some(samples_left))
     }
   }
+}
+
+impl<P> AsRef<Stream<P>> for Stream<P>
+    where P: StreamProducer {
+    fn as_ref(&self) -> &Stream<P> { &self }
+}
+
+impl<P> AsMut<Stream<P>> for Stream<P>
+    where P: StreamProducer {
+    fn as_mut(&mut self) -> &mut Stream<P> { self }
 }
 
 //impl<'a, P, S> IntoIterator for &'a mut Stream<P>
