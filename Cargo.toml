@@ -12,11 +12,11 @@ keywords      = ["audio", "codec", "flac"]
 
 [dependencies]
 
-docopt          = "^0.6.78"
-hound           = "^1.1.0"
 nom             = "^1.0.0"
-rustc-serialize = "^0.3.16"
 
 [dev-dependencies]
 
+docopt          = "^0.6.78"
+hound           = "^1.1.0"
 rust-crypto = "^0.2.34"
+rustc-serialize = "^0.3.16"
